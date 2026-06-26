@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+/dist/
+/dist-ssr/
+.output/
+.vinxi/
+.wrangler/
+.tanstack/
+.vercel/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Local/system files
+.DS_Store
+*.local
+count.txt
+.nitro
+todos.json
+
+# Generated or local-only files
+**/database.types.ts
+.claude/
