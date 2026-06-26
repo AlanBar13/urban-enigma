@@ -1,0 +1,92 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="256" fill="#F97316"/>
+
+  <!-- Shadow/Ground -->
+  <ellipse cx="256" cy="400" rx="200" ry="25" fill="#000000" opacity="0.1"/>
+
+  <!-- Main Central House -->
+  <g transform="translate(256, 256)">
+    <!-- Roof -->
+    <path d="M -90 -50 L 0 -130 L 90 -50 Z" fill="#FFFFFF" filter="url(#shadow)"/>
+    <path d="M -90 -50 L 0 -130 L 90 -50 L 90 -35 L 70 -35 L 0 -100 L -70 -35 L -90 -35 Z" fill="#FFFFFF"/>
+
+    <!-- Chimney -->
+    <rect x="45" y="-115" width="22" height="45" fill="#FFFFFF" opacity="0.95" rx="3"/>
+    <rect x="43" y="-117" width="26" height="8" fill="#FFFFFF" rx="2"/>
+
+    <!-- Main Body -->
+    <rect x="-70" y="-35" width="140" height="115" fill="#FFFFFF" rx="5"/>
+
+    <!-- Door -->
+    <g transform="translate(0, 30)">
+      <rect x="-22" y="-15" width="44" height="65" fill="#DC2626" rx="4"/>
+      <circle cx="12" cy="20" r="4" fill="#FEF3C7"/>
+      <line x1="0" y1="-15" x2="0" y2="50" stroke="#B91C1C" stroke-width="2.5"/>
+    </g>
+
+    <!-- Left Window -->
+    <g transform="translate(-40, -12)">
+      <rect x="-18" y="-18" width="36" height="36" fill="#FED7AA" rx="3"/>
+      <line x1="0" y1="-18" x2="0" y2="18" stroke="#F97316" stroke-width="3"/>
+      <line x1="-18" y1="0" x2="18" y2="0" stroke="#F97316" stroke-width="3"/>
+    </g>
+
+    <!-- Right Window -->
+    <g transform="translate(40, -12)">
+      <rect x="-18" y="-18" width="36" height="36" fill="#FED7AA" rx="3"/>
+      <line x1="0" y1="-18" x2="0" y2="18" stroke="#F97316" stroke-width="3"/>
+      <line x1="-18" y1="0" x2="18" y2="0" stroke="#F97316" stroke-width="3"/>
+    </g>
+
+    <!-- Fence -->
+    <g opacity="0.9" transform="translate(0, 95)">
+      <rect x="-85" y="0" width="170" height="6" fill="#FFFFFF" rx="2"/>
+      <rect x="-75" y="-12" width="5" height="18" fill="#FFFFFF" rx="1"/>
+      <rect x="-50" y="-12" width="5" height="18" fill="#FFFFFF" rx="1"/>
+      <rect x="-25" y="-12" width="5" height="18" fill="#FFFFFF" rx="1"/>
+      <rect x="0" y="-12" width="5" height="18" fill="#FFFFFF" rx="1"/>
+      <rect x="25" y="-12" width="5" height="18" fill="#FFFFFF" rx="1"/>
+      <rect x="50" y="-12" width="5" height="18" fill="#FFFFFF" rx="1"/>
+      <rect x="70" y="-12" width="5" height="18" fill="#FFFFFF" rx="1"/>
+    </g>
+  </g>
+
+  <!-- Left Small House -->
+  <g transform="translate(130, 310)" opacity="0.95">
+    <path d="M -40 -35 L 0 -70 L 40 -35 Z" fill="#FFFFFF"/>
+    <rect x="-35" y="-35" width="70" height="65" fill="#FFFFFF" rx="4"/>
+    <rect x="-12" y="10" width="24" height="25" fill="#FED7AA" rx="2"/>
+    <rect x="-25" y="-18" width="16" height="16" fill="#FED7AA" rx="2"/>
+    <rect x="9" y="-18" width="16" height="16" fill="#FED7AA" rx="2"/>
+  </g>
+
+  <!-- Right Small House -->
+  <g transform="translate(382, 310)" opacity="0.95">
+    <path d="M -40 -35 L 0 -70 L 40 -35 Z" fill="#FFFFFF"/>
+    <rect x="-35" y="-35" width="70" height="65" fill="#FFFFFF" rx="4"/>
+    <rect x="-12" y="10" width="24" height="25" fill="#FED7AA" rx="2"/>
+    <rect x="-25" y="-18" width="16" height="16" fill="#FED7AA" rx="2"/>
+    <rect x="9" y="-18" width="16" height="16" fill="#FED7AA" rx="2"/>
+  </g>
+
+  <!-- Decorative Elements -->
+  <circle cx="85" cy="100" r="10" fill="#FFFFFF" opacity="0.25"/>
+  <circle cx="130" cy="80" r="7" fill="#FFFFFF" opacity="0.2"/>
+  <circle cx="427" cy="100" r="10" fill="#FFFFFF" opacity="0.25"/>
+  <circle cx="382" cy="80" r="7" fill="#FFFFFF" opacity="0.2"/>
+
+  <defs>
+    <filter id="shadow">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="0" dy="4" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.2"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+</svg>
