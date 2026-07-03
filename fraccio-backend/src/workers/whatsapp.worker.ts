@@ -1,12 +1,14 @@
 import { Worker, Job } from "bullmq"
 import { WhatsAppClient } from "../lib/whatsapp/client.js";
 import { WhatsAppService } from "../lib/whatsapp/service.js";
+import SupabaseClient from "../lib/db/client.js";
 
 export async function startWhatsAppWorker() {
     const waClient = new WhatsAppClient("fraccio-whatsapp");
     await waClient.initialize();
+    const supabaseClient = SupabaseClient.getInstance().getSupabase();
 
-    const service = new WhatsAppService(waClient.getClient());
+    const service = new WhatsAppService(waClient.getClient(), supabaseClient);
 
     const worker = new Worker(
         "whatsapp",
@@ -19,20 +21,14 @@ export async function startWhatsAppWorker() {
                 case "SEND_GROUP_MESSAGE":
                     const { tenantId, groupId, message } = job.data;
                     const result = await service.sendGroupMessage(groupId, message);
-
-                    //TODO: save to DB
                     return result;
                 case "ADD_USER_TO_GROUP":
                     const { tenantId: addTenantId, groupId: addGroupId, phone } = job.data;
                     const addResult = await service.addUsertoGroup(addGroupId, phone);
-
-                    //TODO: save to DB to tenantId
                     return addResult;
                 case "CREATE_TENANT_GROUP":
                     const { tenantId: createTenantId, groupName, initialMembers } = job.data;
                     const createResult = await service.createTenantGroup(groupName, initialMembers);
-
-                    //TODO: save to DB to tenantId
                     return createResult;
                 default:
                     throw new Error(`Unknown job name: ${job.name}`);

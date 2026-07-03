@@ -1,7 +1,8 @@
 import { Client, type GroupChat, type CreateGroupResult } from "whatsapp-web.js";
+import { type SupabaseClient } from "@supabase/supabase-js";
 
 export class WhatsAppService {
-    constructor(private client: Client) { }
+    constructor(private client: Client, private supabaseClient: SupabaseClient) { }
 
     private toWhatsappId(phone: string): string {
         const cleanedPhone = phone.replace(/\D/g, '');
@@ -16,6 +17,8 @@ export class WhatsAppService {
         }
 
         await chat.sendMessage(message);
+
+        //TODO: save to DB
 
         return {
             status: "sent",
@@ -37,6 +40,8 @@ export class WhatsAppService {
             const result = await group.addParticipants([whatsappId], {
                 sleep: [1000, 3000]
             });
+
+            //TODO: save to DB to tenantId
 
             return {
                 phone,

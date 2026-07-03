@@ -1,7 +1,9 @@
+import "dotenv/config"
 import Fastify from "fastify";
 import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUi from '@fastify/swagger-ui';
 
+import supabasePlugin from "./lib/db/plugin.js";
 import baseRoutes from "./api/routes/base.route.js";
 import commsRoutes from "./api/routes/comms.route.js";
 
@@ -27,6 +29,8 @@ server.register(fastifySwaggerUi, {
         deepLinking: true
     }
 })
+
+server.register(supabasePlugin);
 
 server.register(async (instance, opts) => {
     instance.register(baseRoutes);
