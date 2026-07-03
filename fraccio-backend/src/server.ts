@@ -1,11 +1,37 @@
 import Fastify from "fastify";
-import { configureBaseRoutes } from "./api/routes/base.route.js";
+import fastifySwagger from '@fastify/swagger';
+import fastifySwaggerUi from '@fastify/swagger-ui';
+
+import baseRoutes from "./api/routes/base.route.js";
+import commsRoutes from "./api/routes/comms.route.js";
 
 const server = Fastify({
     logger: true
 });
 
-configureBaseRoutes(server);
+server.register(fastifySwagger, {
+    openapi: {
+        info: {
+            title: 'Fraccio API',
+            description: 'API documentation for Fraccio',
+            version: '1.0.0'
+        },
+        servers: [{ url: 'http://localhost:5000' }]
+    }
+})
+
+server.register(fastifySwaggerUi, {
+    routePrefix: '/docs',
+    uiConfig: {
+        docExpansion: 'list',
+        deepLinking: true
+    }
+})
+
+server.register(async (instance, opts) => {
+    instance.register(baseRoutes);
+    instance.register(commsRoutes, { prefix: "/comms" });
+}, { prefix: "/api/v1" })
 
 server.listen({ port: 5000 }, (err, address) => {
     if (err) {

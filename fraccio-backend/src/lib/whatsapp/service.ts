@@ -1,4 +1,4 @@
-import { Client, type GroupChat } from "whatsapp-web.js";
+import { Client, type GroupChat, type CreateGroupResult } from "whatsapp-web.js";
 
 export class WhatsAppService {
     constructor(private client: Client) { }
@@ -58,12 +58,19 @@ export class WhatsAppService {
     }
 
     async createTenantGroup(groupName: string, initialMembers: string[]) {
-        const whatsappIds = initialMembers.map(phone => this.toWhatsappId(phone));
+        let whatsappIds: string[] | undefined;
+        if (initialMembers.length > 0) {
+            whatsappIds = initialMembers.map(phone => this.toWhatsappId(phone));
+        }
+        
         const group = await this.client.createGroup(groupName, whatsappIds);
 
+        const waGroup = group as CreateGroupResult;
+        console.log("group id", waGroup.gid._serialized)
+        //TODO: save waGroup.gid._serialized
         return {
             groupName,
-            result: group,
+            groupId: waGroup.gid._serialized,
             status: "created"
         }
     }

@@ -27,9 +27,18 @@ export class WhatsAppClient {
             //TODO:Save the QR code to a db
         });
 
-        this.client.on("ready", () => {
+        this.client.on("ready", async () => {
             console.log("WhatsApp client is ready!");
             this.isReady = true;
+
+            //TODO: Update session status on DB
+            // const chats = await this.client.getChats();
+            // console.log(`Retrieved ${chats.length} chats.`);
+            // const groups = chats.filter(chat => chat.isGroup);
+            // console.log(`Retrieved ${groups.length} groups.`);
+            // groups.forEach(group => {
+            //     console.log(`Group: ${group.name} (${group.id._serialized})`);
+            // });
         });
     }
 
