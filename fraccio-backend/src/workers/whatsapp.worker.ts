@@ -1,35 +1,38 @@
 import { Worker, Job } from "bullmq"
-import { WhatsAppClient } from "../lib/whatsapp/client.js";
 import { WhatsAppService } from "../lib/whatsapp/service.js";
 import SupabaseClient from "../lib/db/client.js";
+import { whatsappSessionManager } from "../lib/whatsapp/session-manager.js";
 
 export async function startWhatsAppWorker() {
-    const waClient = new WhatsAppClient("fraccio-whatsapp");
-    await waClient.initialize();
     const supabaseClient = SupabaseClient.getInstance().getSupabase();
-
-    const service = new WhatsAppService(waClient.getClient(), supabaseClient);
 
     const worker = new Worker(
         "whatsapp",
         async (job: Job) => {
-            if(!waClient.ready()) {
-                throw new Error("WhatsApp client is not ready yet. Please wait for the QR code to be scanned and the client to be ready.");
+            const { tenantId } = job.data;
+            const session = await whatsappSessionManager.getSession(tenantId);
+
+            if (!session) {
+                throw new Error(`WhatsApp session for tenant ${tenantId} does not exist.`);
             }
+
+            if (session.status !== "ready") {
+                throw new Error(`WhatsApp client for tenant ${tenantId} is not ready yet.`);
+            }
+
+            const client = await whatsappSessionManager.getClient(tenantId);
+            const service = new WhatsAppService(client.getClient(), supabaseClient);
 
             switch (job.name) {
                 case "SEND_GROUP_MESSAGE":
-                    const { tenantId, groupId, message } = job.data;
-                    const result = await service.sendGroupMessage(groupId, message);
-                    return result;
+                    const { groupId, message } = job.data;
+                    return service.sendGroupMessage(groupId, message);
                 case "ADD_USER_TO_GROUP":
-                    const { tenantId: addTenantId, groupId: addGroupId, phone } = job.data;
-                    const addResult = await service.addUsertoGroup(addGroupId, phone);
-                    return addResult;
+                    const { groupId: addGroupId, phone } = job.data;
+                    return service.addUsertoGroup(addGroupId, phone);
                 case "CREATE_TENANT_GROUP":
-                    const { tenantId: createTenantId, groupName, initialMembers } = job.data;
-                    const createResult = await service.createTenantGroup(groupName, initialMembers);
-                    return createResult;
+                    const { groupName, initialMembers } = job.data;
+                    return service.createTenantGroup(groupName, initialMembers);
                 default:
                     throw new Error(`Unknown job name: ${job.name}`);
             }
@@ -39,7 +42,7 @@ export async function startWhatsAppWorker() {
                 host: process.env.REDIS_HOST || "localhost",
                 port: Number(process.env.REDIS_PORT) || 6379,
             },
-            concurrency: 1, // Ensure that jobs are processed one at a time to keep session state
+            concurrency: 1,
         }
     );
 

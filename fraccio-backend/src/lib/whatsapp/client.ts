@@ -3,11 +3,17 @@ import whatsapp from "whatsapp-web.js";
 import qrcode from "qrcode-terminal";
 const { LocalAuth } = whatsapp;
 
+export interface WhatsAppClientEvents {
+    onQr?: (qr: string) => Promise<void> | void;
+    onReady?: () => Promise<void> | void;
+    onError?: (message: string) => Promise<void> | void;
+}
+
 export class WhatsAppClient {
     private client: Client;
     private isReady: boolean = false;
 
-    constructor(clientId: string) {
+    constructor(clientId: string, private events: WhatsAppClientEvents = {}) {
         this.client = new Client({
             authStrategy: new LocalAuth({ clientId }),
             puppeteer: {
@@ -20,25 +26,28 @@ export class WhatsAppClient {
     }
 
     private registerEvents() {
-        this.client.on("qr", (qr) => {
+        this.client.on("qr", async (qr) => {
             console.log("QR RECEIVED, Scan the QR code with your WhatsApp app:", qr);
             qrcode.generate(qr, { small: true });
 
-            //TODO:Save the QR code to a db
+            if (this.events.onQr) {
+                await this.events.onQr(qr);
+            }
         });
 
         this.client.on("ready", async () => {
             console.log("WhatsApp client is ready!");
             this.isReady = true;
 
-            //TODO: Update session status on DB
-            // const chats = await this.client.getChats();
-            // console.log(`Retrieved ${chats.length} chats.`);
-            // const groups = chats.filter(chat => chat.isGroup);
-            // console.log(`Retrieved ${groups.length} groups.`);
-            // groups.forEach(group => {
-            //     console.log(`Group: ${group.name} (${group.id._serialized})`);
-            // });
+            if (this.events.onReady) {
+                await this.events.onReady();
+            }
+        });
+
+        this.client.on("auth_failure", async (message) => {
+            if (this.events.onError) {
+                await this.events.onError(message || "Authentication failed");
+            }
         });
     }
 
