@@ -104,9 +104,6 @@ export class WhatsAppSessionManager {
         const cachedSession = this.sessionsCache.get(normalizedTenantId);
 
         if (cachedSession) {
-            if (!this.clients.has(normalizedTenantId)) {
-                await this.initializeClientForTenant(normalizedTenantId, cachedSession);
-            }
             return cachedSession;
         }
 
@@ -135,11 +132,6 @@ export class WhatsAppSessionManager {
         }
 
         this.sessionsCache.set(normalizedTenantId, session);
-
-        if (!this.clients.has(normalizedTenantId)) {
-            await this.initializeClientForTenant(normalizedTenantId, session);
-        }
-
         return session;
     }
 
@@ -164,7 +156,15 @@ export class WhatsAppSessionManager {
     }
 
     async connectSession(tenantId: string): Promise<WhatsAppSession> {
-        return this.ensureSession(tenantId);
+        const normalizedTenantId = this.normalizeTenantId(tenantId);
+        const session = await this.ensureSession(normalizedTenantId);
+
+        await this.updateSession(normalizedTenantId, {
+            status: "connecting",
+            error_message: null,
+        });
+
+        return session;
     }
 
     async updateSession(tenantId: string, updates: Partial<WhatsAppSession>): Promise<WhatsAppSession> {
@@ -196,8 +196,8 @@ export class WhatsAppSessionManager {
             return existingClient;
         }
 
-        await this.ensureSession(normalizedTenantId);
-        const client = this.clients.get(normalizedTenantId);
+        const session = await this.ensureSession(normalizedTenantId);
+        const client = await this.initializeClientForTenant(normalizedTenantId, session);
 
         if (!client) {
             throw new Error(`WhatsApp client for tenant ${normalizedTenantId} was not initialized`);

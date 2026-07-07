@@ -1,4 +1,5 @@
 import { type FastifyInstance } from "fastify";
+import { whatsappQueue } from "../../queue/whatsapp.queue.js";
 import { whatsappSessionManager } from "../../lib/whatsapp/session-manager.js";
 
 interface SessionRouteParams {
@@ -11,6 +12,19 @@ async function routes(server: FastifyInstance) {
 
         try {
             const session = await whatsappSessionManager.connectSession(tenantId);
+            await whatsappQueue.add(
+                "INIT_TENANT_SESSION",
+                { tenantId },
+                {
+                    attempts: 3,
+                    backoff: {
+                        type: "exponential",
+                        delay: 5000,
+                    },
+                    removeOnComplete: true,
+                    removeOnFail: false,
+                }
+            );
             reply.send({ success: true, session });
         } catch (error) {
             reply.status(500).send({ success: false, message: (error as Error).message });
