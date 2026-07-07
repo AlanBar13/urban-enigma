@@ -25,4 +25,3 @@ todos.json
 
 # Generated or local-only files
 **/database.types.ts
-.claude/
