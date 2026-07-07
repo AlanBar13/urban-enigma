@@ -1,10 +1,13 @@
 {
   "permissions": {
-    "ask": [
-      "Bash(git push *)"
-    ],
     "deny": [
       "Bash(rm -rf *)"
+    ],
+    "ask": [
+      "Bash(git push *)"
     ]
+  },
+  "enabledPlugins": {
+    "ponytail@ponytail": true
   }
 }
