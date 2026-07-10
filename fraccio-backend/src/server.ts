@@ -39,7 +39,7 @@ server.register(async (instance, opts) => {
     instance.register(whatsappSessionRoutes, { prefix: "/comms" });
 }, { prefix: "/api/v1" })
 
-server.listen({ port: 5000 }, (err, address) => {
+server.listen({ port: Number(process.env.PORT) || 5000, host: "0.0.0.0" }, (err, address) => {
     if (err) {
         server.log.error(err);
         process.exit(1);

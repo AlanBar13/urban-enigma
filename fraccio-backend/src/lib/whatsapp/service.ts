@@ -71,8 +71,6 @@ export class WhatsAppService {
         const group = await this.client.createGroup(groupName, whatsappIds);
 
         const waGroup = group as CreateGroupResult;
-        console.log("group id", waGroup.gid._serialized)
-        //TODO: save waGroup.gid._serialized
         return {
             groupName,
             groupId: waGroup.gid._serialized,

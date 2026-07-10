@@ -1,6 +1,16 @@
 import type { Queue } from "bullmq";
 import { whatsappQueue } from "../../queue/whatsapp.queue.js";
 
+const jobOptions = {
+    attempts: 3,
+    backoff: {
+        type: "exponential",
+        delay: 5000,
+    },
+    removeOnComplete: true,
+    removeOnFail: false,
+} as const;
+
 class CommsController {
     private queue: Queue
 
@@ -11,38 +21,23 @@ class CommsController {
     /**
      * Sends a message to the tenant group
      * @param {tenantId} id of the tenant to send the message
-     * @param {groupId} wa group id to send the message
+     * @param {groupId} wa group id to send the message; omit to use the tenant's stored group
      * @param {message} message to send to the group
      */
-    async sendWaMessage(tenantId: string, groupId: string, message: string): Promise<{ success: boolean, jobId: string | undefined }> {
-        try {
-            const job = await this.queue.add(
-                "SEND_GROUP_MESSAGE",
-                {
-                    tenantId,
-                    groupId,
-                    message
-                },
-                {
-                    attempts: 3,
-                    backoff: {
-                        type: "exponential",
-                        delay: 5000
-                    },
-                    removeOnComplete: true,
-                    removeOnFail: false
-                })
+    async sendWaMessage(tenantId: string, groupId: string | undefined, message: string): Promise<{ success: boolean, jobId: string | undefined }> {
+        const job = await this.queue.add(
+            "SEND_GROUP_MESSAGE",
+            {
+                tenantId,
+                groupId,
+                message
+            },
+            jobOptions
+        )
 
-            return {
-                success: true,
-                jobId: job.id
-            }
-        } catch (err) {
-            console.log('[Err] Send WaMessage error: ', err)
-            return {
-                success: true,
-                jobId: undefined
-            }
+        return {
+            success: true,
+            jobId: job.id
         }
     }
 
@@ -52,7 +47,7 @@ class CommsController {
      * @param {groupName} name for the wa group
      * @param {initialMembers} numbers of the participants of the group
      */
-    async createWaTenantGroup(tenantId: string, groupName: string, initialMembers: string[]) {
+    async createWaTenantGroup(tenantId: string, groupName: string, initialMembers: string[]): Promise<{ success: boolean, jobId: string | undefined }> {
         const job = await this.queue.add(
             "CREATE_TENANT_GROUP",
             {
@@ -60,19 +55,12 @@ class CommsController {
                 groupName,
                 initialMembers
             },
-            {
-                attempts: 3,
-                backoff: {
-                    type: "exponential",
-                    delay: 5000
-                },
-                removeOnComplete: true,
-                removeOnFail: false
-            }
+            jobOptions
         )
 
         return {
-            success: true
+            success: true,
+            jobId: job.id
         }
     }
 }

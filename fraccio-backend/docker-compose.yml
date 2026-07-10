@@ -1,0 +1,45 @@
+# Base (prod-shaped) stack: redis + api + worker.
+# Dev overrides live in docker-compose.override.yml (auto-merged by `docker compose up`).
+# Prod: `docker compose -f docker-compose.yml up -d --build` (base only).
+
+services:
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  api:
+    build: .
+    image: fraccio-backend
+    command: ["pnpm", "start:api"]
+    env_file: .env
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+    ports:
+      - "5000:5000"
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  worker:
+    build: .
+    image: fraccio-backend
+    command: ["pnpm", "start:worker"]
+    env_file: .env
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+    volumes:
+      - wwebjs_auth:/app/.wwebjs_auth
+      - wwebjs_cache:/app/.wwebjs_cache
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+  wwebjs_auth:
+  wwebjs_cache:

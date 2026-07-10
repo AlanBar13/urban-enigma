@@ -1,0 +1,19 @@
+# Dev overrides: auto-merged when you run `docker compose up` (no -f).
+# Bind-mounts src for hot reload and runs tsx in watch mode.
+# The anonymous volume on /app/node_modules keeps the image's installed deps
+# from being shadowed by the host directory.
+
+services:
+  api:
+    command: ["pnpm", "exec", "tsx", "watch", "src/server.ts"]
+    volumes:
+      - ./src:/app/src
+      - /app/node_modules
+
+  worker:
+    command: ["pnpm", "exec", "tsx", "watch", "src/worker.ts"]
+    volumes:
+      - ./src:/app/src
+      - /app/node_modules
+      - wwebjs_auth:/app/.wwebjs_auth
+      - wwebjs_cache:/app/.wwebjs_cache

@@ -6,7 +6,7 @@ interface CommsRouteParams {
 }
 
 interface SendMessageBody {
-    groupId: string;
+    groupId?: string;
     message: string;
 }
 
@@ -34,9 +34,9 @@ async function routes(server: FastifyInstance, options: Record<string, unknown>)
             },
             body: {
                 type: 'object',
-                required: ['groupId', 'message'],
+                required: ['message'],
                 properties: {
-                    groupId: { type: 'string', minLength: 3 },
+                    groupId: { type: 'string', minLength: 3, description: "Optional; defaults to the tenant's stored group" },
                     message: { type: 'string' },
                 }
             },
@@ -100,7 +100,8 @@ async function routes(server: FastifyInstance, options: Record<string, unknown>)
                     description: 'WaGroup created',
                     type: 'object',
                     properties: {
-                        success: { type: 'boolean' }
+                        success: { type: 'boolean' },
+                        jobId: { type: 'string' }
                     }
                 },
                 500: {
