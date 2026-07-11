@@ -12,7 +12,7 @@ export async function backendFetch(path: string, init?: RequestInit) {
   const res = await fetch(`${BACKEND_URL}${path}`, {
     ...init,
     headers: {
-      'Content-Type': 'application/json',
+      ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
       Authorization: `Bearer ${session.access_token}`,
       ...init?.headers,
     },
