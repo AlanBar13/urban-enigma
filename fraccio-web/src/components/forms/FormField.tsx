@@ -9,10 +9,7 @@ export interface FormFieldProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const FormField = React.forwardRef<HTMLDivElement, FormFieldProps>(
-  (
-    { className, label, error, required, hint, children, ...props },
-    ref
-  ) => (
+  ({ className, label, error, required, hint, children, ...props }, ref) => (
     <div ref={ref} className={cn('flex flex-col gap-2', className)} {...props}>
       {label && (
         <label className="text-sm font-medium text-foreground">
@@ -23,15 +20,11 @@ const FormField = React.forwardRef<HTMLDivElement, FormFieldProps>(
 
       {children}
 
-      {error && (
-        <p className="text-sm text-destructive font-medium">{error}</p>
-      )}
+      {error && <p className="text-sm text-destructive font-medium">{error}</p>}
 
-      {!error && hint && (
-        <p className="text-sm text-foreground/60">{hint}</p>
-      )}
+      {!error && hint && <p className="text-sm text-foreground/60">{hint}</p>}
     </div>
-  )
+  ),
 )
 FormField.displayName = 'FormField'
 

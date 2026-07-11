@@ -1,14 +1,23 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import NotFound from '@/components/ui/NotFound'
 import { useState } from 'react'
+import {
+  Bell,
+  CheckCircle2,
+  CreditCard,
+  FileText,
+  Home,
+  Shield,
+  Users,
+  Zap,
+} from 'lucide-react'
+import NotFound from '@/components/ui/NotFound'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Home, Users, Bell, FileText, CreditCard, Shield, Zap, CheckCircle2 } from 'lucide-react'
 
 export const Route = createFileRoute('/')({
   component: App,
-  notFoundComponent: () => <NotFound />
+  notFoundComponent: () => <NotFound />,
 })
 
 function App() {
@@ -17,7 +26,7 @@ function App() {
     name: '',
     email: '',
     phone: '',
-    fraccionamiento: ''
+    fraccionamiento: '',
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
@@ -27,7 +36,7 @@ function App() {
     setIsSubmitting(true)
 
     // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1500))
+    await new Promise((resolve) => setTimeout(resolve, 1500))
 
     setIsSubmitting(false)
     setIsSubmitted(true)
@@ -40,40 +49,46 @@ function App() {
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
   const features = [
     {
       icon: Home,
       title: 'Gestión de Propiedades',
-      description: 'Administra todas las casas y propiedades de tu fraccionamiento de manera centralizada.'
+      description:
+        'Administra todas las casas y propiedades de tu fraccionamiento de manera centralizada.',
     },
     {
       icon: Users,
       title: 'Control de Residentes',
-      description: 'Gestiona propietarios, residentes e invitados con un sistema de permisos robusto.'
+      description:
+        'Gestiona propietarios, residentes e invitados con un sistema de permisos robusto.',
     },
     {
       icon: Bell,
       title: 'Anuncios y Comunicación',
-      description: 'Mantén a todos informados con anuncios dirigidos y notificaciones en tiempo real.'
+      description:
+        'Mantén a todos informados con anuncios dirigidos y notificaciones en tiempo real.',
     },
     {
       icon: FileText,
       title: 'Gestión Documental',
-      description: 'Almacena y organiza documentos importantes de forma segura y accesible.'
+      description:
+        'Almacena y organiza documentos importantes de forma segura y accesible.',
     },
     {
       icon: CreditCard,
       title: 'Control de Pagos',
-      description: 'Administra cuotas de mantenimiento, pagos y estados de cuenta de manera eficiente.'
+      description:
+        'Administra cuotas de mantenimiento, pagos y estados de cuenta de manera eficiente.',
     },
     {
       icon: Shield,
       title: 'Seguridad y Privacidad',
-      description: 'Protección de datos de nivel empresarial con autenticación segura y respaldos automáticos.'
-    }
+      description:
+        'Protección de datos de nivel empresarial con autenticación segura y respaldos automáticos.',
+    },
   ]
 
   const benefits = [
@@ -82,7 +97,7 @@ function App() {
     'Reportes y estadísticas en tiempo real',
     'Soporte técnico dedicado',
     'Actualizaciones automáticas',
-    'Interfaz intuitiva y fácil de usar'
+    'Interfaz intuitiva y fácil de usar',
   ]
 
   return (
@@ -95,14 +110,22 @@ function App() {
               <Home className="h-8 w-8 text-primary" />
               <span className="text-2xl font-bold text-primary">Fraccio</span>
             </div>
-            <Button variant="outline" onClick={() => {
-              router.navigate({ to: '/login' })
-            }}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                router.navigate({ to: '/login' })
+              }}
+            >
               Iniciar Sesión
             </Button>
-            <Button variant="outline" onClick={() => {
-              document.getElementById('contact-form')?.scrollIntoView({ behavior: 'smooth' })
-            }}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                document
+                  .getElementById('contact-form')
+                  ?.scrollIntoView({ behavior: 'smooth' })
+              }}
+            >
               Solicitar Acceso
             </Button>
           </div>
@@ -114,7 +137,9 @@ function App() {
         <div className="text-center max-w-4xl mx-auto">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8">
             <Zap className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium text-primary">Plataforma de Gestión Moderna</span>
+            <span className="text-sm font-medium text-primary">
+              Plataforma de Gestión Moderna
+            </span>
           </div>
 
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
@@ -122,19 +147,32 @@ function App() {
           </h1>
 
           <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-            Simplifica la gestión de tu comunidad con una plataforma integral que centraliza comunicación,
-            pagos, documentos y mucho más.
+            Simplifica la gestión de tu comunidad con una plataforma integral
+            que centraliza comunicación, pagos, documentos y mucho más.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="text-lg px-8" onClick={() => {
-              document.getElementById('contact-form')?.scrollIntoView({ behavior: 'smooth' })
-            }}>
+            <Button
+              size="lg"
+              className="text-lg px-8"
+              onClick={() => {
+                document
+                  .getElementById('contact-form')
+                  ?.scrollIntoView({ behavior: 'smooth' })
+              }}
+            >
               Comenzar Ahora
             </Button>
-            <Button size="lg" variant="outline" className="text-lg px-8" onClick={() => {
-              document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })
-            }}>
+            <Button
+              size="lg"
+              variant="outline"
+              className="text-lg px-8"
+              onClick={() => {
+                document
+                  .getElementById('features')
+                  ?.scrollIntoView({ behavior: 'smooth' })
+              }}
+            >
               Ver Características
             </Button>
           </div>
@@ -142,13 +180,17 @@ function App() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+      <section
+        id="features"
+        className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24"
+      >
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-bold mb-4">
             Todo lo que necesitas en un solo lugar
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Funcionalidades diseñadas específicamente para la gestión eficiente de fraccionamientos
+            Funcionalidades diseñadas específicamente para la gestión eficiente
+            de fraccionamientos
           </p>
         </div>
 
@@ -177,8 +219,8 @@ function App() {
                 ¿Por qué elegir Fraccio?
               </h2>
               <p className="text-xl text-muted-foreground mb-8">
-                Una plataforma diseñada pensando en la facilidad de uso y la eficiencia operativa
-                de tu fraccionamiento.
+                Una plataforma diseñada pensando en la facilidad de uso y la
+                eficiencia operativa de tu fraccionamiento.
               </p>
               <ul className="space-y-4">
                 {benefits.map((benefit, index) => (
@@ -193,29 +235,41 @@ function App() {
             <div className="bg-card rounded-2xl p-8 shadow-xl border">
               <div className="space-y-6">
                 <div className="text-center pb-6 border-b">
-                  <div className="text-5xl font-bold text-primary mb-2">100%</div>
-                  <div className="text-muted-foreground">Digital y en la nube</div>
+                  <div className="text-5xl font-bold text-primary mb-2">
+                    100%
+                  </div>
+                  <div className="text-muted-foreground">
+                    Digital y en la nube
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-6 text-center">
                   <div>
                     <div className="text-3xl font-bold mb-1">24/7</div>
-                    <div className="text-sm text-muted-foreground">Acceso disponible</div>
+                    <div className="text-sm text-muted-foreground">
+                      Acceso disponible
+                    </div>
                   </div>
                   <div>
                     <div className="text-3xl font-bold mb-1">∞</div>
-                    <div className="text-sm text-muted-foreground">Usuarios ilimitados</div>
+                    <div className="text-sm text-muted-foreground">
+                      Usuarios ilimitados
+                    </div>
                   </div>
                   <div>
                     <div className="text-3xl font-bold mb-1">
                       <Shield className="inline h-8 w-8" />
                     </div>
-                    <div className="text-sm text-muted-foreground">Seguridad garantizada</div>
+                    <div className="text-sm text-muted-foreground">
+                      Seguridad garantizada
+                    </div>
                   </div>
                   <div>
                     <div className="text-3xl font-bold mb-1">
                       <Zap className="inline h-8 w-8" />
                     </div>
-                    <div className="text-sm text-muted-foreground">Rendimiento óptimo</div>
+                    <div className="text-sm text-muted-foreground">
+                      Rendimiento óptimo
+                    </div>
                   </div>
                 </div>
               </div>
@@ -225,14 +279,18 @@ function App() {
       </section>
 
       {/* Contact Form Section */}
-      <section id="contact-form" className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+      <section
+        id="contact-form"
+        className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24"
+      >
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-5xl font-bold mb-4">
               Solicita acceso a Fraccio
             </h2>
             <p className="text-xl text-muted-foreground">
-              Completa el formulario y nos pondremos en contacto contigo para brindarte acceso a la plataforma
+              Completa el formulario y nos pondremos en contacto contigo para
+              brindarte acceso a la plataforma
             </p>
           </div>
 
@@ -292,7 +350,9 @@ function App() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="fraccionamiento">Nombre del Fraccionamiento *</Label>
+                  <Label htmlFor="fraccionamiento">
+                    Nombre del Fraccionamiento *
+                  </Label>
                   <Input
                     id="fraccionamiento"
                     name="fraccionamiento"
@@ -315,8 +375,9 @@ function App() {
                 </Button>
 
                 <p className="text-sm text-muted-foreground text-center">
-                  Al enviar este formulario, aceptas que nos pongamos en contacto contigo
-                  para proporcionarte información sobre Fraccio.
+                  Al enviar este formulario, aceptas que nos pongamos en
+                  contacto contigo para proporcionarte información sobre
+                  Fraccio.
                 </p>
               </form>
             )}
@@ -334,7 +395,8 @@ function App() {
                 <span className="text-xl font-bold">Fraccio</span>
               </div>
               <p className="text-muted-foreground">
-                La plataforma integral para la gestión moderna de fraccionamientos.
+                La plataforma integral para la gestión moderna de
+                fraccionamientos.
               </p>
             </div>
 
@@ -354,16 +416,24 @@ function App() {
               <p className="text-muted-foreground mb-2">
                 ¿Tienes preguntas? Estamos aquí para ayudarte.
               </p>
-              <Button variant="outline" onClick={() => {
-                document.getElementById('contact-form')?.scrollIntoView({ behavior: 'smooth' })
-              }}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  document
+                    .getElementById('contact-form')
+                    ?.scrollIntoView({ behavior: 'smooth' })
+                }}
+              >
                 Contactar
               </Button>
             </div>
           </div>
 
           <div className="border-t pt-8 text-center text-muted-foreground">
-            <p>&copy; {new Date().getFullYear()} Fraccio. Todos los derechos reservados.</p>
+            <p>
+              &copy; {new Date().getFullYear()} Fraccio. Todos los derechos
+              reservados.
+            </p>
           </div>
         </div>
       </footer>

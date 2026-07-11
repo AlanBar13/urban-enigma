@@ -2,8 +2,9 @@ import * as React from 'react'
 import * as AvatarPrimitive from '@radix-ui/react-avatar'
 import { cn } from '@/lib/utils'
 
-interface AvatarProps
-  extends React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root> {
+interface AvatarProps extends React.ComponentPropsWithoutRef<
+  typeof AvatarPrimitive.Root
+> {
   size?: 'sm' | 'md' | 'lg' | 'xl'
 }
 
@@ -21,7 +22,11 @@ const Avatar = React.forwardRef<
   return (
     <AvatarPrimitive.Root
       ref={ref}
-      className={cn('relative inline-flex shrink-0 overflow-hidden rounded-full', sizeClasses[size], className)}
+      className={cn(
+        'relative inline-flex shrink-0 overflow-hidden rounded-full',
+        sizeClasses[size],
+        className,
+      )}
       {...props}
     />
   )
@@ -48,7 +53,7 @@ const AvatarFallback = React.forwardRef<
     ref={ref}
     className={cn(
       'flex items-center justify-center bg-muted text-muted-foreground font-semibold',
-      className
+      className,
     )}
     {...props}
   />

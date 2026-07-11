@@ -1,5 +1,5 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { Home, ShieldAlert, Mail, UserX } from 'lucide-react'
+import { Link, createFileRoute } from '@tanstack/react-router'
+import { Home, Mail, ShieldAlert, UserX } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export const Route = createFileRoute('/user-not-in-fracc')({
@@ -37,10 +37,13 @@ function RouteComponent() {
           <div className="flex items-start gap-4 text-left">
             <UserX className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
             <div className="space-y-2">
-              <h3 className="font-semibold text-lg">¿Por qué estoy viendo esto?</h3>
+              <h3 className="font-semibold text-lg">
+                ¿Por qué estoy viendo esto?
+              </h3>
               <p className="text-muted-foreground">
                 Tu cuenta de usuario no está asociada con este fraccionamiento.
-                Es posible que aún no hayas sido invitado o que tu acceso esté pendiente de aprobación.
+                Es posible que aún no hayas sido invitado o que tu acceso esté
+                pendiente de aprobación.
               </p>
             </div>
           </div>
@@ -57,7 +60,8 @@ function RouteComponent() {
               <div>
                 <h4 className="font-medium mb-1">Solicita una invitación</h4>
                 <p className="text-sm text-muted-foreground">
-                  Contacta al administrador de tu fraccionamiento para que te envíe una invitación de acceso.
+                  Contacta al administrador de tu fraccionamiento para que te
+                  envíe una invitación de acceso.
                 </p>
               </div>
             </div>
@@ -67,9 +71,12 @@ function RouteComponent() {
                 <span className="text-primary font-bold">2</span>
               </div>
               <div>
-                <h4 className="font-medium mb-1">Verifica tu correo electrónico</h4>
+                <h4 className="font-medium mb-1">
+                  Verifica tu correo electrónico
+                </h4>
                 <p className="text-sm text-muted-foreground">
-                  Revisa tu bandeja de entrada (y spam) por si tienes una invitación pendiente.
+                  Revisa tu bandeja de entrada (y spam) por si tienes una
+                  invitación pendiente.
                 </p>
               </div>
             </div>
@@ -79,9 +86,12 @@ function RouteComponent() {
                 <span className="text-primary font-bold">3</span>
               </div>
               <div>
-                <h4 className="font-medium mb-1">Inicia sesión con otra cuenta</h4>
+                <h4 className="font-medium mb-1">
+                  Inicia sesión con otra cuenta
+                </h4>
                 <p className="text-sm text-muted-foreground">
-                  Si tienes múltiples cuentas, asegúrate de estar usando la correcta.
+                  Si tienes múltiples cuentas, asegúrate de estar usando la
+                  correcta.
                 </p>
               </div>
             </div>
@@ -95,8 +105,8 @@ function RouteComponent() {
             <h3 className="font-semibold">¿Necesitas ayuda?</h3>
           </div>
           <p className="text-sm text-muted-foreground">
-            Si crees que esto es un error o necesitas asistencia, contacta al administrador
-            de tu fraccionamiento para resolver el problema.
+            Si crees que esto es un error o necesitas asistencia, contacta al
+            administrador de tu fraccionamiento para resolver el problema.
           </p>
         </div>
 

@@ -9,10 +9,22 @@ export interface RoleBadgeProps {
 }
 
 const roleConfig = {
-  owner: { label: 'Owner', color: '[background:linear-gradient(135deg,#000000,#131b2e)] text-white' },
-  admin: { label: 'Admin', color: 'bg-[var(--surface-container-highest)] text-[var(--on-surface)]' },
-  member: { label: 'Member', color: 'bg-[var(--tertiary-container)] text-[var(--on-tertiary-container)]' },
-  viewer: { label: 'Viewer', color: 'bg-[var(--surface-container)] text-[var(--on-surface-variant)]' },
+  owner: {
+    label: 'Owner',
+    color: '[background:linear-gradient(135deg,#000000,#131b2e)] text-white',
+  },
+  admin: {
+    label: 'Admin',
+    color: 'bg-[var(--surface-container-highest)] text-[var(--on-surface)]',
+  },
+  member: {
+    label: 'Member',
+    color: 'bg-[var(--tertiary-container)] text-[var(--on-tertiary-container)]',
+  },
+  viewer: {
+    label: 'Viewer',
+    color: 'bg-[var(--surface-container)] text-[var(--on-surface-variant)]',
+  },
 }
 
 const RoleBadge: React.FC<RoleBadgeProps> = ({
@@ -31,7 +43,7 @@ const RoleBadge: React.FC<RoleBadgeProps> = ({
           size === 'md' && 'px-2.5 py-0.5 text-xs',
           size === 'lg' && 'px-3 py-1 text-sm',
           'border-border/40',
-          config.color
+          config.color,
         )}
       >
         {config.label}

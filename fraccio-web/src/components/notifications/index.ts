@@ -5,7 +5,7 @@ export { Callout } from './Callout'
 export type { CalloutProps } from './Callout'
 
 export { ToastProvider, useToast } from './ToastContext'
-export type { } from './ToastContext'
+export type {} from './ToastContext'
 
 export { ToastContainer } from './ToastContainer'
 

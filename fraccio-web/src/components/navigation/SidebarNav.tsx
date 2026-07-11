@@ -1,7 +1,7 @@
 import * as React from 'react'
-import { cn } from '@/lib/utils'
 import { ChevronDown } from 'lucide-react'
 import { Button } from '../ui/button'
+import { cn } from '@/lib/utils'
 
 export interface SidebarNavItem {
   id: string
@@ -11,20 +11,22 @@ export interface SidebarNavItem {
   onClick?: () => void
   active?: boolean
   disabled?: boolean
-  children?: SidebarNavItem[]
+  children?: Array<SidebarNavItem>
   badge?: string | number
-  allowedRoles?: string[]
+  allowedRoles?: Array<string>
 }
 
 export interface SidebarNavProps extends React.HTMLAttributes<HTMLDivElement> {
-  items: SidebarNavItem[]
+  items: Array<SidebarNavItem>
   onItemClick?: (item: SidebarNavItem) => void
   role?: string
 }
 
 const SidebarNav = React.forwardRef<HTMLDivElement, SidebarNavProps>(
   ({ className, items, onItemClick, role, ...props }, ref) => {
-    const [expandedItems, setExpandedItems] = React.useState<Set<string>>(new Set())
+    const [expandedItems, setExpandedItems] = React.useState<Set<string>>(
+      new Set(),
+    )
 
     const toggleExpanded = (itemId: string) => {
       const newExpanded = new Set(expandedItems)
@@ -36,7 +38,7 @@ const SidebarNav = React.forwardRef<HTMLDivElement, SidebarNavProps>(
       setExpandedItems(newExpanded)
     }
 
-    const renderItems = (items: SidebarNavItem[], level = 0) => {
+    const renderItems = (items: Array<SidebarNavItem>, level = 0) => {
       return items.map((item) => {
         const isExpanded = expandedItems.has(item.id)
         const hasChildren = item.children && item.children.length > 0
@@ -82,7 +84,7 @@ const SidebarNav = React.forwardRef<HTMLDivElement, SidebarNavProps>(
                 <ChevronDown
                   className={cn(
                     'h-4 w-4 flex-shrink-0 transition-transform',
-                    isExpanded && 'rotate-180'
+                    isExpanded && 'rotate-180',
                   )}
                 />
               )}
@@ -107,7 +109,7 @@ const SidebarNav = React.forwardRef<HTMLDivElement, SidebarNavProps>(
         {renderItems(items)}
       </div>
     )
-  }
+  },
 )
 SidebarNav.displayName = 'SidebarNav'
 

@@ -1,7 +1,7 @@
 import * as React from 'react'
-import { cn } from '@/lib/utils'
 import { Menu, X } from 'lucide-react'
 import { Button } from '../ui/button'
+import { cn } from '@/lib/utils'
 
 export interface DashboardLayoutProps extends React.HTMLAttributes<HTMLDivElement> {
   sidebar?: React.ReactNode
@@ -22,7 +22,7 @@ const DashboardLayout = React.forwardRef<HTMLDivElement, DashboardLayoutProps>(
       mobileBreakpoint = 'md',
       ...props
     },
-    ref
+    ref,
   ) => {
     const [sidebarOpen, setSidebarOpen] = React.useState(false)
 
@@ -82,7 +82,7 @@ const DashboardLayout = React.forwardRef<HTMLDivElement, DashboardLayoutProps>(
               <aside
                 className={cn(
                   `fixed bottom-0 left-0 top-0 z-50 bg-[var(--surface-container)] overflow-y-auto transition-transform ${sidebarWidthMap[sidebarWidth]} ${breakpointMap[mobileBreakpoint]}:static ${breakpointMap[mobileBreakpoint]}:z-auto ${breakpointMap[mobileBreakpoint]}:translate-x-0`,
-                  sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+                  sidebarOpen ? 'translate-x-0' : '-translate-x-full',
                 )}
               >
                 {sidebar}
@@ -97,7 +97,7 @@ const DashboardLayout = React.forwardRef<HTMLDivElement, DashboardLayoutProps>(
         </div>
       </div>
     )
-  }
+  },
 )
 DashboardLayout.displayName = 'DashboardLayout'
 

@@ -1,8 +1,8 @@
+import { Link, createFileRoute } from '@tanstack/react-router'
+import { AlertTriangle, Clock, Home, Mail } from 'lucide-react'
 import Signup from '@/components/Signup'
 import { getInviteFn, removeInviteFn } from '@/lib/invites/functions'
 import { logger } from '@/utils/logger'
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { Home, AlertTriangle, Clock, Mail } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export const Route = createFileRoute('/accept-invite')({
@@ -24,9 +24,9 @@ export const Route = createFileRoute('/accept-invite')({
   head: () => ({
     meta: [
       {
-        title: 'Aceptar Invitación | Fraccio'
-      }
-    ]
+        title: 'Aceptar Invitación | Fraccio',
+      },
+    ],
   }),
   component: RouteComponent,
 })
@@ -57,8 +57,7 @@ function RouteComponent() {
             <p className="text-muted-foreground">
               {expired
                 ? 'Esta invitación ha caducado y ya no es válida'
-                : 'El enlace de invitación no es válido o ya fue utilizado'
-              }
+                : 'El enlace de invitación no es válido o ya fue utilizado'}
             </p>
           </div>
 
@@ -73,15 +72,23 @@ function RouteComponent() {
                   <ul className="space-y-2 text-sm text-muted-foreground">
                     <li className="flex items-start gap-2">
                       <span className="text-primary mt-0.5">•</span>
-                      <span>Solicita una nueva invitación al administrador de tu fraccionamiento</span>
+                      <span>
+                        Solicita una nueva invitación al administrador de tu
+                        fraccionamiento
+                      </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-primary mt-0.5">•</span>
-                      <span>Verifica que el enlace esté completo y no haya sido alterado</span>
+                      <span>
+                        Verifica que el enlace esté completo y no haya sido
+                        alterado
+                      </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-primary mt-0.5">•</span>
-                      <span>Si ya tienes cuenta, simplemente inicia sesión</span>
+                      <span>
+                        Si ya tienes cuenta, simplemente inicia sesión
+                      </span>
                     </li>
                   </ul>
                 </div>
@@ -105,7 +112,10 @@ function RouteComponent() {
 
           {/* Footer */}
           <div className="mt-8 text-center text-sm text-muted-foreground">
-            <p>© {new Date().getFullYear()} Fraccio. Todos los derechos reservados.</p>
+            <p>
+              © {new Date().getFullYear()} Fraccio. Todos los derechos
+              reservados.
+            </p>
           </div>
         </div>
       )}

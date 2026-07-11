@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Button } from '../ui/button'
 import {
   Dialog,
   DialogContent,
@@ -7,7 +8,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from './Dialog'
-import { Button } from '../ui/button'
 
 export interface ConfirmDialogProps {
   open?: boolean
@@ -36,7 +36,7 @@ const ConfirmDialog = React.forwardRef<HTMLDivElement, ConfirmDialogProps>(
       variant = 'default',
       isLoading = false,
     },
-    ref
+    ref,
   ) => {
     const [internalOpen, setInternalOpen] = React.useState(open)
     const [loading, setLoading] = React.useState(false)
@@ -73,7 +73,9 @@ const ConfirmDialog = React.forwardRef<HTMLDivElement, ConfirmDialogProps>(
         <DialogContent ref={ref}>
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
-            {description && <DialogDescription>{description}</DialogDescription>}
+            {description && (
+              <DialogDescription>{description}</DialogDescription>
+            )}
           </DialogHeader>
           <DialogFooter className="gap-2">
             <Button
@@ -94,7 +96,7 @@ const ConfirmDialog = React.forwardRef<HTMLDivElement, ConfirmDialogProps>(
         </DialogContent>
       </Dialog>
     )
-  }
+  },
 )
 ConfirmDialog.displayName = 'ConfirmDialog'
 

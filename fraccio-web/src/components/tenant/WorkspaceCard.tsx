@@ -1,10 +1,11 @@
 import * as React from 'react'
+import { Avatar, AvatarFallback, AvatarImage, Badge  } from '../shared'
 import { cn } from '@/lib/utils'
-import { Avatar, AvatarFallback, AvatarImage } from '../shared'
-import { Badge } from '../shared'
 
-export interface WorkspaceCardProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onSelect'> {
+export interface WorkspaceCardProps extends Omit<
+  React.HTMLAttributes<HTMLDivElement>,
+  'onSelect'
+> {
   id: string
   name: string
   description?: string
@@ -29,7 +30,7 @@ const WorkspaceCard = React.forwardRef<HTMLDivElement, WorkspaceCardProps>(
       onSelect,
       ...props
     },
-    ref
+    ref,
   ) => {
     const initials = name
       .split(' ')
@@ -45,7 +46,7 @@ const WorkspaceCard = React.forwardRef<HTMLDivElement, WorkspaceCardProps>(
           'relative flex gap-4 rounded-lg border border-border/50 bg-card p-4 transition-all hover:shadow-md hover:border-border',
           selected && 'border-primary bg-primary/5 shadow-md',
           onSelect && 'cursor-pointer',
-          className
+          className,
         )}
         {...props}
       >
@@ -62,11 +63,7 @@ const WorkspaceCard = React.forwardRef<HTMLDivElement, WorkspaceCardProps>(
           <div className="flex items-center gap-2">
             <h3 className="font-semibold text-foreground truncate">{name}</h3>
             {role && (
-              <Badge
-                variant="outline"
-                size="sm"
-                className="flex-shrink-0"
-              >
+              <Badge variant="outline" size="sm" className="flex-shrink-0">
                 {role}
               </Badge>
             )}
@@ -89,7 +86,7 @@ const WorkspaceCard = React.forwardRef<HTMLDivElement, WorkspaceCardProps>(
         )}
       </div>
     )
-  }
+  },
 )
 WorkspaceCard.displayName = 'WorkspaceCard'
 

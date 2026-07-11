@@ -1,9 +1,9 @@
 import * as React from 'react'
 import * as SelectPrimitive from '@radix-ui/react-select'
-import { cn } from '@/lib/utils'
+import { Check, ChevronDown } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '../shared'
 import { Button } from '../ui/button'
-import { ChevronDown, Check } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 export interface Tenant {
   id: string
@@ -13,7 +13,7 @@ export interface Tenant {
 }
 
 export interface TenantSelectorProps {
-  tenants: Tenant[]
+  tenants: Array<Tenant>
   selectedTenantId: string
   onSelect: (tenantId: string) => void
   label?: string
@@ -63,7 +63,7 @@ const TenantSelector: React.FC<TenantSelectorProps> = ({
       <SelectPrimitive.Portal>
         <SelectPrimitive.Content
           className={cn(
-            'relative z-50 max-h-96 min-w-[200px] overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2'
+            'relative z-50 max-h-96 min-w-[200px] overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
           )}
           position="popper"
         >
@@ -79,7 +79,7 @@ const TenantSelector: React.FC<TenantSelectorProps> = ({
                   className={cn(
                     'relative flex cursor-pointer select-none items-center gap-2 rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
                     selectedTenantId === tenant.id &&
-                      'bg-accent text-accent-foreground'
+                      'bg-accent text-accent-foreground',
                   )}
                 >
                   <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">

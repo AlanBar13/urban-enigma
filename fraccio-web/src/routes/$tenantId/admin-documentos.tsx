@@ -6,11 +6,16 @@ export const Route = createFileRoute('/$tenantId/admin-documentos')({
   beforeLoad: ({ context }) => {
     // Check if user is admin or superadmin
     if (context.user.role !== 'admin' && context.user.role !== 'superadmin') {
-      throw redirect({ to: `/$tenantId/documentos`, params: { tenantId: context.tenant.path } })
+      throw redirect({
+        to: `/$tenantId/documentos`,
+        params: { tenantId: context.tenant.path },
+      })
     }
   },
   loader: async ({ context }) => {
-    const documents = await getAdminDocumentsFn({ data: { tenantId: context.tenant.id, user: context.user } })
+    const documents = await getAdminDocumentsFn({
+      data: { tenantId: context.tenant.id, user: context.user },
+    })
     return { documents }
   },
   component: RouteComponent,
@@ -30,7 +35,11 @@ function RouteComponent() {
       </div>
 
       <div>
-        <DocumentsContainer tenantId={tenant.id} tenantPath={tenant.path} documents={documents} />
+        <DocumentsContainer
+          tenantId={tenant.id}
+          tenantPath={tenant.path}
+          documents={documents}
+        />
       </div>
     </div>
   )

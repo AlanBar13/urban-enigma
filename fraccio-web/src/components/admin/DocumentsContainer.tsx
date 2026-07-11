@@ -1,15 +1,16 @@
-import { useState, useRef } from 'react'
-import { useToast } from '@/components/notifications'
+import { useRef, useState } from 'react'
 import { useServerFn } from '@tanstack/react-start'
-import { deleteDocumentFn, type Document } from '@/lib/documents'
+import { useRouter } from '@tanstack/react-router'
+import { FileText, Image, Trash2 } from 'lucide-react'
+import { Input } from '../ui/input'
+import { DataTable } from '../shared'
+import type {Document} from '@/lib/documents';
+import { useToast } from '@/components/notifications'
+import {  deleteDocumentFn } from '@/lib/documents'
 import { Button } from '@/components/ui/button'
 import { FormModal } from '@/components/modals'
 import { FormField } from '@/components/forms'
-import { Input } from '../ui/input'
 import { logger } from '@/utils/logger'
-import { DataTable } from '../shared'
-import { useRouter } from '@tanstack/react-router'
-import { FileText, Image, Trash2 } from 'lucide-react'
 
 interface DocumentWithUrl extends Document {
   url: string | null
@@ -18,10 +19,14 @@ interface DocumentWithUrl extends Document {
 interface Props {
   tenantId: string
   tenantPath: string
-  documents: DocumentWithUrl[]
+  documents: Array<DocumentWithUrl>
 }
 
-export default function DocumentsContainer({ tenantId, tenantPath, documents }: Props) {
+export default function DocumentsContainer({
+  tenantId,
+  tenantPath,
+  documents,
+}: Props) {
   const { addToast } = useToast()
   const router = useRouter()
   const [open, setOpen] = useState(false)
@@ -57,11 +62,19 @@ export default function DocumentsContainer({ tenantId, tenantPath, documents }: 
     }
 
     // Validate file type
-    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+    const allowedTypes = [
+      'application/pdf',
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+    ]
     if (!allowedTypes.includes(file.type)) {
       addToast({
         type: 'error',
-        description: 'Solo se permiten archivos PDF e imágenes (JPEG, PNG, GIF, WebP)',
+        description:
+          'Solo se permiten archivos PDF e imágenes (JPEG, PNG, GIF, WebP)',
         duration: 5000,
       })
       return
@@ -91,7 +104,7 @@ export default function DocumentsContainer({ tenantId, tenantPath, documents }: 
         name,
         fileName: file.name,
         fileSize: file.size,
-        ownerOnly
+        ownerOnly,
       })
 
       const response = await fetch('/api/upload/document', {
@@ -126,8 +139,16 @@ export default function DocumentsContainer({ tenantId, tenantPath, documents }: 
     }
   }
 
-  const handleDelete = async (documentId: string, s3Key: string, documentName: string) => {
-    if (!confirm(`¿Estás seguro de que deseas eliminar el documento "${documentName}"?`)) {
+  const handleDelete = async (
+    documentId: string,
+    s3Key: string,
+    documentName: string,
+  ) => {
+    if (
+      !confirm(
+        `¿Estás seguro de que deseas eliminar el documento "${documentName}"?`,
+      )
+    ) {
       return
     }
 
@@ -160,8 +181,11 @@ export default function DocumentsContainer({ tenantId, tenantPath, documents }: 
   const getVisibilityBadge = (ownerOnly: boolean | null) => {
     return (
       <span
-        className={`px-2 py-1 text-xs font-medium rounded ${ownerOnly ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
-          }`}
+        className={`px-2 py-1 text-xs font-medium rounded ${
+          ownerOnly
+            ? 'bg-yellow-100 text-yellow-800'
+            : 'bg-green-100 text-green-800'
+        }`}
       >
         {ownerOnly ? 'Solo Propietarios' : 'Todos los Residentes'}
       </span>
@@ -188,14 +212,16 @@ export default function DocumentsContainer({ tenantId, tenantPath, documents }: 
         Subir Documento
       </Button>
 
-      <FormModal open={open} onOpenChange={setOpen} title="Subir Documento" onSubmit={onSubmit} isLoading={uploading}>
+      <FormModal
+        open={open}
+        onOpenChange={setOpen}
+        title="Subir Documento"
+        onSubmit={onSubmit}
+        isLoading={uploading}
+      >
         <form ref={formRef}>
           <FormField label="Nombre del documento">
-            <Input
-              name="name"
-              placeholder="Ej: Reglamento interno"
-              required
-            />
+            <Input name="name" placeholder="Ej: Reglamento interno" required />
           </FormField>
 
           <FormField label="Archivo">

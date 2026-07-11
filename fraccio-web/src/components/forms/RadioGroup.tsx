@@ -1,9 +1,11 @@
 import * as React from 'react'
-import { cn } from '@/lib/utils'
 import { Label } from '../ui/label'
+import { cn } from '@/lib/utils'
 
-export interface RadioGroupProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> {
+export interface RadioGroupProps extends Omit<
+  React.HTMLAttributes<HTMLDivElement>,
+  'onChange'
+> {
   options: Array<{ label: string; value: string; disabled?: boolean }>
   value?: string
   onChange?: (value: string) => void
@@ -13,18 +15,30 @@ export interface RadioGroupProps
 
 const RadioGroup = React.forwardRef<HTMLDivElement, RadioGroupProps>(
   (
-    { className, options, value, onChange, label, direction = 'vertical', ...props },
-    ref
+    {
+      className,
+      options,
+      value,
+      onChange,
+      label,
+      direction = 'vertical',
+      ...props
+    },
+    ref,
   ) => {
     return (
-      <div ref={ref} className={cn('flex flex-col gap-3', className)} {...props}>
+      <div
+        ref={ref}
+        className={cn('flex flex-col gap-3', className)}
+        {...props}
+      >
         {label && (
           <Label className="font-medium text-foreground">{label}</Label>
         )}
         <div
           className={cn(
             'flex gap-3',
-            direction === 'vertical' ? 'flex-col' : 'flex-row flex-wrap'
+            direction === 'vertical' ? 'flex-col' : 'flex-row flex-wrap',
           )}
         >
           {options.map((option) => (
@@ -41,7 +55,9 @@ const RadioGroup = React.forwardRef<HTMLDivElement, RadioGroupProps>(
               />
               <Label
                 htmlFor={option.value}
-                className={cn(option.disabled && 'opacity-50 cursor-not-allowed')}
+                className={cn(
+                  option.disabled && 'opacity-50 cursor-not-allowed',
+                )}
               >
                 {option.label}
               </Label>
@@ -50,7 +66,7 @@ const RadioGroup = React.forwardRef<HTMLDivElement, RadioGroupProps>(
         </div>
       </div>
     )
-  }
+  },
 )
 RadioGroup.displayName = 'RadioGroup'
 

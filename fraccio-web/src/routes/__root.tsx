@@ -1,9 +1,9 @@
 import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
-import { ToastProvider, ToastContainer } from '@/components/notifications'
-
 import appCss from '../styles.css?url'
+import { ToastContainer, ToastProvider } from '@/components/notifications'
+
 
 export const Route = createRootRoute({
   head: () => ({

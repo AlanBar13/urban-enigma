@@ -1,10 +1,14 @@
-import { SupabaseClient } from "@supabase/supabase-js"
+import type { SupabaseClient } from '@supabase/supabase-js'
 
-
-export const createHouseUserQuery = (supabase: SupabaseClient, houseId: number, userId: string) => supabase
+export const createHouseUserQuery = (
+  supabase: SupabaseClient,
+  houseId: number,
+  userId: string,
+) =>
+  supabase
     .from('house_users')
     .insert({
-        house_id: houseId,
-        user_id: userId
+      house_id: houseId,
+      user_id: userId,
     })
     .select()

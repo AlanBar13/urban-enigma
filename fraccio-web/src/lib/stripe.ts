@@ -1,9 +1,9 @@
 import { createServerFn } from '@tanstack/react-start'
+import { z } from 'zod'
+import Stripe from 'stripe'
 import { getSupabaseClient } from './supabase'
 import { getUser } from './user'
-import { z } from 'zod'
 import { logger } from '@/utils/logger'
-import Stripe from 'stripe'
 
 // Initialize Stripe with secret key
 const getStripeClient = () => {
@@ -153,14 +153,17 @@ export const createCheckoutSessionFn = createServerFn({ method: 'POST' })
       .single()
 
     if (paymentError || !payment) {
-      logger('error', 'Failed to create payment record', { error: paymentError })
+      logger('error', 'Failed to create payment record', {
+        error: paymentError,
+      })
       throw new Error('Failed to create payment record')
     }
 
     // Get base URL for redirects
-    const baseUrl = process.env.NODE_ENV === 'production'
-      ? 'https://fraccio.com' // Update with your production domain
-      : 'http://localhost:3000'
+    const baseUrl =
+      process.env.NODE_ENV === 'production'
+        ? 'https://fraccio.com' // Update with your production domain
+        : 'http://localhost:3000'
 
     // Create Stripe Checkout session
     const session = await stripe.checkout.sessions.create({
@@ -169,7 +172,7 @@ export const createCheckoutSessionFn = createServerFn({ method: 'POST' })
       line_items: [
         {
           price_data: {
-            currency: "mxn", // For now only accept MXN currency
+            currency: 'mxn', // For now only accept MXN currency
             product_data: {
               name: paymentItem.name,
               description: paymentItem.description || undefined,
@@ -196,7 +199,9 @@ export const createCheckoutSessionFn = createServerFn({ method: 'POST' })
       .eq('id', payment.id)
 
     if (updateError) {
-      logger('error', 'Failed to update payment with session ID', { error: updateError })
+      logger('error', 'Failed to update payment with session ID', {
+        error: updateError,
+      })
       // Don't throw here - session is created, we can still recover
     }
 
@@ -246,7 +251,7 @@ export const getPaymentHistoryFn = createServerFn({ method: 'POST' })
       throw new Error('Failed to fetch payment history')
     }
 
-    return payments as (Payment & { houses: { name: string } })[]
+    return payments as Array<Payment & { houses: { name: string } }>
   })
 
 /**
@@ -283,7 +288,7 @@ export const getPaymentItemsFn = createServerFn({ method: 'POST' })
       throw new Error('Failed to fetch payment items')
     }
 
-    return items as PaymentItem[]
+    return items as Array<PaymentItem>
   })
 
 /**
@@ -384,8 +389,8 @@ export const getAdminPaymentsFn = createServerFn({ method: 'POST' })
       throw new Error('Failed to fetch admin payments')
     }
 
-    return payments as (Payment & {
+    return payments as Array<Payment & {
       houses: { name: string }
       profiles: { full_name: string }
-    })[]
+    }>
   })

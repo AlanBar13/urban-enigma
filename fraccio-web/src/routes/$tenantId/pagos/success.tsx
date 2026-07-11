@@ -1,8 +1,8 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { Link, createFileRoute } from '@tanstack/react-router'
 import { CheckCircle } from 'lucide-react'
 import { z } from 'zod'
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 
 const searchSchema = z.object({
   session_id: z.string().optional(),
@@ -26,7 +26,8 @@ function RouteComponent() {
         <h1 className="text-2xl font-bold mb-2">¡Pago Exitoso!</h1>
 
         <p className="text-gray-600 mb-6">
-          Tu pago ha sido procesado correctamente. Recibirás un correo electrónico de confirmación en breve.
+          Tu pago ha sido procesado correctamente. Recibirás un correo
+          electrónico de confirmación en breve.
         </p>
 
         {session_id && (

@@ -1,25 +1,30 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { Link, createFileRoute } from '@tanstack/react-router'
+import {
+  ArrowRight,
+  Banknote,
+  Bell,
+  Building,
+  CheckCircle,
+  Clock,
+  DollarSign,
+  FileText,
+  Home,
+  XCircle,
+} from 'lucide-react'
 import { getAnunciosFn } from '@/lib/anuncios'
-import { getPaymentHistoryFn, getPaymentItemsFn, getAdminPaymentsFn } from '@/lib/stripe'
+import {
+  getAdminPaymentsFn,
+  getPaymentHistoryFn,
+  getPaymentItemsFn,
+} from '@/lib/stripe'
 import { getHousesFn } from '@/lib/houses'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import {
-  DollarSign,
-  CheckCircle,
-  Clock,
-  Bell,
-  Banknote,
-  Building,
-  Home,
-  FileText,
-  ArrowRight,
-  XCircle,
-} from 'lucide-react'
 
 export const Route = createFileRoute('/$tenantId/')({
   loader: async ({ context }) => {
-    const isAdmin = context.user.role === 'admin' || context.user.role === 'superadmin'
+    const isAdmin =
+      context.user.role === 'admin' || context.user.role === 'superadmin'
 
     const [announcements, paymentHistory, paymentItems] = await Promise.all([
       getAnunciosFn({ data: { tenantId: context.tenant.id } }),
@@ -27,7 +32,8 @@ export const Route = createFileRoute('/$tenantId/')({
       getPaymentItemsFn({ data: { tenantId: context.tenant.id } }),
     ])
 
-    let adminPayments: Awaited<ReturnType<typeof getAdminPaymentsFn>> | null = null
+    let adminPayments: Awaited<ReturnType<typeof getAdminPaymentsFn>> | null =
+      null
     let houses: Awaited<ReturnType<typeof getHousesFn>> | null = null
 
     if (isAdmin) {
@@ -37,7 +43,13 @@ export const Route = createFileRoute('/$tenantId/')({
       ])
     }
 
-    return { announcements, paymentHistory, paymentItems, adminPayments, houses }
+    return {
+      announcements,
+      paymentHistory,
+      paymentItems,
+      adminPayments,
+      houses,
+    }
   },
   component: RouteComponent,
 })
@@ -51,7 +63,10 @@ function RouteComponent() {
   const isAdmin = user.role === 'admin' || user.role === 'superadmin'
 
   const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(amount)
+    new Intl.NumberFormat('es-MX', {
+      style: 'currency',
+      currency: 'MXN',
+    }).format(amount)
 
   const formatDate = (dateStr: string) =>
     new Date(dateStr).toLocaleDateString('es-MX', {
@@ -66,24 +81,39 @@ function RouteComponent() {
   const userTotalPaid = userCompleted.reduce((sum, p) => sum + p.amount, 0)
 
   // Admin stats
-  const adminCompleted = adminPayments?.filter((p) => p.status === 'completed') ?? []
-  const adminPending = adminPayments?.filter((p) => p.status === 'pending') ?? []
+  const adminCompleted =
+    adminPayments?.filter((p) => p.status === 'completed') ?? []
+  const adminPending =
+    adminPayments?.filter((p) => p.status === 'pending') ?? []
   const adminFailed = adminPayments?.filter((p) => p.status === 'failed') ?? []
   const adminTotalRevenue = adminCompleted.reduce((sum, p) => sum + p.amount, 0)
 
   const recentAnnouncements = announcements.slice(0, 4)
-  const recentPayments = isAdmin ? (adminPayments ?? []).slice(0, 5) : paymentHistory.slice(0, 5)
+  const recentPayments = isAdmin
+    ? (adminPayments ?? []).slice(0, 5)
+    : paymentHistory.slice(0, 5)
 
   const getStatusBadge = (status: string) => {
     const map: Record<string, { label: string; className: string }> = {
-      completed: { label: 'Completado', className: 'bg-green-100 text-green-800' },
-      pending: { label: 'Pendiente', className: 'bg-yellow-100 text-yellow-800' },
+      completed: {
+        label: 'Completado',
+        className: 'bg-green-100 text-green-800',
+      },
+      pending: {
+        label: 'Pendiente',
+        className: 'bg-yellow-100 text-yellow-800',
+      },
       failed: { label: 'Fallido', className: 'bg-red-100 text-red-800' },
       cancelled: { label: 'Cancelado', className: 'bg-gray-100 text-gray-800' },
     }
-    const info = map[status] ?? { label: status, className: 'bg-gray-100 text-gray-800' }
+    const info = map[status] ?? {
+      label: status,
+      className: 'bg-gray-100 text-gray-800',
+    }
     return (
-      <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${info.className}`}>
+      <span
+        className={`px-2 py-0.5 text-xs font-medium rounded-full ${info.className}`}
+      >
         {info.label}
       </span>
     )
@@ -171,7 +201,11 @@ function RouteComponent() {
     { label: 'Anuncios', path: `/${params.tenantId}/anuncios`, icon: Bell },
     { label: 'Mi Casa', path: `/${params.tenantId}/casa`, icon: Home },
     { label: 'Pagos', path: `/${params.tenantId}/pagos`, icon: Banknote },
-    { label: 'Documentos', path: `/${params.tenantId}/documentos`, icon: FileText },
+    {
+      label: 'Documentos',
+      path: `/${params.tenantId}/documentos`,
+      icon: FileText,
+    },
   ]
 
   return (
@@ -179,20 +213,25 @@ function RouteComponent() {
       {/* Welcome */}
       <div>
         <h1 className="text-2xl font-bold">
-          Bienvenido, {(user.full_name ?? user.email ?? 'Usuario').split(' ')[0]}
+          Bienvenido,{' '}
+          {(user.full_name ?? user.email ?? 'Usuario').split(' ')[0]}
         </h1>
         <p className="text-muted-foreground mt-0.5">{tenant.name}</p>
       </div>
 
       {/* Stats Cards */}
-      <div className={`grid grid-cols-1 sm:grid-cols-2 ${isAdmin ? 'lg:grid-cols-3 xl:grid-cols-6' : 'lg:grid-cols-3'} gap-4`}>
+      <div
+        className={`grid grid-cols-1 sm:grid-cols-2 ${isAdmin ? 'lg:grid-cols-3 xl:grid-cols-6' : 'lg:grid-cols-3'} gap-4`}
+      >
         {statsCards.map((stat, i) => {
           const Icon = stat.icon
           return (
             <Card key={i} className="p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">{stat.title}</p>
+                  <p className="text-xs text-muted-foreground mb-1">
+                    {stat.title}
+                  </p>
                   <p className="text-xl font-bold">{stat.value}</p>
                 </div>
                 <div className={`p-2.5 rounded-xl ${stat.bg}`}>
@@ -213,8 +252,15 @@ function RouteComponent() {
               <Bell className="w-4 h-4 text-muted-foreground" />
               <h2 className="text-base font-semibold">Anuncios Recientes</h2>
             </div>
-            <Link to="/$tenantId/anuncios" params={{ tenantId: params.tenantId }}>
-              <Button variant="ghost" size="sm" className="gap-1 text-xs h-7 px-2">
+            <Link
+              to="/$tenantId/anuncios"
+              params={{ tenantId: params.tenantId }}
+            >
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1 text-xs h-7 px-2"
+              >
                 Ver todos <ArrowRight className="w-3 h-3" />
               </Button>
             </Link>
@@ -246,7 +292,9 @@ function RouteComponent() {
                       {a.description}
                     </p>
                   )}
-                  <p className="text-xs text-muted-foreground mt-2">{formatDate(a.created_at)}</p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {formatDate(a.created_at)}
+                  </p>
                 </div>
               ))}
             </div>
@@ -266,7 +314,11 @@ function RouteComponent() {
               to={isAdmin ? '/$tenantId/admin-pagos' : '/$tenantId/pagos'}
               params={{ tenantId: params.tenantId }}
             >
-              <Button variant="ghost" size="sm" className="gap-1 text-xs h-7 px-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1 text-xs h-7 px-2"
+              >
                 Ver todos <ArrowRight className="w-3 h-3" />
               </Button>
             </Link>
@@ -317,10 +369,16 @@ function RouteComponent() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-muted-foreground" />
-              <h2 className="text-base font-semibold">Conceptos de Pago Activos</h2>
+              <h2 className="text-base font-semibold">
+                Conceptos de Pago Activos
+              </h2>
             </div>
             <Link to="/$tenantId/pagos" params={{ tenantId: params.tenantId }}>
-              <Button variant="ghost" size="sm" className="gap-1 text-xs h-7 px-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1 text-xs h-7 px-2"
+              >
                 Ir a Pagos <ArrowRight className="w-3 h-3" />
               </Button>
             </Link>

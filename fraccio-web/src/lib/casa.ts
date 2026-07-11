@@ -1,7 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
+import { z } from 'zod'
 import { getSupabaseClient } from './supabase'
 import { getUser } from './user'
-import { z } from 'zod'
 import { logger } from '@/utils/logger'
 
 // Validation schemas
@@ -45,7 +45,7 @@ interface HouseUser {
 
 interface UserHouseData {
   house: House | null
-  users: HouseUser[]
+  users: Array<HouseUser>
   isOwner: boolean
 }
 
@@ -146,7 +146,7 @@ export const getUserHouseFn = createServerFn({ method: 'POST' })
 
     return {
       house: house as House,
-      users: (profiles || []) as HouseUser[],
+      users: (profiles || []) as Array<HouseUser>,
       isOwner,
     }
   })
@@ -179,7 +179,9 @@ export const updateHouseFn = createServerFn({ method: 'POST' })
         userId: user.email,
         houseId: data.houseId,
       })
-      throw new Error('Unauthorized: Only house owners can update house information')
+      throw new Error(
+        'Unauthorized: Only house owners can update house information',
+      )
     }
 
     // Update house
@@ -316,7 +318,9 @@ export const addHouseUserFn = createServerFn({ method: 'POST' })
         house_id: data.houseId,
         house_owner: false,
         name: data.name,
-        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // Expires in 7 days
+        expires_at: new Date(
+          Date.now() + 7 * 24 * 60 * 60 * 1000,
+        ).toISOString(), // Expires in 7 days
       })
       .select()
       .single()

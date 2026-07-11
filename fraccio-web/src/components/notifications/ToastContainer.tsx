@@ -1,7 +1,7 @@
 import * as React from 'react'
-import { cn } from '@/lib/utils'
-import { AlertCircle, CheckCircle, AlertTriangle, Info, X } from 'lucide-react'
+import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from 'lucide-react'
 import { useToast } from './ToastContext'
+import { cn } from '@/lib/utils'
 
 const typeConfig = {
   info: {
@@ -36,14 +36,12 @@ const ToastContainer: React.FC = () => {
             key={toast.id}
             className={cn(
               'flex items-start gap-3 px-4 py-3 rounded-lg text-white shadow-lg pointer-events-auto animate-in slide-in-from-right-full duration-300',
-              config.bgColor
+              config.bgColor,
             )}
           >
             <Icon className="h-5 w-5 flex-shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
-              {toast.title && (
-                <h4 className="font-semibold">{toast.title}</h4>
-              )}
+              {toast.title && <h4 className="font-semibold">{toast.title}</h4>}
               <p className="text-sm">{toast.description}</p>
             </div>
             <button

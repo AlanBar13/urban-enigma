@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { cn } from '@/lib/utils'
 import { ChevronRight } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 export interface BreadcrumbProps extends React.OlHTMLAttributes<HTMLOListElement> {}
 
@@ -11,12 +11,9 @@ const Breadcrumb = React.forwardRef<HTMLOListElement, BreadcrumbProps>(
       aria-label="breadcrumb"
       className={cn('text-sm text-foreground/60', className)}
     >
-      <ol
-        className="flex items-center gap-1"
-        {...props}
-      />
+      <ol className="flex items-center gap-1" {...props} />
     </nav>
-  )
+  ),
 )
 Breadcrumb.displayName = 'Breadcrumb'
 
@@ -31,29 +28,28 @@ const BreadcrumbItem = React.forwardRef<HTMLLIElement, BreadcrumbItemProps>(
       className={cn(
         'flex items-center gap-1',
         isCurrent && 'text-foreground font-medium',
-        className
+        className,
       )}
       {...props}
     />
-  )
+  ),
 )
 BreadcrumbItem.displayName = 'BreadcrumbItem'
 
 export interface BreadcrumbLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {}
 
-const BreadcrumbLink = React.forwardRef<
-  HTMLAnchorElement,
-  BreadcrumbLinkProps
->(({ className, ...props }, ref) => (
-  <a
-    ref={ref}
-    className={cn(
-      'transition-colors hover:text-foreground hover:underline',
-      className
-    )}
-    {...props}
-  />
-))
+const BreadcrumbLink = React.forwardRef<HTMLAnchorElement, BreadcrumbLinkProps>(
+  ({ className, ...props }, ref) => (
+    <a
+      ref={ref}
+      className={cn(
+        'transition-colors hover:text-foreground hover:underline',
+        className,
+      )}
+      {...props}
+    />
+  ),
+)
 BreadcrumbLink.displayName = 'BreadcrumbLink'
 
 const BreadcrumbSeparator = ({
@@ -72,9 +68,4 @@ const BreadcrumbSeparator = ({
 )
 BreadcrumbSeparator.displayName = 'BreadcrumbSeparator'
 
-export {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbSeparator,
-}
+export { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator }

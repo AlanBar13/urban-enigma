@@ -1,7 +1,7 @@
 import * as React from 'react'
-import { cn } from '@/lib/utils'
-import { AlertCircle, CheckCircle, AlertTriangle, Info, X } from 'lucide-react'
+import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from 'lucide-react'
 import { Button } from '../ui/button'
+import { cn } from '@/lib/utils'
 
 export interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
   type?: 'info' | 'success' | 'warning' | 'error'
@@ -50,7 +50,7 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
       children,
       ...props
     },
-    ref
+    ref,
   ) => {
     const config = typeConfig[type]
     const Icon = config.Icon
@@ -61,26 +61,22 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
         className={cn(
           'relative w-full rounded-lg px-4 py-3 flex gap-3',
           config.bgColor,
-          className
+          className,
         )}
         {...props}
       >
-        <Icon className={cn('h-5 w-5 flex-shrink-0 mt-0.5', config.textColor)} />
+        <Icon
+          className={cn('h-5 w-5 flex-shrink-0 mt-0.5', config.textColor)}
+        />
         <div className="flex-1 min-w-0">
           {title && (
-            <h4 className={cn('font-semibold', config.textColor)}>
-              {title}
-            </h4>
+            <h4 className={cn('font-semibold', config.textColor)}>{title}</h4>
           )}
           {description && (
-            <p className={cn('text-sm', config.textColor)}>
-              {description}
-            </p>
+            <p className={cn('text-sm', config.textColor)}>{description}</p>
           )}
           {children && (
-            <div className={cn('text-sm', config.textColor)}>
-              {children}
-            </div>
+            <div className={cn('text-sm', config.textColor)}>{children}</div>
           )}
         </div>
         {closable && onClose && (
@@ -95,7 +91,7 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
         )}
       </div>
     )
-  }
+  },
 )
 Alert.displayName = 'Alert'
 

@@ -1,6 +1,16 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { Link, createFileRoute } from '@tanstack/react-router'
+import {
+  Activity,
+  ArrowRight,
+  Bell,
+  Building,
+  Clock,
+  Home,
+  Plus,
+  TrendingUp,
+  Users,
+} from 'lucide-react'
 import { getDashboardStatsFn } from '@/lib/admin'
-import { Building, Users, Home, Bell, TrendingUp, Activity, Plus, ArrowRight, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export const Route = createFileRoute('/admin/')({
@@ -19,7 +29,7 @@ function RouteComponent() {
     return new Intl.DateTimeFormat('es-ES', {
       day: '2-digit',
       month: 'short',
-      year: 'numeric'
+      year: 'numeric',
     }).format(date)
   }
 
@@ -29,29 +39,29 @@ function RouteComponent() {
       value: stats.totalTenants,
       icon: Building,
       color: 'bg-primary/10 text-primary',
-      link: '/admin/fraccionamientos'
+      link: '/admin/fraccionamientos',
     },
     {
       title: 'Usuarios',
       value: stats.totalUsers,
       icon: Users,
       color: 'bg-accent/10 text-accent',
-      link: '/admin/usuarios'
+      link: '/admin/usuarios',
     },
     {
       title: 'Casas',
       value: stats.totalHouses,
       icon: Home,
       color: 'bg-chart-2/10 text-chart-2',
-      link: '#'
+      link: '#',
     },
     {
       title: 'Anuncios',
       value: stats.totalAnnouncements,
       icon: Bell,
       color: 'bg-chart-4/10 text-chart-4',
-      link: '#'
-    }
+      link: '#',
+    },
   ]
 
   const quickActions = [
@@ -60,15 +70,15 @@ function RouteComponent() {
       description: 'Crear un nuevo fraccionamiento en el sistema',
       icon: Building,
       link: '/admin/fraccionamientos',
-      color: 'bg-primary'
+      color: 'bg-primary',
     },
     {
       title: 'Invitar Usuario',
       description: 'Enviar invitación a un nuevo usuario',
       icon: Users,
       link: '/admin/usuarios',
-      color: 'bg-accent'
-    }
+      color: 'bg-accent',
+    },
   ]
 
   return (
@@ -86,20 +96,20 @@ function RouteComponent() {
         {statCards.map((stat, index) => {
           const Icon = stat.icon
           return (
-            <Link
-              key={index}
-              to={stat.link}
-              className="block group"
-            >
+            <Link key={index} to={stat.link} className="block group">
               <div className="bg-card border rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:border-primary/50">
                 <div className="flex items-start justify-between mb-4">
-                  <div className={`h-12 w-12 rounded-lg ${stat.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                  <div
+                    className={`h-12 w-12 rounded-lg ${stat.color} flex items-center justify-center group-hover:scale-110 transition-transform`}
+                  >
                     <Icon className="h-6 w-6" />
                   </div>
                   <TrendingUp className="h-4 w-4 text-muted-foreground" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">{stat.title}</p>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    {stat.title}
+                  </p>
                   <p className="text-3xl font-bold">{stat.value}</p>
                 </div>
               </div>
@@ -121,7 +131,9 @@ function RouteComponent() {
               <Link key={index} to={action.link}>
                 <div className="group border rounded-lg p-4 hover:border-primary/50 transition-all cursor-pointer">
                   <div className="flex items-start gap-4">
-                    <div className={`h-10 w-10 rounded-lg ${action.color} text-white flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform`}>
+                    <div
+                      className={`h-10 w-10 rounded-lg ${action.color} text-white flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform`}
+                    >
                       <Icon className="h-5 w-5" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -148,7 +160,9 @@ function RouteComponent() {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               <Building className="h-5 w-5 text-primary" />
-              <h2 className="text-xl font-semibold">Fraccionamientos Recientes</h2>
+              <h2 className="text-xl font-semibold">
+                Fraccionamientos Recientes
+              </h2>
             </div>
             <Link to="/admin/fraccionamientos">
               <Button variant="ghost" size="sm">
@@ -170,7 +184,9 @@ function RouteComponent() {
                     </div>
                     <div>
                       <p className="font-medium">{tenant.name}</p>
-                      <p className="text-sm text-muted-foreground">/{tenant.path}</p>
+                      <p className="text-sm text-muted-foreground">
+                        /{tenant.path}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -215,7 +231,9 @@ function RouteComponent() {
                     </div>
                     <div>
                       <p className="font-medium">{user.full_name}</p>
-                      <p className="text-sm text-muted-foreground">{user.email}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {user.email}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -238,7 +256,9 @@ function RouteComponent() {
       <div className="bg-muted/50 border rounded-xl p-6">
         <div className="grid md:grid-cols-3 gap-6 text-center">
           <div>
-            <p className="text-sm text-muted-foreground mb-1">Estado del Sistema</p>
+            <p className="text-sm text-muted-foreground mb-1">
+              Estado del Sistema
+            </p>
             <div className="flex items-center justify-center gap-2">
               <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
               <p className="font-semibold">Operativo</p>

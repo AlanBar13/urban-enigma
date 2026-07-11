@@ -1,7 +1,7 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { Link, createFileRoute } from '@tanstack/react-router'
+import { XCircle } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { XCircle } from 'lucide-react'
 
 export const Route = createFileRoute('/$tenantId/pagos/cancel')({
   component: RouteComponent,

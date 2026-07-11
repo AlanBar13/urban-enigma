@@ -1,17 +1,25 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { getPaymentItemsFn, getPaymentHistoryFn, createCheckoutSessionFn } from '@/lib/stripe'
+import { useServerFn } from '@tanstack/react-start'
+import { useState } from 'react'
+import {
+  createCheckoutSessionFn,
+  getPaymentHistoryFn,
+  getPaymentItemsFn,
+} from '@/lib/stripe'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/shared'
 import { useToast } from '@/components/notifications'
-import { useServerFn } from '@tanstack/react-start'
 import { logger } from '@/utils/logger'
-import { useState } from 'react'
 
 export const Route = createFileRoute('/$tenantId/pagos/')({
   loader: async ({ context }) => {
-    const itemsReq = getPaymentItemsFn({ data: { tenantId: context.tenant.id } })
-    const historyReq = getPaymentHistoryFn({ data: { tenantId: context.tenant.id } })
+    const itemsReq = getPaymentItemsFn({
+      data: { tenantId: context.tenant.id },
+    })
+    const historyReq = getPaymentHistoryFn({
+      data: { tenantId: context.tenant.id },
+    })
 
     const [items, history] = await Promise.all([itemsReq, historyReq])
     return { items, history }
@@ -44,7 +52,9 @@ function RouteComponent() {
       logger('error', 'Error creating checkout session:', { error })
       addToast({
         type: 'error',
-        description: error.message || 'Error al procesar el pago. Por favor intenta de nuevo.',
+        description:
+          error.message ||
+          'Error al procesar el pago. Por favor intenta de nuevo.',
         duration: 10000,
       })
       setLoading(null)
@@ -65,9 +75,14 @@ function RouteComponent() {
       failed: { label: 'Fallido', class: 'bg-red-100 text-red-800' },
       cancelled: { label: 'Cancelado', class: 'bg-gray-100 text-gray-800' },
     }
-    const statusInfo = statusMap[status] || { label: status, class: 'bg-gray-100 text-gray-800' }
+    const statusInfo = statusMap[status] || {
+      label: status,
+      class: 'bg-gray-100 text-gray-800',
+    }
     return (
-      <span className={`px-2 py-1 text-xs font-medium rounded ${statusInfo.class}`}>
+      <span
+        className={`px-2 py-1 text-xs font-medium rounded ${statusInfo.class}`}
+      >
         {statusInfo.label}
       </span>
     )
@@ -87,13 +102,16 @@ function RouteComponent() {
       <div>
         <h1 className="text-2xl font-bold">Pagos</h1>
         <p className="text-gray-600 mt-1">
-          Realiza tus pagos de mantenimiento, cuotas especiales y multas de forma segura
+          Realiza tus pagos de mantenimiento, cuotas especiales y multas de
+          forma segura
         </p>
       </div>
 
       {/* Payment Items Section */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Conceptos Disponibles para Pago</h2>
+        <h2 className="text-xl font-semibold mb-4">
+          Conceptos Disponibles para Pago
+        </h2>
         {items.length === 0 ? (
           <Card className="p-6">
             <p className="text-gray-600 text-center">
@@ -112,7 +130,9 @@ function RouteComponent() {
                     </span>
                   </div>
                   {item.description && (
-                    <p className="text-gray-600 text-sm mb-4">{item.description}</p>
+                    <p className="text-gray-600 text-sm mb-4">
+                      {item.description}
+                    </p>
                   )}
                   <div className="text-2xl font-bold text-green-600 mb-4">
                     {formatCurrency(item.amount)}
@@ -198,4 +218,3 @@ function RouteComponent() {
     </div>
   )
 }
-

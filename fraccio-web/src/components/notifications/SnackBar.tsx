@@ -1,7 +1,7 @@
 import * as React from 'react'
-import { cn } from '@/lib/utils'
 import { X } from 'lucide-react'
 import { Button } from '../ui/button'
+import { cn } from '@/lib/utils'
 
 export interface SnackBarProps extends React.HTMLAttributes<HTMLDivElement> {
   type?: 'info' | 'success' | 'warning' | 'error'
@@ -40,7 +40,7 @@ const SnackBar = React.forwardRef<HTMLDivElement, SnackBarProps>(
       autoClose = 5000,
       ...props
     },
-    ref
+    ref,
   ) => {
     React.useEffect(() => {
       if (autoClose && onClose) {
@@ -57,7 +57,7 @@ const SnackBar = React.forwardRef<HTMLDivElement, SnackBarProps>(
         className={cn(
           'flex items-center justify-between gap-3 px-4 py-3 rounded text-white shadow-lg',
           config.bgColor,
-          className
+          className,
         )}
         {...props}
       >
@@ -86,7 +86,7 @@ const SnackBar = React.forwardRef<HTMLDivElement, SnackBarProps>(
         </div>
       </div>
     )
-  }
+  },
 )
 SnackBar.displayName = 'SnackBar'
 

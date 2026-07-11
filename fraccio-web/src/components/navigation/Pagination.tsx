@@ -1,7 +1,7 @@
 import * as React from 'react'
-import { cn } from '@/lib/utils'
 import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react'
 import { Button } from '../ui/button'
+import { cn } from '@/lib/utils'
 
 export interface PaginationProps extends React.HTMLAttributes<HTMLElement> {
   currentPage: number
@@ -19,7 +19,7 @@ const Pagination: React.FC<PaginationProps> = ({
   ...props
 }) => {
   const getPageNumbers = () => {
-    const pages: (number | string)[] = []
+    const pages: Array<number | string> = []
     const leftSiblingIndex = Math.max(currentPage - siblingCount, 1)
     const rightSiblingIndex = Math.min(currentPage + siblingCount, totalPages)
     const showLeftEllipsis = leftSiblingIndex > 2
@@ -77,7 +77,10 @@ const Pagination: React.FC<PaginationProps> = ({
         {getPageNumbers().map((page, index) => {
           if (page === 'left-ellipsis' || page === 'right-ellipsis') {
             return (
-              <span key={`${page}-${index}`} className="px-2 text-foreground/50">
+              <span
+                key={`${page}-${index}`}
+                className="px-2 text-foreground/50"
+              >
                 <MoreHorizontal className="h-4 w-4" />
               </span>
             )

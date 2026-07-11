@@ -1,7 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
+import { z } from 'zod'
 import { getSupabaseClient } from './supabase'
 import { getUser } from './user'
-import { z } from 'zod'
 import { logger } from '@/utils/logger'
 
 // Validation schemas
@@ -48,7 +48,7 @@ export const getAnunciosFn = createServerFn({ method: 'POST' })
     }
 
     // Verify user belongs to the tenant
-    if ((user.tenantId !== data.tenantId) && user.role !== 'superadmin') {
+    if (user.tenantId !== data.tenantId && user.role !== 'superadmin') {
       logger('error', 'User does not belong to tenant', {
         userId: user.email,
         requestedTenant: data.tenantId,
@@ -78,14 +78,16 @@ export const getAnunciosFn = createServerFn({ method: 'POST' })
       query = query.eq('owners_only', false)
     }
 
-    const { data: announcements, error } = await query.order('created_at', { ascending: false })
+    const { data: announcements, error } = await query.order('created_at', {
+      ascending: false,
+    })
 
     if (error) {
       logger('error', 'Error fetching announcements', { error })
       throw new Error('Failed to fetch announcements')
     }
 
-    return announcements as Announcement[]
+    return announcements as Array<Announcement>
   })
 
 /**
@@ -195,5 +197,5 @@ export const getAdminAnunciosFn = createServerFn({ method: 'POST' })
       throw new Error('Failed to fetch announcements')
     }
 
-    return announcements as Announcement[]
+    return announcements as Array<Announcement>
   })

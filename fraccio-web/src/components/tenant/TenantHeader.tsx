@@ -1,8 +1,8 @@
 import * as React from 'react'
-import { cn } from '@/lib/utils'
+import { ChevronDown } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '../shared'
 import { Button } from '../ui/button'
-import { ChevronDown } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 export interface TenantHeaderProps {
   tenantName: string
@@ -15,7 +15,7 @@ export interface TenantHeaderProps {
 const TenantHeader = React.forwardRef<HTMLDivElement, TenantHeaderProps>(
   (
     { tenantName, tenantLogo, userRole, onSwitch, className, ...props },
-    ref
+    ref,
   ) => {
     const initials = tenantName
       .split(' ')
@@ -28,7 +28,7 @@ const TenantHeader = React.forwardRef<HTMLDivElement, TenantHeaderProps>(
         ref={ref}
         className={cn(
           'flex items-center gap-3 px-4 py-3 rounded-lg bg-[var(--surface-container-highest)]',
-          className
+          className,
         )}
         {...props}
       >
@@ -58,7 +58,7 @@ const TenantHeader = React.forwardRef<HTMLDivElement, TenantHeaderProps>(
         )}
       </div>
     )
-  }
+  },
 )
 TenantHeader.displayName = 'TenantHeader'
 

@@ -1,20 +1,27 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { getPaymentItemsFn, getAdminPaymentsFn } from '@/lib/stripe'
+import { CheckCircle, DollarSign, TrendingUp, XCircle } from 'lucide-react'
+import { getAdminPaymentsFn, getPaymentItemsFn } from '@/lib/stripe'
 import PaymentItemsContainer from '@/components/admin/PaymentItemsContainer'
 import { Card } from '@/components/ui/card'
 import { DataTable } from '@/components/shared'
-import { DollarSign, TrendingUp, CheckCircle, XCircle } from 'lucide-react'
 
 export const Route = createFileRoute('/$tenantId/admin-pagos')({
   beforeLoad: ({ context }) => {
     // Check if user is admin or superadmin
     if (context.user.role !== 'admin' && context.user.role !== 'superadmin') {
-      throw redirect({ to: `/$tenantId/pagos`, params: { tenantId: context.tenant.path } })
+      throw redirect({
+        to: `/$tenantId/pagos`,
+        params: { tenantId: context.tenant.path },
+      })
     }
   },
   loader: async ({ context }) => {
-    const itemsReq = getPaymentItemsFn({ data: { tenantId: context.tenant.id } })
-    const paymentsReq = getAdminPaymentsFn({ data: { tenantId: context.tenant.id } })
+    const itemsReq = getPaymentItemsFn({
+      data: { tenantId: context.tenant.id },
+    })
+    const paymentsReq = getAdminPaymentsFn({
+      data: { tenantId: context.tenant.id },
+    })
 
     const [items, payments] = await Promise.all([itemsReq, paymentsReq])
     return { items, payments }
@@ -40,9 +47,14 @@ function RouteComponent() {
       failed: { label: 'Fallido', class: 'bg-red-100 text-red-800' },
       cancelled: { label: 'Cancelado', class: 'bg-gray-100 text-gray-800' },
     }
-    const statusInfo = statusMap[status] || { label: status, class: 'bg-gray-100 text-gray-800' }
+    const statusInfo = statusMap[status] || {
+      label: status,
+      class: 'bg-gray-100 text-gray-800',
+    }
     return (
-      <span className={`px-2 py-1 text-xs font-medium rounded ${statusInfo.class}`}>
+      <span
+        className={`px-2 py-1 text-xs font-medium rounded ${statusInfo.class}`}
+      >
         {statusInfo.label}
       </span>
     )
@@ -62,7 +74,9 @@ function RouteComponent() {
     .filter((p) => p.status === 'completed')
     .reduce((sum, p) => sum + p.amount, 0)
 
-  const completedPayments = payments.filter((p) => p.status === 'completed').length
+  const completedPayments = payments.filter(
+    (p) => p.status === 'completed',
+  ).length
   const pendingPayments = payments.filter((p) => p.status === 'pending').length
   const failedPayments = payments.filter((p) => p.status === 'failed').length
 
@@ -102,7 +116,8 @@ function RouteComponent() {
       <div>
         <h1 className="text-2xl font-bold">Administrar Pagos</h1>
         <p className="text-gray-600 mt-1">
-          Gestiona conceptos de pago y visualiza todas las transacciones del fraccionamiento
+          Gestiona conceptos de pago y visualiza todas las transacciones del
+          fraccionamiento
         </p>
       </div>
 
@@ -137,7 +152,9 @@ function RouteComponent() {
         <h2 className="text-xl font-semibold mb-4">Todos los Pagos</h2>
         {payments.length === 0 ? (
           <Card className="p-6">
-            <p className="text-gray-600 text-center">No hay pagos registrados todavía</p>
+            <p className="text-gray-600 text-center">
+              No hay pagos registrados todavía
+            </p>
           </Card>
         ) : (
           <DataTable

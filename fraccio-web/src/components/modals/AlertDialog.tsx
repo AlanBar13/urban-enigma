@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Button } from '../ui/button'
 import {
   Dialog,
   DialogContent,
@@ -7,7 +8,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from './Dialog'
-import { Button } from '../ui/button'
 
 export interface AlertDialogProps {
   open?: boolean
@@ -21,8 +21,14 @@ export interface AlertDialogProps {
 
 const typeConfig = {
   info: { color: 'text-blue-600', bgColor: 'bg-blue-100 dark:bg-blue-900' },
-  success: { color: 'text-green-600', bgColor: 'bg-green-100 dark:bg-green-900' },
-  warning: { color: 'text-yellow-600', bgColor: 'bg-yellow-100 dark:bg-yellow-900' },
+  success: {
+    color: 'text-green-600',
+    bgColor: 'bg-green-100 dark:bg-green-900',
+  },
+  warning: {
+    color: 'text-yellow-600',
+    bgColor: 'bg-yellow-100 dark:bg-yellow-900',
+  },
   error: { color: 'text-red-600', bgColor: 'bg-red-100 dark:bg-red-900' },
 }
 
@@ -37,7 +43,7 @@ const AlertDialog = React.forwardRef<HTMLDivElement, AlertDialogProps>(
       actionText = 'Dismiss',
       onAction,
     },
-    ref
+    ref,
   ) => {
     const [internalOpen, setInternalOpen] = React.useState(open)
     const isControlled = onOpenChange !== undefined
@@ -57,7 +63,9 @@ const AlertDialog = React.forwardRef<HTMLDivElement, AlertDialogProps>(
       <Dialog open={isOpen} onOpenChange={handleOpenChange}>
         <DialogContent ref={ref}>
           <DialogHeader>
-            <div className={`inline-flex items-center justify-center h-12 w-12 rounded-full ${config.bgColor} mb-2`}>
+            <div
+              className={`inline-flex items-center justify-center h-12 w-12 rounded-full ${config.bgColor} mb-2`}
+            >
               <span className={`${config.color} text-lg`}>
                 {type === 'info' && 'ℹ'}
                 {type === 'success' && '✓'}
@@ -66,17 +74,24 @@ const AlertDialog = React.forwardRef<HTMLDivElement, AlertDialogProps>(
               </span>
             </div>
             <DialogTitle>{title}</DialogTitle>
-            {description && <DialogDescription>{description}</DialogDescription>}
+            {description && (
+              <DialogDescription>{description}</DialogDescription>
+            )}
           </DialogHeader>
           <DialogFooter>
-            <Button onClick={() => { onAction?.(); handleOpenChange(false); }}>
+            <Button
+              onClick={() => {
+                onAction?.()
+                handleOpenChange(false)
+              }}
+            >
               {actionText}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     )
-  }
+  },
 )
 AlertDialog.displayName = 'AlertDialog'
 

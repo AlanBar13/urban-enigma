@@ -42,7 +42,9 @@ export const Route = createFileRoute('/api/stripe/webhook')({
         try {
           event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
         } catch (err: any) {
-          logger('error', 'Webhook signature verification failed', { error: err.message })
+          logger('error', 'Webhook signature verification failed', {
+            error: err.message,
+          })
           return new Response(`Webhook Error: ${err.message}`, { status: 400 })
         }
 
@@ -53,7 +55,7 @@ export const Route = createFileRoute('/api/stripe/webhook')({
           // Handle the event
           switch (event.type) {
             case 'checkout.session.completed': {
-              const session = event.data.object as Stripe.Checkout.Session
+              const session = event.data.object
 
               logger('info', 'Checkout session completed', {
                 sessionId: session.id,
@@ -66,7 +68,10 @@ export const Route = createFileRoute('/api/stripe/webhook')({
                 const { error } = await supabase
                   .from('payments')
                   .update({
-                    status: session.payment_status === 'paid' ? 'completed': 'pending',
+                    status:
+                      session.payment_status === 'paid'
+                        ? 'completed'
+                        : 'pending',
                     stripe_payment_intent_id: session.payment_intent as string,
                   })
                   .eq('id', parseInt(session.metadata.payment_id))
@@ -86,7 +91,7 @@ export const Route = createFileRoute('/api/stripe/webhook')({
             }
 
             case 'payment_intent.succeeded': {
-              const paymentIntent = event.data.object as Stripe.PaymentIntent
+              const paymentIntent = event.data.object
 
               logger('info', 'Payment intent succeeded', {
                 paymentIntentId: paymentIntent.id,
@@ -116,7 +121,7 @@ export const Route = createFileRoute('/api/stripe/webhook')({
             }
 
             case 'payment_intent.payment_failed': {
-              const paymentIntent = event.data.object as Stripe.PaymentIntent
+              const paymentIntent = event.data.object
 
               logger('warn', 'Payment intent failed', {
                 paymentIntentId: paymentIntent.id,
@@ -145,7 +150,9 @@ export const Route = createFileRoute('/api/stripe/webhook')({
             }
 
             default:
-              logger('info', 'Unhandled webhook event type', { type: event.type })
+              logger('info', 'Unhandled webhook event type', {
+                type: event.type,
+              })
           }
 
           return new Response(JSON.stringify({ received: true }), {
@@ -154,9 +161,11 @@ export const Route = createFileRoute('/api/stripe/webhook')({
           })
         } catch (error: any) {
           logger('error', 'Error processing webhook', { error: error.message })
-          return new Response(`Webhook Error: ${error.message}`, { status: 500 })
+          return new Response(`Webhook Error: ${error.message}`, {
+            status: 500,
+          })
         }
-      }
-    }
-  }
+      },
+    },
+  },
 })

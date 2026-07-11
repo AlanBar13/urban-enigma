@@ -1,14 +1,14 @@
 import { useState } from 'react'
-import { useToast } from '@/components/notifications'
 import { useServerFn } from '@tanstack/react-start'
+import { useRouter } from '@tanstack/react-router'
+import { Input } from '../ui/input'
+import { DataTable } from '../shared'
+import { useToast } from '@/components/notifications'
 import { createAnuncioFn } from '@/lib/anuncios'
 import { Button } from '@/components/ui/button'
 import { FormModal } from '@/components/modals'
 import { FormField } from '@/components/forms'
-import { Input } from '../ui/input'
 import { logger } from '@/utils/logger'
-import { DataTable } from '../shared'
-import { useRouter } from '@tanstack/react-router'
 
 interface Announcement {
   id: number
@@ -22,7 +22,7 @@ interface Announcement {
 
 interface Props {
   tenantId: string
-  announcements: Announcement[]
+  announcements: Array<Announcement>
 }
 
 export default function AnunciosContainer({ tenantId, announcements }: Props) {
@@ -81,7 +81,9 @@ export default function AnunciosContainer({ tenantId, announcements }: Props) {
     return (
       <span
         className={`px-2 py-1 text-xs font-medium rounded ${
-          ownersOnly ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
+          ownersOnly
+            ? 'bg-yellow-100 text-yellow-800'
+            : 'bg-green-100 text-green-800'
         }`}
       >
         {ownersOnly ? 'Solo Propietarios' : 'Todos los Residentes'}
@@ -95,7 +97,12 @@ export default function AnunciosContainer({ tenantId, announcements }: Props) {
         Crear Anuncio
       </Button>
 
-      <FormModal open={open} onOpenChange={setOpen} title="Crear Anuncio" onSubmit={onSubmit}>
+      <FormModal
+        open={open}
+        onOpenChange={setOpen}
+        title="Crear Anuncio"
+        onSubmit={onSubmit}
+      >
         <FormField label="Título del anuncio">
           <Input
             placeholder="Ej: Mantenimiento del área común"

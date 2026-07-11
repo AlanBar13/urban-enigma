@@ -1,7 +1,7 @@
 import * as React from 'react'
-import { cn } from '@/lib/utils'
-import { ChevronUp, ChevronDown, Pencil, Trash } from 'lucide-react'
+import { ChevronDown, ChevronUp, Pencil, Trash } from 'lucide-react'
 import { Button } from '../ui/button'
+import { cn } from '@/lib/utils'
 
 export interface DataTableColumn<T> {
   key: keyof T
@@ -13,8 +13,8 @@ export interface DataTableColumn<T> {
 }
 
 export interface DataTableProps<T> {
-  columns: DataTableColumn<T>[]
-  data: T[]
+  columns: Array<DataTableColumn<T>>
+  data: Array<T>
   onSort?: (key: keyof T, direction: 'asc' | 'desc') => void
   sortKey?: keyof T
   sortDirection?: 'asc' | 'desc'
@@ -46,7 +46,7 @@ export const DataTable = React.forwardRef<
       onEdit,
       onDelete,
     },
-    ref
+    ref,
   ) => {
     const handleSort = (key: any) => {
       if (!onSort) return
@@ -59,10 +59,7 @@ export const DataTable = React.forwardRef<
       <div className="overflow-x-auto rounded-lg bg-card">
         <table
           ref={ref}
-          className={cn(
-            'w-full text-sm border-collapse',
-            className
-          )}
+          className={cn('w-full text-sm border-collapse', className)}
         >
           <thead>
             <tr className="bg-[var(--surface-container-low)]">
@@ -72,7 +69,7 @@ export const DataTable = React.forwardRef<
                   className={cn(
                     'px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.05em] text-[var(--on-surface-variant)]',
                     dense && 'py-2 px-3',
-                    col.className
+                    col.className,
                   )}
                   style={{ width: col.width }}
                 >
@@ -85,13 +82,12 @@ export const DataTable = React.forwardRef<
                     >
                       <span className="flex items-center gap-2">
                         {col.label}
-                        {sortKey === col.key && (
-                          sortDirection === 'asc' ? (
+                        {sortKey === col.key &&
+                          (sortDirection === 'asc' ? (
                             <ChevronUp className="h-4 w-4" />
                           ) : (
                             <ChevronDown className="h-4 w-4" />
-                          )
-                        )}
+                          ))}
                       </span>
                     </Button>
                   ) : (
@@ -118,7 +114,7 @@ export const DataTable = React.forwardRef<
                   colSpan={columns.length}
                   className={cn(
                     'px-4 py-8 text-center text-[var(--on-surface-variant)]',
-                    dense && 'py-4 px-3'
+                    dense && 'py-4 px-3',
                   )}
                 >
                   No data available
@@ -130,8 +126,10 @@ export const DataTable = React.forwardRef<
                   key={idx}
                   className={cn(
                     'transition-colors',
-                    striped && idx % 2 === 0 && 'bg-[var(--surface-container-low)]',
-                    hoverable && 'hover:bg-[var(--surface-container-highest)]'
+                    striped &&
+                      idx % 2 === 0 &&
+                      'bg-[var(--surface-container-low)]',
+                    hoverable && 'hover:bg-[var(--surface-container-highest)]',
                   )}
                 >
                   {columns.map((col) => (
@@ -140,7 +138,7 @@ export const DataTable = React.forwardRef<
                       className={cn(
                         'px-4 py-4 text-[var(--on-surface)]',
                         dense && 'py-2 px-3 text-xs',
-                        col.className
+                        col.className,
                       )}
                       style={{ width: col.width }}
                     >
@@ -152,10 +150,24 @@ export const DataTable = React.forwardRef<
                   {actions && (
                     <>
                       <td className="text-center">
-                        <Button variant="ghost" size="sm" onClick={() => onEdit && onEdit(row)} className="text-blue-500 hover:text-blue-700"><Pencil className="h-4 w-4" /></Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onEdit && onEdit(row)}
+                          className="text-blue-500 hover:text-blue-700"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
                       </td>
                       <td className="text-center">
-                        <Button variant="ghost" size="sm" onClick={() => onDelete && onDelete(row)} className="text-red-500 hover:text-red-700"><Trash className="h-4 w-4" /></Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onDelete && onDelete(row)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Trash className="h-4 w-4" />
+                        </Button>
                       </td>
                     </>
                   )}
@@ -166,7 +178,7 @@ export const DataTable = React.forwardRef<
         </table>
       </div>
     )
-  }
+  },
 )
 
 DataTable.displayName = 'DataTable'

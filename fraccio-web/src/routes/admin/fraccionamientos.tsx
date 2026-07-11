@@ -1,12 +1,21 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { getTenantsWithStatsFn } from '@/lib/admin-tenants'
-import { Building, Users, Home, Plus, MapPin, Calendar, ExternalLink, TrendingUp } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Link, createFileRoute } from '@tanstack/react-router'
+import {
+  Building,
+  Calendar,
+  ExternalLink,
+  Home,
+  MapPin,
+  Plus,
+  TrendingUp,
+  Users,
+} from 'lucide-react'
 import { useState } from 'react'
+import { useServerFn } from '@tanstack/react-start'
+import { getTenantsWithStatsFn } from '@/lib/admin-tenants'
+import { Button } from '@/components/ui/button'
 import { FormModal } from '@/components/modals'
 import { FormField } from '@/components/forms'
 import { Input } from '@/components/ui/input'
-import { useServerFn } from '@tanstack/react-start'
 import { createTenantFn } from '@/lib/tenants'
 import { useToast } from '@/components/notifications'
 import { logger } from '@/utils/logger'
@@ -43,7 +52,7 @@ function RouteComponent() {
       addToast({
         type: 'success',
         description: 'Fraccionamiento creado exitosamente',
-        duration: 5000
+        duration: 5000,
       })
       setOpen(false)
       setName('')
@@ -56,7 +65,7 @@ function RouteComponent() {
       addToast({
         type: 'error',
         description: 'Error al crear el fraccionamiento',
-        duration: 10000
+        duration: 10000,
       })
     }
   }
@@ -66,13 +75,14 @@ function RouteComponent() {
     return new Intl.DateTimeFormat('es-ES', {
       day: '2-digit',
       month: 'short',
-      year: 'numeric'
+      year: 'numeric',
     }).format(date)
   }
 
   const totalUsers = tenants.reduce((sum, t) => sum + t.users_count, 0)
   const totalHouses = tenants.reduce((sum, t) => sum + t.houses_count, 0)
-  const avgUsersPerTenant = tenants.length > 0 ? Math.round(totalUsers / tenants.length) : 0
+  const avgUsersPerTenant =
+    tenants.length > 0 ? Math.round(totalUsers / tenants.length) : 0
 
   return (
     <div className="space-y-6">
@@ -187,14 +197,18 @@ function RouteComponent() {
                   <div className="bg-muted/50 rounded-lg p-3">
                     <div className="flex items-center gap-2 mb-1">
                       <Users className="h-4 w-4 text-accent" />
-                      <span className="text-xs text-muted-foreground">Usuarios</span>
+                      <span className="text-xs text-muted-foreground">
+                        Usuarios
+                      </span>
                     </div>
                     <p className="text-xl font-bold">{tenant.users_count}</p>
                   </div>
                   <div className="bg-muted/50 rounded-lg p-3">
                     <div className="flex items-center gap-2 mb-1">
                       <Home className="h-4 w-4 text-chart-2" />
-                      <span className="text-xs text-muted-foreground">Casas</span>
+                      <span className="text-xs text-muted-foreground">
+                        Casas
+                      </span>
                     </div>
                     <p className="text-xl font-bold">{tenant.houses_count}</p>
                   </div>
@@ -219,7 +233,9 @@ function RouteComponent() {
         ) : (
           <div className="text-center py-12">
             <Building className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-20" />
-            <h3 className="text-lg font-semibold mb-2">No hay fraccionamientos</h3>
+            <h3 className="text-lg font-semibold mb-2">
+              No hay fraccionamientos
+            </h3>
             <p className="text-muted-foreground mb-6">
               Comienza creando tu primer fraccionamiento
             </p>

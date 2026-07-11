@@ -1,20 +1,30 @@
 import * as React from 'react'
-import { cn } from '@/lib/utils'
 import { Label } from '../ui/label'
+import { cn } from '@/lib/utils'
 
-export interface CheckboxGroupProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> {
+export interface CheckboxGroupProps extends Omit<
+  React.HTMLAttributes<HTMLDivElement>,
+  'onChange'
+> {
   options: Array<{ label: string; value: string; disabled?: boolean }>
-  value?: string[]
-  onChange?: (values: string[]) => void
+  value?: Array<string>
+  onChange?: (values: Array<string>) => void
   label?: string
   direction?: 'vertical' | 'horizontal'
 }
 
 const CheckboxGroup = React.forwardRef<HTMLDivElement, CheckboxGroupProps>(
   (
-    { className, options, value = [], onChange, label, direction = 'vertical', ...props },
-    ref
+    {
+      className,
+      options,
+      value = [],
+      onChange,
+      label,
+      direction = 'vertical',
+      ...props
+    },
+    ref,
   ) => {
     const handleChange = (optionValue: string, checked: boolean) => {
       const newValue = checked
@@ -24,14 +34,18 @@ const CheckboxGroup = React.forwardRef<HTMLDivElement, CheckboxGroupProps>(
     }
 
     return (
-      <div ref={ref} className={cn('flex flex-col gap-3', className)} {...props}>
+      <div
+        ref={ref}
+        className={cn('flex flex-col gap-3', className)}
+        {...props}
+      >
         {label && (
           <Label className="font-medium text-foreground">{label}</Label>
         )}
         <div
           className={cn(
             'flex gap-3',
-            direction === 'vertical' ? 'flex-col' : 'flex-row flex-wrap'
+            direction === 'vertical' ? 'flex-col' : 'flex-row flex-wrap',
           )}
         >
           {options.map((option) => (
@@ -46,7 +60,9 @@ const CheckboxGroup = React.forwardRef<HTMLDivElement, CheckboxGroupProps>(
               />
               <Label
                 htmlFor={option.value}
-                className={cn(option.disabled && 'opacity-50 cursor-not-allowed')}
+                className={cn(
+                  option.disabled && 'opacity-50 cursor-not-allowed',
+                )}
               >
                 {option.label}
               </Label>
@@ -55,7 +71,7 @@ const CheckboxGroup = React.forwardRef<HTMLDivElement, CheckboxGroupProps>(
         </div>
       </div>
     )
-  }
+  },
 )
 CheckboxGroup.displayName = 'CheckboxGroup'
 

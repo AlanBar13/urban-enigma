@@ -1,41 +1,42 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { getAdminAnunciosFn } from '@/lib/anuncios'
-import AnunciosContainer from '@/components/admin/AnunciosContainer'
+import { getWhatsappStatusFn } from '@/lib/whatsapp'
+import WhatsappContainer from '@/components/admin/WhatsappContainer'
 
-export const Route = createFileRoute('/$tenantId/admin-anuncios')({
+export const Route = createFileRoute('/$tenantId/admin-whatsapp')({
   beforeLoad: ({ context }) => {
     // Check if user is admin or superadmin
     if (context.user.role !== 'admin' && context.user.role !== 'superadmin') {
       throw redirect({
-        to: `/$tenantId/anuncios`,
+        to: `/$tenantId`,
         params: { tenantId: context.tenant.path },
       })
     }
   },
   loader: async ({ context }) => {
-    const announcements = await getAdminAnunciosFn({
+    const { session } = await getWhatsappStatusFn({
       data: { tenantId: context.tenant.id },
     })
-    return { announcements }
+    return { session }
   },
   component: RouteComponent,
 })
 
 function RouteComponent() {
   const { tenant } = Route.useRouteContext()
-  const { announcements } = Route.useLoaderData()
+  const { session } = Route.useLoaderData()
 
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold">Administrar Anuncios</h1>
+        <h1 className="text-2xl font-bold">WhatsApp</h1>
         <p className="text-gray-600 mt-1">
-          Gestiona los anuncios del fraccionamiento y controla su visibilidad
+          Conecta la sesión de WhatsApp del fraccionamiento y envía mensajes al
+          grupo
         </p>
       </div>
 
       <div>
-        <AnunciosContainer tenantId={tenant.id} announcements={announcements} />
+        <WhatsappContainer tenantId={tenant.id} initialSession={session} />
       </div>
     </div>
   )

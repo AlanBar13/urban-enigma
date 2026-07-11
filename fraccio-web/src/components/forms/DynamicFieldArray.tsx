@@ -1,21 +1,28 @@
 import * as React from 'react'
-import { cn } from '@/lib/utils'
+import { Plus, X } from 'lucide-react'
 import { Button } from '../ui/button'
-import { X, Plus } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 export interface DynamicFieldArrayProps extends React.HTMLAttributes<HTMLDivElement> {
-  fields: any[]
+  fields: Array<any>
   onAddField: () => void
   onRemoveField: (index: number) => void
   onFieldChange: (index: number, value: any) => void
-  renderField: (field: any, index: number, onChange: (value: any) => void) => React.ReactNode
+  renderField: (
+    field: any,
+    index: number,
+    onChange: (value: any) => void,
+  ) => React.ReactNode
   label?: string
   addButtonLabel?: string
   minFields?: number
   maxFields?: number
 }
 
-const DynamicFieldArray = React.forwardRef<HTMLDivElement, DynamicFieldArrayProps>(
+const DynamicFieldArray = React.forwardRef<
+  HTMLDivElement,
+  DynamicFieldArrayProps
+>(
   (
     {
       className,
@@ -30,10 +37,14 @@ const DynamicFieldArray = React.forwardRef<HTMLDivElement, DynamicFieldArrayProp
       maxFields,
       ...props
     },
-    ref
+    ref,
   ) => {
     return (
-      <div ref={ref} className={cn('flex flex-col gap-4', className)} {...props}>
+      <div
+        ref={ref}
+        className={cn('flex flex-col gap-4', className)}
+        {...props}
+      >
         {label && (
           <label className="text-sm font-medium text-foreground">{label}</label>
         )}
@@ -43,7 +54,7 @@ const DynamicFieldArray = React.forwardRef<HTMLDivElement, DynamicFieldArrayProp
             <div key={index} className="flex gap-2 items-start">
               <div className="flex-1">
                 {renderField(field, index, (value) =>
-                  onFieldChange(index, value)
+                  onFieldChange(index, value),
                 )}
               </div>
               <Button
@@ -73,7 +84,7 @@ const DynamicFieldArray = React.forwardRef<HTMLDivElement, DynamicFieldArrayProp
         </Button>
       </div>
     )
-  }
+  },
 )
 DynamicFieldArray.displayName = 'DynamicFieldArray'
 

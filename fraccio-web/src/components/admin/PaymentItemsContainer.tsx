@@ -1,14 +1,14 @@
 import { useState } from 'react'
-import { useToast } from '@/components/notifications'
 import { useServerFn } from '@tanstack/react-start'
+import { useRouter } from '@tanstack/react-router'
+import { Input } from '../ui/input'
+import { DataTable } from '../shared'
+import { useToast } from '@/components/notifications'
 import { createPaymentItemFn } from '@/lib/stripe'
 import { Button } from '@/components/ui/button'
 import { FormModal } from '@/components/modals'
 import { FormField, Select } from '@/components/forms'
-import { Input } from '../ui/input'
 import { logger } from '@/utils/logger'
-import { DataTable } from '../shared'
-import { useRouter } from '@tanstack/react-router'
 
 interface PaymentItem {
   id: number
@@ -24,7 +24,7 @@ interface PaymentItem {
 
 interface Props {
   tenantId: string
-  items: PaymentItem[]
+  items: Array<PaymentItem>
 }
 
 export default function PaymentItemsContainer({ tenantId, items }: Props) {
@@ -34,7 +34,9 @@ export default function PaymentItemsContainer({ tenantId, items }: Props) {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [amount, setAmount] = useState('')
-  const [paymentType, setPaymentType] = useState<'maintenance' | 'assessment' | 'fine'>('maintenance')
+  const [paymentType, setPaymentType] = useState<
+    'maintenance' | 'assessment' | 'fine'
+  >('maintenance')
   const createPaymentItem = useServerFn(createPaymentItemFn)
 
   const onSubmit = async () => {
@@ -126,7 +128,12 @@ export default function PaymentItemsContainer({ tenantId, items }: Props) {
         Crear Concepto de Pago
       </Button>
 
-      <FormModal open={open} onOpenChange={setOpen} title="Crear Concepto de Pago" onSubmit={onSubmit}>
+      <FormModal
+        open={open}
+        onOpenChange={setOpen}
+        title="Crear Concepto de Pago"
+        onSubmit={onSubmit}
+      >
         <FormField label="Nombre del concepto">
           <Input
             placeholder="Ej: Cuota Mensual Febrero 2026"
@@ -159,7 +166,11 @@ export default function PaymentItemsContainer({ tenantId, items }: Props) {
         <FormField label="Tipo de pago">
           <Select
             value={paymentType}
-            onChange={(e) => setPaymentType(e.target.value as 'maintenance' | 'assessment' | 'fine')}
+            onChange={(e) =>
+              setPaymentType(
+                e.target.value as 'maintenance' | 'assessment' | 'fine',
+              )
+            }
           >
             <option value="maintenance">Mantenimiento</option>
             <option value="assessment">Cuota Especial</option>

@@ -1,10 +1,10 @@
+import { createFileRoute } from '@tanstack/react-router'
 import CasasContainer from '@/components/admin/CasasContainer'
 import { getHousesFn } from '@/lib/houses'
-import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/$tenantId/adminCasas')({
   loader: async ({ context }) => {
-    const houses = await getHousesFn({ data: { tenantId: context.tenant.id }})
+    const houses = await getHousesFn({ data: { tenantId: context.tenant.id } })
 
     return { houses }
   },
@@ -12,7 +12,7 @@ export const Route = createFileRoute('/$tenantId/adminCasas')({
 })
 
 function RouteComponent() {
-  const { tenant} = Route.useRouteContext()
+  const { tenant } = Route.useRouteContext()
   const { houses } = Route.useLoaderData()
   return (
     <div>

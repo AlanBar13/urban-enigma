@@ -26,6 +26,7 @@ import { Route as TenantIdDocumentosRouteImport } from './routes/$tenantId/docum
 import { Route as TenantIdCasaRouteImport } from './routes/$tenantId/casa'
 import { Route as TenantIdAnunciosRouteImport } from './routes/$tenantId/anuncios'
 import { Route as TenantIdAdminCasasRouteImport } from './routes/$tenantId/adminCasas'
+import { Route as TenantIdAdminWhatsappRouteImport } from './routes/$tenantId/admin-whatsapp'
 import { Route as TenantIdAdminPagosRouteImport } from './routes/$tenantId/admin-pagos'
 import { Route as TenantIdAdminDocumentosRouteImport } from './routes/$tenantId/admin-documentos'
 import { Route as TenantIdAdminAnunciosRouteImport } from './routes/$tenantId/admin-anuncios'
@@ -120,6 +121,11 @@ const TenantIdAdminCasasRoute = TenantIdAdminCasasRouteImport.update({
   path: '/adminCasas',
   getParentRoute: () => TenantIdRouteRoute,
 } as any)
+const TenantIdAdminWhatsappRoute = TenantIdAdminWhatsappRouteImport.update({
+  id: '/admin-whatsapp',
+  path: '/admin-whatsapp',
+  getParentRoute: () => TenantIdRouteRoute,
+} as any)
 const TenantIdAdminPagosRoute = TenantIdAdminPagosRouteImport.update({
   id: '/admin-pagos',
   path: '/admin-pagos',
@@ -172,6 +178,7 @@ export interface FileRoutesByFullPath {
   '/$tenantId/admin-anuncios': typeof TenantIdAdminAnunciosRoute
   '/$tenantId/admin-documentos': typeof TenantIdAdminDocumentosRoute
   '/$tenantId/admin-pagos': typeof TenantIdAdminPagosRoute
+  '/$tenantId/admin-whatsapp': typeof TenantIdAdminWhatsappRoute
   '/$tenantId/adminCasas': typeof TenantIdAdminCasasRoute
   '/$tenantId/anuncios': typeof TenantIdAnunciosRoute
   '/$tenantId/casa': typeof TenantIdCasaRoute
@@ -197,6 +204,7 @@ export interface FileRoutesByTo {
   '/$tenantId/admin-anuncios': typeof TenantIdAdminAnunciosRoute
   '/$tenantId/admin-documentos': typeof TenantIdAdminDocumentosRoute
   '/$tenantId/admin-pagos': typeof TenantIdAdminPagosRoute
+  '/$tenantId/admin-whatsapp': typeof TenantIdAdminWhatsappRoute
   '/$tenantId/adminCasas': typeof TenantIdAdminCasasRoute
   '/$tenantId/anuncios': typeof TenantIdAnunciosRoute
   '/$tenantId/casa': typeof TenantIdCasaRoute
@@ -225,6 +233,7 @@ export interface FileRoutesById {
   '/$tenantId/admin-anuncios': typeof TenantIdAdminAnunciosRoute
   '/$tenantId/admin-documentos': typeof TenantIdAdminDocumentosRoute
   '/$tenantId/admin-pagos': typeof TenantIdAdminPagosRoute
+  '/$tenantId/admin-whatsapp': typeof TenantIdAdminWhatsappRoute
   '/$tenantId/adminCasas': typeof TenantIdAdminCasasRoute
   '/$tenantId/anuncios': typeof TenantIdAnunciosRoute
   '/$tenantId/casa': typeof TenantIdCasaRoute
@@ -254,6 +263,7 @@ export interface FileRouteTypes {
     | '/$tenantId/admin-anuncios'
     | '/$tenantId/admin-documentos'
     | '/$tenantId/admin-pagos'
+    | '/$tenantId/admin-whatsapp'
     | '/$tenantId/adminCasas'
     | '/$tenantId/anuncios'
     | '/$tenantId/casa'
@@ -279,6 +289,7 @@ export interface FileRouteTypes {
     | '/$tenantId/admin-anuncios'
     | '/$tenantId/admin-documentos'
     | '/$tenantId/admin-pagos'
+    | '/$tenantId/admin-whatsapp'
     | '/$tenantId/adminCasas'
     | '/$tenantId/anuncios'
     | '/$tenantId/casa'
@@ -306,6 +317,7 @@ export interface FileRouteTypes {
     | '/$tenantId/admin-anuncios'
     | '/$tenantId/admin-documentos'
     | '/$tenantId/admin-pagos'
+    | '/$tenantId/admin-whatsapp'
     | '/$tenantId/adminCasas'
     | '/$tenantId/anuncios'
     | '/$tenantId/casa'
@@ -456,6 +468,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TenantIdAdminCasasRouteImport
       parentRoute: typeof TenantIdRouteRoute
     }
+    '/$tenantId/admin-whatsapp': {
+      id: '/$tenantId/admin-whatsapp'
+      path: '/admin-whatsapp'
+      fullPath: '/$tenantId/admin-whatsapp'
+      preLoaderRoute: typeof TenantIdAdminWhatsappRouteImport
+      parentRoute: typeof TenantIdRouteRoute
+    }
     '/$tenantId/admin-pagos': {
       id: '/$tenantId/admin-pagos'
       path: '/admin-pagos'
@@ -519,6 +538,7 @@ interface TenantIdRouteRouteChildren {
   TenantIdAdminAnunciosRoute: typeof TenantIdAdminAnunciosRoute
   TenantIdAdminDocumentosRoute: typeof TenantIdAdminDocumentosRoute
   TenantIdAdminPagosRoute: typeof TenantIdAdminPagosRoute
+  TenantIdAdminWhatsappRoute: typeof TenantIdAdminWhatsappRoute
   TenantIdAdminCasasRoute: typeof TenantIdAdminCasasRoute
   TenantIdAnunciosRoute: typeof TenantIdAnunciosRoute
   TenantIdCasaRoute: typeof TenantIdCasaRoute
@@ -535,6 +555,7 @@ const TenantIdRouteRouteChildren: TenantIdRouteRouteChildren = {
   TenantIdAdminAnunciosRoute: TenantIdAdminAnunciosRoute,
   TenantIdAdminDocumentosRoute: TenantIdAdminDocumentosRoute,
   TenantIdAdminPagosRoute: TenantIdAdminPagosRoute,
+  TenantIdAdminWhatsappRoute: TenantIdAdminWhatsappRoute,
   TenantIdAdminCasasRoute: TenantIdAdminCasasRoute,
   TenantIdAnunciosRoute: TenantIdAnunciosRoute,
   TenantIdCasaRoute: TenantIdCasaRoute,

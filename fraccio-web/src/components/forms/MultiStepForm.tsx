@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { cn } from '@/lib/utils'
 import { Button } from '../ui/button'
+import { cn } from '@/lib/utils'
 
 export interface MultiStepFormStep {
   id: string
@@ -9,7 +9,7 @@ export interface MultiStepFormStep {
 }
 
 export interface MultiStepFormProps extends React.HTMLAttributes<HTMLDivElement> {
-  steps: MultiStepFormStep[]
+  steps: Array<MultiStepFormStep>
   currentStep: number
   onStepChange: (step: number) => void
   onSubmit: () => void | Promise<void>
@@ -31,13 +31,17 @@ const MultiStepForm = React.forwardRef<HTMLDivElement, MultiStepFormProps>(
       showStepIndicator = true,
       ...props
     },
-    ref
+    ref,
   ) => {
     const canGoBack = currentStep > 0
     const canGoNext = currentStep < steps.length - 1
 
     return (
-      <div ref={ref} className={cn('flex flex-col gap-6', className)} {...props}>
+      <div
+        ref={ref}
+        className={cn('flex flex-col gap-6', className)}
+        {...props}
+      >
         {/* Step Indicator */}
         {showStepIndicator && (
           <div className="flex gap-2">
@@ -49,7 +53,7 @@ const MultiStepForm = React.forwardRef<HTMLDivElement, MultiStepFormProps>(
                     'flex h-8 w-8 items-center justify-center rounded-full font-semibold text-sm transition-colors',
                     index <= currentStep
                       ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-foreground/50'
+                      : 'bg-muted text-foreground/50',
                   )}
                   disabled={isLoading}
                 >
@@ -59,9 +63,7 @@ const MultiStepForm = React.forwardRef<HTMLDivElement, MultiStepFormProps>(
                   <div
                     className={cn(
                       'h-1 w-8 transition-colors',
-                      index < currentStep
-                        ? 'bg-primary'
-                        : 'bg-border'
+                      index < currentStep ? 'bg-primary' : 'bg-border',
                     )}
                   />
                 )}
@@ -72,9 +74,7 @@ const MultiStepForm = React.forwardRef<HTMLDivElement, MultiStepFormProps>(
 
         {/* Current Step Info */}
         <div className="flex flex-col gap-1">
-          <h3 className="text-lg font-semibold">
-            {steps[currentStep].label}
-          </h3>
+          <h3 className="text-lg font-semibold">{steps[currentStep].label}</h3>
           {steps[currentStep].description && (
             <p className="text-sm text-foreground/60">
               {steps[currentStep].description}
@@ -104,11 +104,7 @@ const MultiStepForm = React.forwardRef<HTMLDivElement, MultiStepFormProps>(
                 Next
               </Button>
             ) : (
-              <Button
-                onClick={onSubmit}
-                disabled={isLoading}
-                className="gap-2"
-              >
+              <Button onClick={onSubmit} disabled={isLoading} className="gap-2">
                 {isLoading ? 'Submitting...' : 'Submit'}
               </Button>
             )}
@@ -116,7 +112,7 @@ const MultiStepForm = React.forwardRef<HTMLDivElement, MultiStepFormProps>(
         </div>
       </div>
     )
-  }
+  },
 )
 MultiStepForm.displayName = 'MultiStepForm'
 

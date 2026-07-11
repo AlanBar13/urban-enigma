@@ -1,7 +1,13 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useRouter  } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useServerFn } from '@tanstack/react-start'
-import { getUserHouseFn, updateHouseFn, addHouseUserFn, removeHouseUserFn } from '@/lib/casa'
+import { Edit, Home, Trash2, UserPlus, Users } from 'lucide-react'
+import {
+  addHouseUserFn,
+  getUserHouseFn,
+  removeHouseUserFn,
+  updateHouseFn,
+} from '@/lib/casa'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { FormModal } from '@/components/modals'
@@ -9,12 +15,12 @@ import { FormField } from '@/components/forms'
 import { Input } from '@/components/ui/input'
 import { useToast } from '@/components/notifications'
 import { logger } from '@/utils/logger'
-import { useRouter } from '@tanstack/react-router'
-import { Home, Users, Edit, UserPlus, Trash2 } from 'lucide-react'
 
 export const Route = createFileRoute('/$tenantId/casa')({
   loader: async ({ context }) => {
-    const houseData = await getUserHouseFn({ data: { tenantId: context.tenant.id } })
+    const houseData = await getUserHouseFn({
+      data: { tenantId: context.tenant.id },
+    })
     return { houseData }
   },
   component: RouteComponent,
@@ -29,7 +35,9 @@ function RouteComponent() {
   // Edit house modal state
   const [editOpen, setEditOpen] = useState(false)
   const [houseName, setHouseName] = useState(houseData.house?.name || '')
-  const [houseAddress, setHouseAddress] = useState(houseData.house?.address || '')
+  const [houseAddress, setHouseAddress] = useState(
+    houseData.house?.address || '',
+  )
   const updateHouse = useServerFn(updateHouseFn)
 
   // Add user modal state
@@ -163,9 +171,12 @@ function RouteComponent() {
 
         <Card className="p-8 text-center">
           <Home className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-          <h2 className="text-xl font-semibold mb-2">No tienes una casa asignada</h2>
+          <h2 className="text-xl font-semibold mb-2">
+            No tienes una casa asignada
+          </h2>
           <p className="text-muted-foreground">
-            Contacta al administrador del fraccionamiento para que te asigne a una casa.
+            Contacta al administrador del fraccionamiento para que te asigne a
+            una casa.
           </p>
         </Card>
       </div>
@@ -213,7 +224,9 @@ function RouteComponent() {
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Capacidad</p>
-            <p className="font-medium">{houseData.house.max_habitants} habitantes</p>
+            <p className="font-medium">
+              {houseData.house.max_habitants} habitantes
+            </p>
           </div>
         </div>
       </Card>
@@ -249,11 +262,14 @@ function RouteComponent() {
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                   <span className="text-sm font-medium text-primary">
-                    {user.full_name?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
+                    {user.full_name?.charAt(0).toUpperCase() ||
+                      user.email.charAt(0).toUpperCase()}
                   </span>
                 </div>
                 <div>
-                  <p className="font-medium">{user.full_name || 'Sin nombre'}</p>
+                  <p className="font-medium">
+                    {user.full_name || 'Sin nombre'}
+                  </p>
                   <p className="text-sm text-muted-foreground">{user.email}</p>
                 </div>
               </div>
@@ -271,7 +287,9 @@ function RouteComponent() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => onRemoveUser(user.id, user.full_name || user.email)}
+                    onClick={() =>
+                      onRemoveUser(user.id, user.full_name || user.email)
+                    }
                     className="text-destructive hover:text-destructive hover:bg-destructive/10"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -343,8 +361,8 @@ function RouteComponent() {
         </FormField>
 
         <p className="text-sm text-muted-foreground">
-          Se enviará una invitación al usuario para que se una a tu casa. La invitación expirará
-          en 7 días.
+          Se enviará una invitación al usuario para que se una a tu casa. La
+          invitación expirará en 7 días.
         </p>
       </FormModal>
     </div>

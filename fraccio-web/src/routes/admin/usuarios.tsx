@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { Building, Calendar, Mail, Shield, Users } from 'lucide-react'
 import { getAllUsersFn } from '@/lib/admin-users'
-import { Users, Mail, Shield, Building, Calendar } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { listTenantsFn } from '@/lib/tenants'
 import SAUserForm from '@/components/admin/SAUserForm'
@@ -25,11 +25,13 @@ function RouteComponent() {
       month: 'short',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     }).format(date)
   }
 
-  const getRoleBadgeVariant = (role: string): "default" | "secondary" | "destructive" | "outline" => {
+  const getRoleBadgeVariant = (
+    role: string,
+  ): 'default' | 'secondary' | 'destructive' | 'outline' => {
     switch (role) {
       case 'superadmin':
         return 'destructive'
@@ -57,9 +59,9 @@ function RouteComponent() {
 
   const stats = {
     total: users.length,
-    superadmins: users.filter(u => u.role === 'superadmin').length,
-    admins: users.filter(u => u.role === 'admin').length,
-    users: users.filter(u => u.role === 'user').length
+    superadmins: users.filter((u) => u.role === 'superadmin').length,
+    admins: users.filter((u) => u.role === 'admin').length,
+    users: users.filter((u) => u.role === 'user').length,
   }
 
   return (
@@ -135,17 +137,30 @@ function RouteComponent() {
           <table className="w-full">
             <thead className="bg-muted/50">
               <tr>
-                <th className="px-6 py-3 text-left text-sm font-semibold">Usuario</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold">Correo</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold">Rol</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold">Fraccionamiento</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold">Fecha de Registro</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold">
+                  Usuario
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold">
+                  Correo
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold">
+                  Rol
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold">
+                  Fraccionamiento
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold">
+                  Fecha de Registro
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {users.length > 0 ? (
                 users.map((user) => (
-                  <tr key={user.id} className="hover:bg-muted/50 transition-colors">
+                  <tr
+                    key={user.id}
+                    className="hover:bg-muted/50 transition-colors"
+                  >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -153,7 +168,9 @@ function RouteComponent() {
                         </div>
                         <div>
                           <p className="font-medium">{user.full_name}</p>
-                          <p className="text-sm text-muted-foreground">{user.id.slice(0, 8)}...</p>
+                          <p className="text-sm text-muted-foreground">
+                            {user.id.slice(0, 8)}...
+                          </p>
                         </div>
                       </div>
                     </td>
@@ -186,7 +203,9 @@ function RouteComponent() {
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center">
                     <Users className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-20" />
-                    <p className="text-muted-foreground">No hay usuarios registrados</p>
+                    <p className="text-muted-foreground">
+                      No hay usuarios registrados
+                    </p>
                   </td>
                 </tr>
               )}

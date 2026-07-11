@@ -1,10 +1,10 @@
+import { createFileRoute } from '@tanstack/react-router'
 import { s3Service } from '@/lib/s3'
 import { getSupabaseClient } from '@/lib/supabase'
 import { getUser } from '@/lib/user'
 import { logger } from '@/utils/logger'
-import { createFileRoute } from '@tanstack/react-router'
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 
 const ALLOWED_MIME_TYPES = [
   'application/pdf',
@@ -12,7 +12,7 @@ const ALLOWED_MIME_TYPES = [
   'image/jpg',
   'image/png',
   'image/gif',
-  'image/webp'
+  'image/webp',
 ]
 
 export const Route = createFileRoute('/api/upload/document')({
@@ -35,7 +35,12 @@ export const Route = createFileRoute('/api/upload/document')({
             userId: user.email,
             role: user.role,
           })
-          return new Response(JSON.stringify({ error: 'Unauthorized: Only admins can upload documents' }), { status: 403 })
+          return new Response(
+            JSON.stringify({
+              error: 'Unauthorized: Only admins can upload documents',
+            }),
+            { status: 403 },
+          )
         }
 
         const formData = await request.formData()
@@ -48,7 +53,12 @@ export const Route = createFileRoute('/api/upload/document')({
         // Validate required fields
         if (!tenantId || !name || !file) {
           logger('error', 'Missing required fields for document upload')
-          return new Response(JSON.stringify({ error: 'Missing required fields: tenantId, name, or file' }), { status: 400 })
+          return new Response(
+            JSON.stringify({
+              error: 'Missing required fields: tenantId, name, or file',
+            }),
+            { status: 400 },
+          )
         }
 
         // Verify user belongs to the tenant
@@ -58,7 +68,12 @@ export const Route = createFileRoute('/api/upload/document')({
             requestedTenant: tenantId,
             userTenant: user.tenantId,
           })
-          return new Response(JSON.stringify({ error: 'Unauthorized: User does not belong to this tenant' }), { status: 403 })
+          return new Response(
+            JSON.stringify({
+              error: 'Unauthorized: User does not belong to this tenant',
+            }),
+            { status: 403 },
+          )
         }
 
         // Validate file size
@@ -68,7 +83,9 @@ export const Route = createFileRoute('/api/upload/document')({
 
         // Validate file type
         if (!ALLOWED_MIME_TYPES.includes(file.type)) {
-          throw new Error('Only PDF and image files (JPEG, PNG, GIF, WebP) are allowed')
+          throw new Error(
+            'Only PDF and image files (JPEG, PNG, GIF, WebP) are allowed',
+          )
         }
 
         try {
@@ -82,7 +99,7 @@ export const Route = createFileRoute('/api/upload/document')({
             tenantPath,
             !ownerOnly, // isPublic - if not owner_only, make it public
             file.name,
-            file.type
+            file.type,
           )
 
           // Save document metadata to database
@@ -105,23 +122,34 @@ export const Route = createFileRoute('/api/upload/document')({
             try {
               await s3Service.deleteFile(key)
             } catch (deleteError) {
-              logger('error', 'Failed to delete orphaned S3 file after DB error', {
-                key,
-                deleteError
-              })
+              logger(
+                'error',
+                'Failed to delete orphaned S3 file after DB error',
+                {
+                  key,
+                  deleteError,
+                },
+              )
             }
             logger('error', 'Error saving document metadata', { error })
-            return new Response(JSON.stringify({ error: 'Error saving document metadata' }), { status: 500 })
+            return new Response(
+              JSON.stringify({ error: 'Error saving document metadata' }),
+              { status: 500 },
+            )
           }
 
-          return new Response(JSON.stringify({ message: 'Document uploaded successfully' }), { status: 200 })
+          return new Response(
+            JSON.stringify({ message: 'Document uploaded successfully' }),
+            { status: 200 },
+          )
         } catch (error) {
           logger('error', 'Error uploading document:', { error })
-          return new Response(JSON.stringify({ error: 'Error uploading document' }), { status: 500 })
+          return new Response(
+            JSON.stringify({ error: 'Error uploading document' }),
+            { status: 500 },
+          )
         }
-      }
-    }
-  }
-}
-)
-
+      },
+    },
+  },
+})

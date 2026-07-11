@@ -12,7 +12,7 @@ export const getRouter = () => {
 
     scrollRestoration: true,
     defaultPreloadStaleTime: 0,
-    defaultNotFoundComponent: () => <NotFound />
+    defaultNotFoundComponent: () => <NotFound />,
   })
 
   return router

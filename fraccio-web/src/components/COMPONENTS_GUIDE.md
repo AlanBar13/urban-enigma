@@ -28,6 +28,7 @@ components/
 ## 📦 Shared Components
 
 ### Badge
+
 A flexible badge component with multiple variants and sizes.
 
 ```typescript
@@ -40,6 +41,7 @@ import { Badge } from '@/components/shared'
 **Props**: `variant` | `size` | `className`
 
 ### Avatar
+
 Display user/team avatars with fallback support.
 
 ```typescript
@@ -54,6 +56,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/shared'
 **Props**: `size` (sm | md | lg | xl)
 
 ### Skeleton
+
 Loading skeleton component with pulse animation.
 
 ```typescript
@@ -63,6 +66,7 @@ import { Skeleton } from '@/components/shared'
 ```
 
 ### DataTable
+
 Feature-rich table component with sorting and customizable columns.
 
 ```typescript
@@ -81,12 +85,14 @@ import { DataTable } from '@/components/shared'
 ```
 
 **Props**:
+
 - `columns`: Array of column definitions
 - `data`: Array of items
 - `onSort`: Sort callback
 - `hoverable`, `striped`, `dense`: Display options
 
 ### List & ListItem
+
 Flexible list component with variants and spacing.
 
 ```typescript
@@ -101,6 +107,7 @@ import { List, ListItem } from '@/components/shared'
 ## 🎯 Layout Components
 
 ### DashboardLayout
+
 Complete dashboard layout with responsive sidebar and header.
 
 ```typescript
@@ -116,6 +123,7 @@ import { DashboardLayout } from '@/components/layouts'
 ```
 
 ### PageHeader
+
 Hero section with title, description, and action button.
 
 ```typescript
@@ -129,6 +137,7 @@ import { PageHeader } from '@/components/layouts'
 ```
 
 ### Section
+
 Container for grouped content with padding and variant options.
 
 ```typescript
@@ -140,6 +149,7 @@ import { Section } from '@/components/layouts'
 ```
 
 ### Stack & Grid
+
 Flexible flexbox and grid layout helpers.
 
 ```typescript
@@ -157,6 +167,7 @@ import { Stack, Grid } from '@/components/layouts'
 ## 👥 Tenant Components
 
 ### TenantSelector
+
 Dropdown for switching between workspaces.
 
 ```typescript
@@ -172,6 +183,7 @@ import { TenantSelector } from '@/components/tenant'
 ```
 
 ### TenantHeader
+
 Display current tenant with role and switch button.
 
 ```typescript
@@ -185,6 +197,7 @@ import { TenantHeader } from '@/components/tenant'
 ```
 
 ### RoleBadge
+
 Tenant role indicator with color coding.
 
 ```typescript
@@ -195,6 +208,7 @@ import { RoleBadge } from '@/components/tenant'
 ```
 
 ### WorkspaceCard
+
 Card for displaying and selecting workspaces.
 
 ```typescript
@@ -214,6 +228,7 @@ import { WorkspaceCard } from '@/components/tenant'
 ## 🧭 Navigation Components
 
 ### Breadcrumbs
+
 Navigation breadcrumb trail.
 
 ```typescript
@@ -234,6 +249,7 @@ import {
 ```
 
 ### Tabs
+
 Tab navigation component.
 
 ```typescript
@@ -249,6 +265,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/navigatio
 ```
 
 ### Pagination
+
 Pagination controls.
 
 ```typescript
@@ -262,6 +279,7 @@ import { Pagination } from '@/components/navigation'
 ```
 
 ### SidebarNav
+
 Collapsible sidebar navigation with badges.
 
 ```typescript
@@ -285,6 +303,7 @@ import { SidebarNav } from '@/components/navigation'
 ## 📝 Form Components
 
 ### FormField
+
 Wrapper for form fields with label, error, and hint.
 
 ```typescript
@@ -297,6 +316,7 @@ import { Input } from '@/components/ui/input'
 ```
 
 ### Textarea & Select
+
 Styled textarea and select elements.
 
 ```typescript
@@ -309,6 +329,7 @@ import { Textarea, Select } from '@/components/forms'
 ```
 
 ### MultiStepForm
+
 Multi-step form with progress indicator.
 
 ```typescript
@@ -328,6 +349,7 @@ import { MultiStepForm } from '@/components/forms'
 ```
 
 ### DynamicFieldArray
+
 Add/remove dynamic form fields.
 
 ```typescript
@@ -346,6 +368,7 @@ import { DynamicFieldArray } from '@/components/forms'
 ```
 
 ### CheckboxGroup & RadioGroup
+
 Group selection components.
 
 ```typescript
@@ -370,6 +393,7 @@ import { CheckboxGroup, RadioGroup } from '@/components/forms'
 ## 🔔 Modal & Dialog Components
 
 ### Dialog (Base)
+
 Low-level dialog primitive.
 
 ```typescript
@@ -399,6 +423,7 @@ import {
 ```
 
 ### ConfirmDialog
+
 Confirmation dialog with customizable buttons.
 
 ```typescript
@@ -417,6 +442,7 @@ import { ConfirmDialog } from '@/components/modals'
 ```
 
 ### AlertDialog
+
 Alert dialog with icon and type (info/success/warning/error).
 
 ```typescript
@@ -431,6 +457,7 @@ import { AlertDialog } from '@/components/modals'
 ```
 
 ### FormModal
+
 Modal with built-in form handling.
 
 ```typescript
@@ -449,6 +476,7 @@ import { FormModal } from '@/components/modals'
 ```
 
 ### Drawer
+
 Side drawer component (mobile-friendly alternative to dialog).
 
 ```typescript
@@ -462,6 +490,7 @@ import { DrawerContent } from '@/components/modals'
 ## 🔔 Notification Components
 
 ### Alert
+
 Dismissable alert with multiple types.
 
 ```typescript
@@ -477,6 +506,7 @@ import { Alert } from '@/components/notifications'
 ```
 
 ### Callout
+
 Non-dismissable callout for important information.
 
 ```typescript
@@ -488,6 +518,7 @@ import { Callout } from '@/components/notifications'
 ```
 
 ### Toast
+
 Toast notification system with context provider.
 
 ```typescript
@@ -519,6 +550,7 @@ function MyComponent() {
 ```
 
 ### SnackBar
+
 Inline snackbar notification with action.
 
 ```typescript
@@ -538,6 +570,7 @@ import { SnackBar } from '@/components/notifications'
 ## 🚀 Quick Start
 
 ### 1. Setup Toast Provider (Root Layout)
+
 Wrap your app with `ToastProvider` in your root layout:
 
 ```typescript
@@ -559,6 +592,7 @@ export default function RootLayout() {
 ```
 
 ### 2. Import and Use
+
 ```typescript
 import { DataTable, Badge } from '@/components/shared'
 import { DashboardLayout, PageHeader } from '@/components/layouts'
@@ -586,6 +620,7 @@ export default function Dashboard() {
 ## 🛠️ Customization
 
 ### Theming
+
 Components use Tailwind CSS classes. Customize colors via:
 
 - `tailwind.config.js` - Change color scheme
@@ -593,6 +628,7 @@ Components use Tailwind CSS classes. Customize colors via:
 - CSS variables - For dynamic theming (if configured)
 
 ### Extending Components
+
 All components are forwardRef'd and accept standard HTML attributes:
 
 ```typescript

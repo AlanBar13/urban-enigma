@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as DrawerPrimitive from '@radix-ui/react-dialog'
-import { cn } from '@/lib/utils'
 import { X } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 const DrawerOverlay = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Overlay>,
@@ -11,7 +11,7 @@ const DrawerOverlay = React.forwardRef<
     ref={ref}
     className={cn(
       'fixed inset-0 z-50 bg-background/80 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
-      className
+      className,
     )}
     {...props}
   />
@@ -28,7 +28,7 @@ const DrawerContent = React.forwardRef<
       ref={ref}
       className={cn(
         'fixed inset-y-0 right-0 z-50 w-3/4 border-l border-border bg-background shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:w-[400px]',
-        className
+        className,
       )}
       {...props}
     >

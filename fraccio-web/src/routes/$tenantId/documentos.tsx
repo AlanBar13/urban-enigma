@@ -1,11 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { Download, FileText, Image } from 'lucide-react'
 import { getDocumentsFn } from '@/lib/documents'
 import { Card } from '@/components/ui/card'
-import { FileText, Image, Download } from 'lucide-react'
 
 export const Route = createFileRoute('/$tenantId/documentos')({
   loader: async ({ context }) => {
-    const documents = await getDocumentsFn({ data: { tenantId: context.tenant.id, user: context.user } })
+    const documents = await getDocumentsFn({
+      data: { tenantId: context.tenant.id, user: context.user },
+    })
     return { documents }
   },
   component: RouteComponent,
@@ -18,7 +20,9 @@ function RouteComponent() {
     return (
       <span
         className={`px-2 py-1 text-xs font-medium rounded ${
-          ownerOnly ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
+          ownerOnly
+            ? 'bg-yellow-100 text-yellow-800'
+            : 'bg-green-100 text-green-800'
         }`}
       >
         {ownerOnly ? 'Solo Propietarios' : 'Todos los Residentes'}
@@ -28,8 +32,10 @@ function RouteComponent() {
 
   const getFileTypeIcon = (mimeType: string | null) => {
     if (!mimeType) return <FileText className="w-5 h-5 text-gray-400" />
-    if (mimeType.startsWith('image/')) return <Image className="w-5 h-5 text-blue-500" />
-    if (mimeType === 'application/pdf') return <FileText className="w-5 h-5 text-red-500" />
+    if (mimeType.startsWith('image/'))
+      return <Image className="w-5 h-5 text-blue-500" />
+    if (mimeType === 'application/pdf')
+      return <FileText className="w-5 h-5 text-red-500" />
     return <FileText className="w-5 h-5 text-gray-400" />
   }
 
@@ -51,17 +57,24 @@ function RouteComponent() {
 
       {documents.length === 0 ? (
         <Card className="p-8">
-          <p className="text-gray-600 text-center">No hay documentos disponibles</p>
+          <p className="text-gray-600 text-center">
+            No hay documentos disponibles
+          </p>
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {documents.map((document) => (
-            <Card key={document.id} className="p-4 hover:shadow-lg transition-shadow">
+            <Card
+              key={document.id}
+              className="p-4 hover:shadow-lg transition-shadow"
+            >
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
                   {getFileTypeIcon(document.mime_type)}
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-lg truncate">{document.name}</h3>
+                    <h3 className="font-semibold text-lg truncate">
+                      {document.name}
+                    </h3>
                     <div className="flex items-center gap-2 mt-1">
                       {getVisibilityBadge(document.owner_only)}
                     </div>
@@ -71,7 +84,8 @@ function RouteComponent() {
                 <div className="text-sm text-gray-500 space-y-1">
                   <p>Tamaño: {formatFileSize(document.file_size)}</p>
                   <p>
-                    Subido: {new Date(document.created_at).toLocaleDateString('es-MX', {
+                    Subido:{' '}
+                    {new Date(document.created_at).toLocaleDateString('es-MX', {
                       year: 'numeric',
                       month: 'short',
                       day: 'numeric',

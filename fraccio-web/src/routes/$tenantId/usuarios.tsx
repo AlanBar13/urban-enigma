@@ -1,7 +1,7 @@
+import { createFileRoute } from '@tanstack/react-router'
 import UsersContainer from '@/components/admin/UsersContainer'
 import { getHousesFn } from '@/lib/houses'
 import { getTenantUsersFn } from '@/lib/user'
-import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/$tenantId/usuarios')({
   loader: async ({ context }) => {

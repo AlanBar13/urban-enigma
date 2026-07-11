@@ -1,6 +1,6 @@
 import * as React from 'react'
+import { AlertCircle, AlertTriangle, CheckCircle, Info } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { AlertCircle, CheckCircle, AlertTriangle, Info } from 'lucide-react'
 
 export interface CalloutProps extends React.HTMLAttributes<HTMLDivElement> {
   type?: 'info' | 'success' | 'warning' | 'error'
@@ -35,10 +35,7 @@ const typeConfig = {
 }
 
 const Callout = React.forwardRef<HTMLDivElement, CalloutProps>(
-  (
-    { className, type = 'info', title, children, ...props },
-    ref
-  ) => {
+  ({ className, type = 'info', title, children, ...props }, ref) => {
     const config = typeConfig[type]
     const Icon = config.Icon
 
@@ -49,24 +46,24 @@ const Callout = React.forwardRef<HTMLDivElement, CalloutProps>(
           'p-4 rounded-md flex gap-3',
           config.bgColor,
           config.borderColor,
-          className
+          className,
         )}
         {...props}
       >
-        <Icon className={cn('h-5 w-5 flex-shrink-0 mt-0.5', config.textColor)} />
+        <Icon
+          className={cn('h-5 w-5 flex-shrink-0 mt-0.5', config.textColor)}
+        />
         <div className="flex-1">
           {title && (
             <h4 className={cn('font-semibold mb-1', config.textColor)}>
               {title}
             </h4>
           )}
-          <div className={cn('text-sm', config.textColor)}>
-            {children}
-          </div>
+          <div className={cn('text-sm', config.textColor)}>{children}</div>
         </div>
       </div>
     )
-  }
+  },
 )
 Callout.displayName = 'Callout'
 

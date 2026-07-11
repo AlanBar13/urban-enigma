@@ -1,5 +1,6 @@
 import * as React from 'react'
-import { cva, type VariantProps } from 'class-variance-authority'
+import {  cva } from 'class-variance-authority'
+import type {VariantProps} from 'class-variance-authority';
 import { cn } from '@/lib/utils'
 
 const listVariants = cva('flex flex-col gap-0', {
@@ -28,7 +29,8 @@ const listVariants = cva('flex flex-col gap-0', {
 })
 
 export interface ListProps
-  extends React.HTMLAttributes<HTMLUListElement>,
+  extends
+    React.HTMLAttributes<HTMLUListElement>,
     VariantProps<typeof listVariants> {}
 
 const List = React.forwardRef<HTMLUListElement, ListProps>(
@@ -38,7 +40,7 @@ const List = React.forwardRef<HTMLUListElement, ListProps>(
       className={cn(listVariants({ variant, spacing, border }), className)}
       {...props}
     />
-  )
+  ),
 )
 List.displayName = 'List'
 
@@ -56,11 +58,11 @@ const ListItem = React.forwardRef<HTMLLIElement, ListItemProps>(
         active && 'bg-accent text-accent-foreground',
         disabled && 'opacity-50 cursor-not-allowed',
         !disabled && 'hover:bg-muted/50 cursor-default',
-        className
+        className,
       )}
       {...props}
     />
-  )
+  ),
 )
 ListItem.displayName = 'ListItem'
 

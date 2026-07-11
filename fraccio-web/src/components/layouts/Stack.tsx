@@ -19,7 +19,7 @@ const Stack = React.forwardRef<
       justify = 'start',
       ...props
     },
-    ref
+    ref,
   ) => {
     const gapMap = {
       xs: 'gap-1',
@@ -52,12 +52,12 @@ const Stack = React.forwardRef<
           gapMap[gap],
           alignMap[align],
           justifyMap[justify],
-          className
+          className,
         )}
         {...props}
       />
     )
-  }
+  },
 )
 Stack.displayName = 'Stack'
 

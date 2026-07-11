@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Button } from '../ui/button'
 import {
   Dialog,
   DialogContent,
@@ -7,7 +8,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from './Dialog'
-import { Button } from '../ui/button'
 
 export interface FormModalProps {
   open?: boolean
@@ -34,7 +34,7 @@ const FormModal = React.forwardRef<HTMLDivElement, FormModalProps>(
       cancelText = 'Cancel',
       isLoading = false,
     },
-    ref
+    ref,
   ) => {
     const [internalOpen, setInternalOpen] = React.useState(open)
     const [loading, setLoading] = React.useState(false)
@@ -66,7 +66,9 @@ const FormModal = React.forwardRef<HTMLDivElement, FormModalProps>(
         <DialogContent ref={ref} className="max-w-md">
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
-            {description && <DialogDescription>{description}</DialogDescription>}
+            {description && (
+              <DialogDescription>{description}</DialogDescription>
+            )}
           </DialogHeader>
           <div className="py-4">{children}</div>
           <DialogFooter className="gap-2">
@@ -77,17 +79,14 @@ const FormModal = React.forwardRef<HTMLDivElement, FormModalProps>(
             >
               {cancelText}
             </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={loading || isLoading}
-            >
+            <Button onClick={handleSubmit} disabled={loading || isLoading}>
               {loading || isLoading ? 'Loading...' : submitText}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     )
-  }
+  },
 )
 FormModal.displayName = 'FormModal'
 
