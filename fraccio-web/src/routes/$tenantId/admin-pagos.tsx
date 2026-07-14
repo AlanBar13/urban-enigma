@@ -1,9 +1,19 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
+import { useServerFn } from '@tanstack/react-start'
+import { useState } from 'react'
 import { CheckCircle, DollarSign, TrendingUp, XCircle } from 'lucide-react'
-import { getAdminPaymentsFn, getPaymentItemsFn } from '@/lib/stripe'
+import {
+  createStripeOnboardingLinkFn,
+  getAdminPaymentsFn,
+  getPaymentItemsFn,
+  getStripeAccountStatusFn,
+} from '@/lib/stripe'
 import PaymentItemsContainer from '@/components/admin/PaymentItemsContainer'
 import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/shared'
+import { useToast } from '@/components/notifications'
+import { logger } from '@/utils/logger'
 
 export const Route = createFileRoute('/$tenantId/admin-pagos')({
   beforeLoad: ({ context }) => {
@@ -22,16 +32,45 @@ export const Route = createFileRoute('/$tenantId/admin-pagos')({
     const paymentsReq = getAdminPaymentsFn({
       data: { tenantId: context.tenant.id },
     })
+    const stripeStatusReq = getStripeAccountStatusFn({
+      data: { tenantId: context.tenant.id },
+    })
 
-    const [items, payments] = await Promise.all([itemsReq, paymentsReq])
-    return { items, payments }
+    const [items, payments, stripeStatus] = await Promise.all([
+      itemsReq,
+      paymentsReq,
+      stripeStatusReq,
+    ])
+    return { items, payments, stripeStatus }
   },
   component: RouteComponent,
 })
 
 function RouteComponent() {
   const { tenant } = Route.useRouteContext()
-  const { items, payments } = Route.useLoaderData()
+  const { items, payments, stripeStatus } = Route.useLoaderData()
+  const { addToast } = useToast()
+  const createOnboardingLink = useServerFn(createStripeOnboardingLinkFn)
+  const [connecting, setConnecting] = useState(false)
+
+  const handleConnectStripe = async () => {
+    setConnecting(true)
+    try {
+      const { url } = await createOnboardingLink({
+        data: { tenantId: tenant.id },
+      })
+      window.location.href = url
+    } catch (error: any) {
+      logger('error', 'Error creating Stripe onboarding link:', { error })
+      addToast({
+        type: 'error',
+        description:
+          'Error al conectar con Stripe. Por favor intenta de nuevo.',
+        duration: 10000,
+      })
+      setConnecting(false)
+    }
+  }
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-MX', {
@@ -140,6 +179,36 @@ function RouteComponent() {
           )
         })}
       </div>
+
+      {/* Stripe Connect Status */}
+      <Card className="p-6">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold">Cuenta de Cobros (Stripe)</h2>
+            <p className="text-gray-600 text-sm mt-1">
+              {stripeStatus.chargesEnabled
+                ? 'El fraccionamiento puede recibir pagos en su propia cuenta.'
+                : stripeStatus.hasAccount
+                  ? 'La configuración de la cuenta está incompleta. Continúa para habilitar los pagos.'
+                  : 'Conecta una cuenta para que el fraccionamiento reciba los pagos directamente.'}
+            </p>
+          </div>
+          {stripeStatus.chargesEnabled ? (
+            <span className="flex items-center gap-1 px-3 py-1 text-sm font-medium rounded bg-green-100 text-green-800 whitespace-nowrap">
+              <CheckCircle className="w-4 h-4" />
+              Stripe conectado
+            </span>
+          ) : (
+            <Button onClick={handleConnectStripe} disabled={connecting}>
+              {connecting
+                ? 'Redirigiendo...'
+                : stripeStatus.hasAccount
+                  ? 'Continuar configuración'
+                  : 'Conectar Stripe'}
+            </Button>
+          )}
+        </div>
+      </Card>
 
       {/* Payment Items Management */}
       <div>

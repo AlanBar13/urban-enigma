@@ -33,7 +33,6 @@ import { Route as TenantIdAdminAnunciosRouteImport } from './routes/$tenantId/ad
 import { Route as TenantIdPagosIndexRouteImport } from './routes/$tenantId/pagos/index'
 import { Route as ApiUploadDocumentRouteImport } from './routes/api/upload/document'
 import { Route as ApiUploadAnuncioRouteImport } from './routes/api/upload/anuncio'
-import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe/webhook'
 import { Route as TenantIdPagosSuccessRouteImport } from './routes/$tenantId/pagos/success'
 import { Route as TenantIdPagosCancelRouteImport } from './routes/$tenantId/pagos/cancel'
 
@@ -157,11 +156,6 @@ const ApiUploadAnuncioRoute = ApiUploadAnuncioRouteImport.update({
   path: '/api/upload/anuncio',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
-  id: '/api/stripe/webhook',
-  path: '/api/stripe/webhook',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const TenantIdPagosSuccessRoute = TenantIdPagosSuccessRouteImport.update({
   id: '/pagos/success',
   path: '/pagos/success',
@@ -197,7 +191,6 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/$tenantId/pagos/cancel': typeof TenantIdPagosCancelRoute
   '/$tenantId/pagos/success': typeof TenantIdPagosSuccessRoute
-  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/api/upload/anuncio': typeof ApiUploadAnuncioRoute
   '/api/upload/document': typeof ApiUploadDocumentRoute
   '/$tenantId/pagos/': typeof TenantIdPagosIndexRoute
@@ -224,7 +217,6 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/$tenantId/pagos/cancel': typeof TenantIdPagosCancelRoute
   '/$tenantId/pagos/success': typeof TenantIdPagosSuccessRoute
-  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/api/upload/anuncio': typeof ApiUploadAnuncioRoute
   '/api/upload/document': typeof ApiUploadDocumentRoute
   '/$tenantId/pagos': typeof TenantIdPagosIndexRoute
@@ -254,7 +246,6 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/$tenantId/pagos/cancel': typeof TenantIdPagosCancelRoute
   '/$tenantId/pagos/success': typeof TenantIdPagosSuccessRoute
-  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/api/upload/anuncio': typeof ApiUploadAnuncioRoute
   '/api/upload/document': typeof ApiUploadDocumentRoute
   '/$tenantId/pagos/': typeof TenantIdPagosIndexRoute
@@ -285,7 +276,6 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/$tenantId/pagos/cancel'
     | '/$tenantId/pagos/success'
-    | '/api/stripe/webhook'
     | '/api/upload/anuncio'
     | '/api/upload/document'
     | '/$tenantId/pagos/'
@@ -312,7 +302,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/$tenantId/pagos/cancel'
     | '/$tenantId/pagos/success'
-    | '/api/stripe/webhook'
     | '/api/upload/anuncio'
     | '/api/upload/document'
     | '/$tenantId/pagos'
@@ -341,7 +330,6 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/$tenantId/pagos/cancel'
     | '/$tenantId/pagos/success'
-    | '/api/stripe/webhook'
     | '/api/upload/anuncio'
     | '/api/upload/document'
     | '/$tenantId/pagos/'
@@ -355,7 +343,6 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   NotFoundRoute: typeof NotFoundRoute
   UserNotInFraccRoute: typeof UserNotInFraccRoute
-  ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
   ApiUploadAnuncioRoute: typeof ApiUploadAnuncioRoute
   ApiUploadDocumentRoute: typeof ApiUploadDocumentRoute
 }
@@ -530,13 +517,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiUploadAnuncioRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/stripe/webhook': {
-      id: '/api/stripe/webhook'
-      path: '/api/stripe/webhook'
-      fullPath: '/api/stripe/webhook'
-      preLoaderRoute: typeof ApiStripeWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/$tenantId/pagos/success': {
       id: '/$tenantId/pagos/success'
       path: '/pagos/success'
@@ -616,7 +596,6 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   NotFoundRoute: NotFoundRoute,
   UserNotInFraccRoute: UserNotInFraccRoute,
-  ApiStripeWebhookRoute: ApiStripeWebhookRoute,
   ApiUploadAnuncioRoute: ApiUploadAnuncioRoute,
   ApiUploadDocumentRoute: ApiUploadDocumentRoute,
 }

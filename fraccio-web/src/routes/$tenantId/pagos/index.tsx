@@ -33,6 +33,8 @@ function RouteComponent() {
   const { addToast } = useToast()
   const createCheckoutSession = useServerFn(createCheckoutSessionFn)
   const [loading, setLoading] = useState<number | null>(null)
+  // UX only — the backend rejects checkout (409) until the tenant finishes Stripe onboarding
+  const paymentsEnabled = tenant.stripe_charges_enabled
 
   const handlePayment = async (itemId: number) => {
     setLoading(itemId)
@@ -112,6 +114,14 @@ function RouteComponent() {
         <h2 className="text-xl font-semibold mb-4">
           Conceptos Disponibles para Pago
         </h2>
+        {!paymentsEnabled && (
+          <Card className="p-6 mb-4 border-yellow-300 bg-yellow-50">
+            <p className="text-yellow-800 text-center">
+              Los pagos en línea aún no están habilitados para este
+              fraccionamiento. Contacta a tu administrador.
+            </p>
+          </Card>
+        )}
         {items.length === 0 ? (
           <Card className="p-6">
             <p className="text-gray-600 text-center">
@@ -140,7 +150,7 @@ function RouteComponent() {
                 </div>
                 <Button
                   onClick={() => handlePayment(item.id)}
-                  disabled={loading !== null}
+                  disabled={loading !== null || !paymentsEnabled}
                   className="w-full"
                 >
                   {loading === item.id ? 'Procesando...' : 'Pagar'}

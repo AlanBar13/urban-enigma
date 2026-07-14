@@ -2,6 +2,12 @@ import { createRemoteJWKSet, jwtVerify } from "jose";
 import type { FastifyRequest, FastifyReply } from "fastify";
 import SupaClient from "../../lib/db/client.js";
 
+declare module "fastify" {
+    interface FastifyRequest {
+        authUser?: { id: string; role: string };
+    }
+}
+
 const jwksUrl = process.env.SUPABASE_JWKS_URL
     ?? `${process.env.SUPABASE_URL}/auth/v1/.well-known/jwks.json`;
 const jwks = createRemoteJWKSet(new URL(jwksUrl)); // caches keys in-process
@@ -32,5 +38,15 @@ export async function requireTenantAuth(request: FastifyRequest, reply: FastifyR
     // ponytail: one profiles query per request; cache by sub if traffic ever matters
     if (!profile || (profile.role !== "superadmin" && profile.tenant_id !== tenantId)) {
         return reply.status(403).send({ success: false, message: "Forbidden" });
+    }
+
+    request.authUser = { id: sub, role: profile.role };
+}
+
+/** Route-level preHandler; runs after the group-level requireTenantAuth hook, so authUser is set. */
+export async function requireAdmin(request: FastifyRequest, reply: FastifyReply) {
+    const role = request.authUser?.role;
+    if (role !== "admin" && role !== "superadmin") {
+        return reply.status(403).send({ success: false, message: "Admin access required" });
     }
 }
