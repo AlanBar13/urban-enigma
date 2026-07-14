@@ -1,5 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
+import { s3Service } from './s3'
 import { getSupabaseClient } from './supabase'
 import { getUser } from './user'
 import { logger } from '@/utils/logger'
@@ -9,19 +10,12 @@ const getAnunciosSchema = z.object({
   tenantId: z.uuid(),
 })
 
-const createAnuncioSchema = z.object({
-  tenantId: z.uuid(),
-  title: z.string().min(3, 'Title must be at least 3 characters'),
-  description: z.string().optional(),
-  ownersOnly: z.boolean(),
-})
-
 const getAdminAnunciosSchema = z.object({
   tenantId: z.uuid(),
 })
 
 // Types
-interface Announcement {
+export interface Announcement {
   id: number
   tenant_id: string
   title: string
@@ -29,6 +23,41 @@ interface Announcement {
   owners_only: boolean
   interactions: number
   created_at: string
+  attachment_s3_key: string | null
+  attachment_mime_type: string | null
+  attachment_name: string | null
+}
+
+export type AnnouncementWithUrl = Announcement & {
+  attachment_url: string | null
+}
+
+/**
+ * Attaches a viewable URL for each announcement's attachment
+ * (presigned for owners-only, public otherwise)
+ */
+async function withAttachmentUrls(
+  announcements: Array<Announcement>,
+): Promise<Array<AnnouncementWithUrl>> {
+  return Promise.all(
+    announcements.map(async (announcement) => {
+      if (!announcement.attachment_s3_key) {
+        return { ...announcement, attachment_url: null }
+      }
+      try {
+        const url = announcement.owners_only
+          ? await s3Service.getPreSignedUrl(announcement.attachment_s3_key)
+          : s3Service.getFileUrl(announcement.attachment_s3_key)
+        return { ...announcement, attachment_url: url }
+      } catch (error) {
+        logger('error', 'Error getting announcement attachment URL', {
+          announcementId: announcement.id,
+          error,
+        })
+        return { ...announcement, attachment_url: null }
+      }
+    }),
+  )
 }
 
 /**
@@ -87,68 +116,7 @@ export const getAnunciosFn = createServerFn({ method: 'POST' })
       throw new Error('Failed to fetch announcements')
     }
 
-    return announcements as Array<Announcement>
-  })
-
-/**
- * Creates a new announcement (admin only)
- */
-export const createAnuncioFn = createServerFn({ method: 'POST' })
-  .inputValidator(createAnuncioSchema)
-  .handler(async ({ data }) => {
-    const supabase = getSupabaseClient()
-
-    // Get authenticated user
-    const user = await getUser()
-    if (!user) {
-      logger('error', 'User not authenticated')
-      throw new Error('User not authenticated')
-    }
-
-    // Verify user is admin or superadmin
-    if (user.role !== 'admin' && user.role !== 'superadmin') {
-      logger('error', 'User is not authorized to create announcements', {
-        userId: user.email,
-        role: user.role,
-      })
-      throw new Error('Unauthorized: Only admins can create announcements')
-    }
-
-    // Verify user belongs to the tenant
-    if (user.tenantId !== data.tenantId) {
-      logger('error', 'User does not belong to tenant', {
-        userId: user.email,
-        requestedTenant: data.tenantId,
-        userTenant: user.tenantId,
-      })
-      throw new Error('Unauthorized: User does not belong to this tenant')
-    }
-
-    // Insert announcement
-    const { data: announcement, error } = await supabase
-      .from('announcements')
-      .insert({
-        tenant_id: data.tenantId,
-        title: data.title,
-        description: data.description || null,
-        owners_only: data.ownersOnly,
-        interactions: 0,
-      })
-      .select()
-      .single()
-
-    if (error) {
-      logger('error', 'Error creating announcement', { error })
-      throw new Error('Failed to create announcement')
-    }
-
-    logger('info', 'Announcement created successfully', {
-      announcementId: announcement.id,
-      title: data.title,
-      ownersOnly: data.ownersOnly,
-    })
-
-    return announcement as Announcement
+    return withAttachmentUrls(announcements as Array<Announcement>)
   })
 
 /**
@@ -197,5 +165,5 @@ export const getAdminAnunciosFn = createServerFn({ method: 'POST' })
       throw new Error('Failed to fetch announcements')
     }
 
-    return announcements as Array<Announcement>
+    return withAttachmentUrls(announcements as Array<Announcement>)
   })

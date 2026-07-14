@@ -36,14 +36,14 @@ export async function startWhatsAppWorker() {
                 }
                 case "SEND_GROUP_MESSAGE": {
                     const { session, service } = await getReadyService(tenantId);
-                    const { message } = job.data;
+                    const { message, media } = job.data;
                     const groupId = job.data.groupId ?? session.group_id;
 
                     if (!groupId) {
                         throw new Error(`No groupId provided and tenant ${tenantId} has no stored group.`);
                     }
 
-                    return service.sendGroupMessage(groupId, message);
+                    return service.sendGroupMessage(groupId, message, media);
                 }
                 case "ADD_USER_TO_GROUP": {
                     const { session, service } = await getReadyService(tenantId);

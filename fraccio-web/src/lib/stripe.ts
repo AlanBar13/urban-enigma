@@ -389,8 +389,10 @@ export const getAdminPaymentsFn = createServerFn({ method: 'POST' })
       throw new Error('Failed to fetch admin payments')
     }
 
-    return payments as Array<Payment & {
-      houses: { name: string }
-      profiles: { full_name: string }
-    }>
+    return payments as Array<
+      Payment & {
+        houses: { name: string }
+        profiles: { full_name: string }
+      }
+    >
   })

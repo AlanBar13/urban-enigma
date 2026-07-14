@@ -8,6 +8,10 @@ interface CommsRouteParams {
 interface SendMessageBody {
     groupId?: string;
     message: string;
+    media?: {
+        url: string;
+        filename?: string;
+    };
 }
 
 interface CreateWaGroupBody {
@@ -38,6 +42,15 @@ async function routes(server: FastifyInstance, options: Record<string, unknown>)
                 properties: {
                     groupId: { type: 'string', minLength: 3, description: "Optional; defaults to the tenant's stored group" },
                     message: { type: 'string' },
+                    media: {
+                        type: 'object',
+                        required: ['url'],
+                        description: 'Optional attachment fetched by URL (image or document)',
+                        properties: {
+                            url: { type: 'string' },
+                            filename: { type: 'string' },
+                        }
+                    },
                 }
             },
             response: {
@@ -60,9 +73,9 @@ async function routes(server: FastifyInstance, options: Record<string, unknown>)
         }
     }, async (request, reply) => {
         const { tenantId } = request.params;
-        const { groupId, message } = request.body;
+        const { groupId, message, media } = request.body;
         try {
-            const result = await commsController.sendWaMessage(tenantId, groupId, message)
+            const result = await commsController.sendWaMessage(tenantId, groupId, message, media)
             reply.send(result);
         } catch (err) {
             reply.status(500).send({

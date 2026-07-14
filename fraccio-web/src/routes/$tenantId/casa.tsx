@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter  } from '@tanstack/react-router'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useServerFn } from '@tanstack/react-start'
 import { Edit, Home, Trash2, UserPlus, Users } from 'lucide-react'

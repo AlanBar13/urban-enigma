@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Avatar, AvatarFallback, AvatarImage, Badge  } from '../shared'
+import { Avatar, AvatarFallback, AvatarImage, Badge } from '../shared'
 import { cn } from '@/lib/utils'
 
 export interface WorkspaceCardProps extends Omit<

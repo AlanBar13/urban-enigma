@@ -4,7 +4,6 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 import appCss from '../styles.css?url'
 import { ToastContainer, ToastProvider } from '@/components/notifications'
 
-
 export const Route = createRootRoute({
   head: () => ({
     meta: [

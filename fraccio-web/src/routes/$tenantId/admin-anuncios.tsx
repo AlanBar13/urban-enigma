@@ -35,7 +35,11 @@ function RouteComponent() {
       </div>
 
       <div>
-        <AnunciosContainer tenantId={tenant.id} announcements={announcements} />
+        <AnunciosContainer
+          tenantId={tenant.id}
+          tenantPath={tenant.path}
+          announcements={announcements}
+        />
       </div>
     </div>
   )

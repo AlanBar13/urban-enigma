@@ -32,6 +32,7 @@ import { Route as TenantIdAdminDocumentosRouteImport } from './routes/$tenantId/
 import { Route as TenantIdAdminAnunciosRouteImport } from './routes/$tenantId/admin-anuncios'
 import { Route as TenantIdPagosIndexRouteImport } from './routes/$tenantId/pagos/index'
 import { Route as ApiUploadDocumentRouteImport } from './routes/api/upload/document'
+import { Route as ApiUploadAnuncioRouteImport } from './routes/api/upload/anuncio'
 import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe/webhook'
 import { Route as TenantIdPagosSuccessRouteImport } from './routes/$tenantId/pagos/success'
 import { Route as TenantIdPagosCancelRouteImport } from './routes/$tenantId/pagos/cancel'
@@ -151,6 +152,11 @@ const ApiUploadDocumentRoute = ApiUploadDocumentRouteImport.update({
   path: '/api/upload/document',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiUploadAnuncioRoute = ApiUploadAnuncioRouteImport.update({
+  id: '/api/upload/anuncio',
+  path: '/api/upload/anuncio',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
   id: '/api/stripe/webhook',
   path: '/api/stripe/webhook',
@@ -192,6 +198,7 @@ export interface FileRoutesByFullPath {
   '/$tenantId/pagos/cancel': typeof TenantIdPagosCancelRoute
   '/$tenantId/pagos/success': typeof TenantIdPagosSuccessRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
+  '/api/upload/anuncio': typeof ApiUploadAnuncioRoute
   '/api/upload/document': typeof ApiUploadDocumentRoute
   '/$tenantId/pagos/': typeof TenantIdPagosIndexRoute
 }
@@ -218,6 +225,7 @@ export interface FileRoutesByTo {
   '/$tenantId/pagos/cancel': typeof TenantIdPagosCancelRoute
   '/$tenantId/pagos/success': typeof TenantIdPagosSuccessRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
+  '/api/upload/anuncio': typeof ApiUploadAnuncioRoute
   '/api/upload/document': typeof ApiUploadDocumentRoute
   '/$tenantId/pagos': typeof TenantIdPagosIndexRoute
 }
@@ -247,6 +255,7 @@ export interface FileRoutesById {
   '/$tenantId/pagos/cancel': typeof TenantIdPagosCancelRoute
   '/$tenantId/pagos/success': typeof TenantIdPagosSuccessRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
+  '/api/upload/anuncio': typeof ApiUploadAnuncioRoute
   '/api/upload/document': typeof ApiUploadDocumentRoute
   '/$tenantId/pagos/': typeof TenantIdPagosIndexRoute
 }
@@ -277,6 +286,7 @@ export interface FileRouteTypes {
     | '/$tenantId/pagos/cancel'
     | '/$tenantId/pagos/success'
     | '/api/stripe/webhook'
+    | '/api/upload/anuncio'
     | '/api/upload/document'
     | '/$tenantId/pagos/'
   fileRoutesByTo: FileRoutesByTo
@@ -303,6 +313,7 @@ export interface FileRouteTypes {
     | '/$tenantId/pagos/cancel'
     | '/$tenantId/pagos/success'
     | '/api/stripe/webhook'
+    | '/api/upload/anuncio'
     | '/api/upload/document'
     | '/$tenantId/pagos'
   id:
@@ -331,6 +342,7 @@ export interface FileRouteTypes {
     | '/$tenantId/pagos/cancel'
     | '/$tenantId/pagos/success'
     | '/api/stripe/webhook'
+    | '/api/upload/anuncio'
     | '/api/upload/document'
     | '/$tenantId/pagos/'
   fileRoutesById: FileRoutesById
@@ -344,6 +356,7 @@ export interface RootRouteChildren {
   NotFoundRoute: typeof NotFoundRoute
   UserNotInFraccRoute: typeof UserNotInFraccRoute
   ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
+  ApiUploadAnuncioRoute: typeof ApiUploadAnuncioRoute
   ApiUploadDocumentRoute: typeof ApiUploadDocumentRoute
 }
 
@@ -510,6 +523,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiUploadDocumentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/upload/anuncio': {
+      id: '/api/upload/anuncio'
+      path: '/api/upload/anuncio'
+      fullPath: '/api/upload/anuncio'
+      preLoaderRoute: typeof ApiUploadAnuncioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/stripe/webhook': {
       id: '/api/stripe/webhook'
       path: '/api/stripe/webhook'
@@ -597,6 +617,7 @@ const rootRouteChildren: RootRouteChildren = {
   NotFoundRoute: NotFoundRoute,
   UserNotInFraccRoute: UserNotInFraccRoute,
   ApiStripeWebhookRoute: ApiStripeWebhookRoute,
+  ApiUploadAnuncioRoute: ApiUploadAnuncioRoute,
   ApiUploadDocumentRoute: ApiUploadDocumentRoute,
 }
 export const routeTree = rootRouteImport

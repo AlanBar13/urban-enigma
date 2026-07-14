@@ -1,5 +1,6 @@
 import type { Queue } from "bullmq";
 import { whatsappQueue } from "../../queue/whatsapp.queue.js";
+import type { MessageMediaInput } from "../../lib/whatsapp/service.js";
 
 const jobOptions = {
     attempts: 3,
@@ -23,14 +24,16 @@ class CommsController {
      * @param {tenantId} id of the tenant to send the message
      * @param {groupId} wa group id to send the message; omit to use the tenant's stored group
      * @param {message} message to send to the group
+     * @param {media} optional attachment sent by URL (image or document)
      */
-    async sendWaMessage(tenantId: string, groupId: string | undefined, message: string): Promise<{ success: boolean, jobId: string | undefined }> {
+    async sendWaMessage(tenantId: string, groupId: string | undefined, message: string, media?: MessageMediaInput): Promise<{ success: boolean, jobId: string | undefined }> {
         const job = await this.queue.add(
             "SEND_GROUP_MESSAGE",
             {
                 tenantId,
                 groupId,
-                message
+                message,
+                media
             },
             jobOptions
         )

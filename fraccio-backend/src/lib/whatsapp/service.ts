@@ -1,5 +1,12 @@
 import { Client, type GroupChat, type CreateGroupResult } from "whatsapp-web.js";
+import whatsapp from "whatsapp-web.js";
 import { type SupabaseClient } from "@supabase/supabase-js";
+const { MessageMedia } = whatsapp;
+
+export interface MessageMediaInput {
+    url: string;
+    filename?: string;
+}
 
 export class WhatsAppService {
     constructor(private client: Client, private supabaseClient: SupabaseClient) { }
@@ -9,14 +16,23 @@ export class WhatsAppService {
         return `${cleanedPhone}@c.us`;
     }
 
-    async sendGroupMessage(groupId: string, message: string) {
+    async sendGroupMessage(groupId: string, message: string, media?: MessageMediaInput) {
         const chat = await this.client.getChatById(groupId)
 
         if (!chat.isGroup) {
             throw new Error("The provided ID does not correspond to a group chat.");
         }
 
-        await chat.sendMessage(message);
+        if (media) {
+            // unsafeMime: presigned URLs carry query strings that break extension-based mime sniffing
+            const attachment = await MessageMedia.fromUrl(media.url, {
+                unsafeMime: true,
+                ...(media.filename ? { filename: media.filename } : {}),
+            });
+            await chat.sendMessage(attachment, { caption: message });
+        } else {
+            await chat.sendMessage(message);
+        }
 
         //TODO: save to DB
 

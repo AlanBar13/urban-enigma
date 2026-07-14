@@ -60,6 +60,30 @@ function RouteComponent() {
                   <p className="text-gray-700">{announcement.description}</p>
                 )}
 
+                {announcement.attachment_url &&
+                  (announcement.attachment_mime_type?.startsWith('image/') ? (
+                    <a
+                      href={announcement.attachment_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <img
+                        src={announcement.attachment_url}
+                        alt={announcement.attachment_name ?? 'Adjunto'}
+                        className="max-h-64 rounded-lg"
+                      />
+                    </a>
+                  ) : (
+                    <a
+                      href={announcement.attachment_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline text-sm"
+                    >
+                      {announcement.attachment_name ?? 'Ver adjunto'}
+                    </a>
+                  ))}
+
                 <div className="flex items-center gap-4 text-sm text-gray-500">
                   <span>
                     {new Date(announcement.created_at).toLocaleDateString(
