@@ -3,6 +3,7 @@ import { WhatsAppService } from "../lib/whatsapp/service.js";
 import SupabaseClient from "../lib/db/client.js";
 import { whatsappSessionManager } from "../lib/whatsapp/session-manager.js";
 import type { WhatsAppSession } from "../lib/whatsapp/session-manager.js";
+import { redisConnection } from "../lib/redis.js";
 
 export async function startWhatsAppWorker() {
     const supabaseClient = SupabaseClient.getInstance().getSupabase();
@@ -72,10 +73,7 @@ export async function startWhatsAppWorker() {
             }
         },
         {
-            connection: {
-                host: process.env.REDIS_HOST || "localhost",
-                port: Number(process.env.REDIS_PORT) || 6379,
-            },
+            connection: redisConnection,
             concurrency: 1,
         }
     );

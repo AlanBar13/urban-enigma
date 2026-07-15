@@ -38,7 +38,7 @@ pnpm start:worker     # BullMQ worker that processes WhatsApp jobs
 
 Swagger UI: `http://localhost:5000/docs`. All routes are under `/api/v1`.
 
-There is no build, lint, or test setup yet — it runs directly from TypeScript via `tsx`.
+There is no build, lint, or test setup yet — it runs directly from TypeScript via `tsx`. Typechecking: `pnpm typecheck` (also run in CI, see `.github/workflows/ci-backend.yml`).
 
 ## Running in Docker (dev)
 
@@ -55,6 +55,24 @@ Prod-shaped stack (base compose file only, no hot reload):
 ```bash
 docker compose -f docker-compose.yml up -d --build
 ```
+
+## Deployment (Railway)
+
+One Railway project with three services. `api` and `worker` both build from this directory's `Dockerfile` (set **Root Directory** to `fraccio-backend` on each).
+
+| Service | Config |
+|---|---|
+| **Redis** | Railway Redis template. Set `maxmemory-policy noeviction` (BullMQ requirement). |
+| **api** | Default Docker CMD (`pnpm start:api`). Generate a public domain; Railway injects `PORT` and the server reads it. |
+| **worker** | Custom start command: `pnpm start:worker`. Attach a **volume mounted at `/app/.wwebjs_auth`** — without it every deploy loses the WhatsApp session and forces a QR re-scan. (`.wwebjs_cache` is a re-creatable cache; no volume needed.) |
+
+On both `api` and `worker`:
+
+- **Watch paths**: `fraccio-backend/**` — web-only commits don't trigger backend deploys.
+- **Wait for CI**: enabled — deploys only after the commit's GitHub checks (`ci-backend`) pass.
+- **Variables**: `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD` as reference variables from the Redis service, plus `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_JWKS_URL`, `STRIPE_SECRET_KEY`, `STRIPE_CONNECT_WEBHOOK_SECRET`.
+
+`docker-compose.yml` is the local-dev story only; Railway builds straight from the `Dockerfile`.
 
 ## Architecture
 
