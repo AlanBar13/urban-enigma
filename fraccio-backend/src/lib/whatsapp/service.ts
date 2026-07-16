@@ -17,7 +17,18 @@ export class WhatsAppService {
     }
 
     async sendGroupMessage(groupId: string, message: string, media?: MessageMediaInput) {
-        const chat = await this.client.getChatById(groupId)
+        let chat = null;
+
+        /// Bypass Change to address r:r error from whatsapp-web.js when groupId is invalid or not found
+        try {
+            chat = await this.client.getChatById(groupId)
+        } catch (error) {
+            console.warn(`Send message to group ${groupId}:`, error);
+        }
+
+        if (!chat) {
+            throw new Error(`Group with ID ${groupId} not found.`);
+        }
 
         if (!chat.isGroup) {
             throw new Error("The provided ID does not correspond to a group chat.");
@@ -83,7 +94,7 @@ export class WhatsAppService {
         if (initialMembers.length > 0) {
             whatsappIds = initialMembers.map(phone => this.toWhatsappId(phone));
         }
-        
+
         const group = await this.client.createGroup(groupName, whatsappIds);
 
         const waGroup = group as CreateGroupResult;
