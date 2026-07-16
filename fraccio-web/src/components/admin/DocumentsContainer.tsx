@@ -39,8 +39,8 @@ export default function DocumentsContainer({
     if (!formRef.current) return
 
     const formData = new FormData(formRef.current)
-    const name = formData.get('name') as string
-    const file = formData.get('file') as File
+    const name = formData.get('name') as string | null
+    const file = formData.get('file') as File | null
     const ownerOnly = formData.get('ownerOnly') === 'on'
 
     if (!name?.trim()) {

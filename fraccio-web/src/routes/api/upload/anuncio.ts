@@ -24,10 +24,6 @@ export const Route = createFileRoute('/api/upload/anuncio')({
 
         // Get authenticated user
         const user = await getUser()
-        if (!user) {
-          logger('error', 'User not authenticated')
-          throw new Error('User not authenticated')
-        }
 
         // Verify user is admin or superadmin
         if (user.role !== 'admin' && user.role !== 'superadmin') {

@@ -50,7 +50,7 @@ const AlertDialog = React.forwardRef<HTMLDivElement, AlertDialogProps>(
 
     const handleOpenChange = (newOpen: boolean) => {
       if (isControlled) {
-        onOpenChange?.(newOpen)
+        onOpenChange(newOpen)
       } else {
         setInternalOpen(newOpen)
       }

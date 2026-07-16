@@ -118,10 +118,6 @@ export const getPaymentHistoryFn = createServerFn({ method: 'POST' })
 
     // Get authenticated user
     const user = await getUser()
-    if (!user) {
-      logger('error', 'User not authenticated')
-      throw new Error('User not authenticated')
-    }
 
     // Verify user belongs to the tenant
     if (user.tenantId !== data.tenantId && user.role !== 'superadmin') {
@@ -155,10 +151,6 @@ export const getPaymentItemsFn = createServerFn({ method: 'POST' })
 
     // Get authenticated user
     const user = await getUser()
-    if (!user) {
-      logger('error', 'User not authenticated')
-      throw new Error('User not authenticated')
-    }
 
     // Verify user belongs to the tenant
     if (user.tenantId !== data.tenantId && user.role !== 'superadmin') {
@@ -192,10 +184,6 @@ export const createPaymentItemFn = createServerFn({ method: 'POST' })
 
     // Get authenticated user
     const user = await getUser()
-    if (!user) {
-      logger('error', 'User not authenticated')
-      throw new Error('User not authenticated')
-    }
 
     // Verify user belongs to the tenant
     if (user.tenantId !== data.tenantId) {
@@ -251,10 +239,6 @@ export const getAdminPaymentsFn = createServerFn({ method: 'POST' })
 
     // Get authenticated user
     const user = await getUser()
-    if (!user) {
-      logger('error', 'User not authenticated')
-      throw new Error('User not authenticated')
-    }
 
     // Verify user belongs to the tenant
     if (user.tenantId !== data.tenantId && user.role !== 'superadmin') {

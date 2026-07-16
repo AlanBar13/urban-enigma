@@ -345,7 +345,7 @@ function RouteComponent() {
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {isAdmin
-                          ? `${p.houses?.name ?? '-'} · ${formatDate(p.created_at)}`
+                          ? `${(p.houses as { name: string } | undefined)?.name ?? '-'} · ${formatDate(p.created_at)}`
                           : formatDate(p.created_at)}
                       </p>
                     </div>

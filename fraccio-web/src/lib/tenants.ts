@@ -36,10 +36,6 @@ export const getTenantFn = createServerFn({ method: 'GET' })
       logger('error', 'Error fetching tenant:', { error })
       throw error
     }
-    if (!tenant) {
-      throw new Error('Tenant not found')
-    }
-
     return tenant
   })
 
@@ -59,10 +55,6 @@ export const getTenantByIdFn = createServerFn({ method: 'GET' })
       logger('error', 'Error fetching tenant by ID:', { id: data.id, error })
       throw error
     }
-    if (!tenant) {
-      throw new Error('Tenant not found')
-    }
-
     return tenant
   })
 

@@ -115,7 +115,7 @@ export default function UsersContainer({ tenantId, houses, users }: Props) {
               key: 'house_users',
               label: 'Casa',
               render: (value: Array<any>) => {
-                if (!value || value.length === 0) return '-'
+                if (value.length === 0) return '-'
                 return value[0]?.houses?.name || '-'
               },
             },

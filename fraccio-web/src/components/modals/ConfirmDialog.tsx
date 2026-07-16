@@ -45,7 +45,7 @@ const ConfirmDialog = React.forwardRef<HTMLDivElement, ConfirmDialogProps>(
 
     const handleOpenChange = (newOpen: boolean) => {
       if (isControlled) {
-        onOpenChange?.(newOpen)
+        onOpenChange(newOpen)
       } else {
         setInternalOpen(newOpen)
       }

@@ -43,7 +43,7 @@ const FormModal = React.forwardRef<HTMLDivElement, FormModalProps>(
 
     const handleOpenChange = (newOpen: boolean) => {
       if (isControlled) {
-        onOpenChange?.(newOpen)
+        onOpenChange(newOpen)
       } else {
         setInternalOpen(newOpen)
       }

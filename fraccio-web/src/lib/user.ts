@@ -54,16 +54,12 @@ export const getUser = createServerFn({ method: 'GET' }).handler(async () => {
     throw error
   }
 
-  if (!data.user) {
-    logger('error', 'Error fetching user:', { error })
-    throw new Error('User not found')
-  }
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('full_name, role, tenant_id')
     .eq('id', data.user.id)
     .single()
-  if (!profile || profileError) {
+  if (!profile) {
     logger('error', 'Error fetching profile:', { error: profileError })
     throw new Error('Profile not found')
   }
@@ -94,20 +90,12 @@ export const loginFn = createServerFn({ method: 'POST' })
       }
     }
 
-    if (!auth.user) {
-      logger('error', 'Error logging in: User not found', { user: data.email })
-      return {
-        error: true,
-        message: 'User not found',
-      }
-    }
-
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('role, tenant_id')
       .eq('id', auth.user.id)
       .single()
-    if (!profile || profileError) {
+    if (!profile) {
       logger('error', 'Error fetching profile after login:', {
         error: profileError,
       })

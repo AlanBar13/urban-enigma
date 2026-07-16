@@ -24,10 +24,6 @@ export const Route = createFileRoute('/api/upload/document')({
 
         // Get authenticated user
         const user = await getUser()
-        if (!user) {
-          logger('error', 'User not authenticated')
-          throw new Error('User not authenticated')
-        }
 
         // Verify user is admin or superadmin
         if (user.role !== 'admin' && user.role !== 'superadmin') {
@@ -44,8 +40,8 @@ export const Route = createFileRoute('/api/upload/document')({
         }
 
         const formData = await request.formData()
-        const name = formData.get('name') as string
-        const file = formData.get('file') as File
+        const name = formData.get('name') as string | null
+        const file = formData.get('file') as File | null
         const ownerOnly = formData.get('ownerOnly') === 'true'
         const tenantId = formData.get('tenantId') as string
         const tenantPath = formData.get('tenantPath') as string

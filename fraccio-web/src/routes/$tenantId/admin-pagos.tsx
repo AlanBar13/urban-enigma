@@ -86,7 +86,9 @@ function RouteComponent() {
       failed: { label: 'Fallido', class: 'bg-red-100 text-red-800' },
       cancelled: { label: 'Cancelado', class: 'bg-gray-100 text-gray-800' },
     }
-    const statusInfo = statusMap[status] || {
+    const statusInfo = (
+      statusMap as Record<string, { label: string; class: string } | undefined>
+    )[status] || {
       label: status,
       class: 'bg-gray-100 text-gray-800',
     }

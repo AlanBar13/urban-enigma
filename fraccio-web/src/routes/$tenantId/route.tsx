@@ -192,7 +192,7 @@ function RouteComponent() {
   ]
 
   const filteredAdminItems = adminNavItems.filter(
-    (item) => !item.allowedRoles || item.allowedRoles.includes(user.role),
+    (item) => item.allowedRoles.includes(user.role),
   )
 
   const allNavItems = [...navItems, ...filteredAdminItems]

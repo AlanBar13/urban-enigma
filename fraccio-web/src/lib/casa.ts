@@ -59,10 +59,6 @@ export const getUserHouseFn = createServerFn({ method: 'POST' })
 
     // Get authenticated user
     const user = await getUser()
-    if (!user) {
-      logger('error', 'User not authenticated')
-      throw new Error('User not authenticated')
-    }
 
     // Verify user belongs to the tenant
     if (user.tenantId !== data.tenantId && user.role !== 'superadmin') {
@@ -146,7 +142,7 @@ export const getUserHouseFn = createServerFn({ method: 'POST' })
 
     return {
       house: house as House,
-      users: (profiles || []) as Array<HouseUser>,
+      users: profiles as Array<HouseUser>,
       isOwner,
     }
   })
@@ -161,10 +157,6 @@ export const updateHouseFn = createServerFn({ method: 'POST' })
 
     // Get authenticated user
     const user = await getUser()
-    if (!user) {
-      logger('error', 'User not authenticated')
-      throw new Error('User not authenticated')
-    }
 
     // Verify user is the house owner
     const { data: houseOwnerRecord } = await supabase
@@ -218,10 +210,6 @@ export const addHouseUserFn = createServerFn({ method: 'POST' })
 
     // Get authenticated user
     const user = await getUser()
-    if (!user) {
-      logger('error', 'User not authenticated')
-      throw new Error('User not authenticated')
-    }
 
     // Verify user is the house owner
     const { data: houseOwnerRecord } = await supabase
@@ -250,7 +238,7 @@ export const addHouseUserFn = createServerFn({ method: 'POST' })
       throw new Error('Failed to check user count')
     }
 
-    if (currentUsers && currentUsers.length >= 5) {
+    if (currentUsers.length >= 5) {
       logger('warn', 'House has reached maximum user limit', {
         houseId: data.houseId,
         currentCount: currentUsers.length,
@@ -349,10 +337,6 @@ export const removeHouseUserFn = createServerFn({ method: 'POST' })
 
     // Get authenticated user
     const user = await getUser()
-    if (!user) {
-      logger('error', 'User not authenticated')
-      throw new Error('User not authenticated')
-    }
 
     // Verify user is the house owner
     const { data: houseOwnerRecord } = await supabase
