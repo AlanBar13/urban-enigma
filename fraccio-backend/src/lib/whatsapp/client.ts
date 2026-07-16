@@ -21,7 +21,8 @@ export class WhatsAppClient {
             authStrategy: new LocalAuth({ clientId }),
             puppeteer: {
                 headless: true,
-                args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"]
+                args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
+                protocolTimeout: 60000, // 60 seconds
             }
         })
 
