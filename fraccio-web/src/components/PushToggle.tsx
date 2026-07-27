@@ -58,12 +58,19 @@ export function PushToggle({ tenantId }: { tenantId: string }) {
   const enable = async () => {
     setBusy(true)
     try {
+      const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY
+      // Inlined at build time — if the env var was missing when this bundle was
+      // built, it is undefined here no matter what the server has now.
+      if (!vapidKey) {
+        throw new Error(
+          'VITE_VAPID_PUBLIC_KEY missing from this build — set it and redeploy',
+        )
+      }
+
       const registration = await navigator.serviceWorker.ready
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(
-          import.meta.env.VITE_VAPID_PUBLIC_KEY,
-        ),
+        applicationServerKey: urlBase64ToUint8Array(vapidKey),
       })
 
       const { endpoint, keys } = subscription.toJSON()
@@ -84,13 +91,17 @@ export function PushToggle({ tenantId }: { tenantId: string }) {
       })
     } catch (error) {
       logger('error', 'Error enabling push notifications', { error })
+      const detail =
+        error instanceof Error
+          ? `${error.name}: ${error.message}`
+          : String(error)
       addToast({
         type: 'error',
         description:
           Notification.permission === 'denied'
-            ? 'Las notificaciones están bloqueadas en la configuración de tu navegador'
-            : 'No se pudieron activar las notificaciones',
-        duration: 10000,
+            ? 'Las notificaciones están bloqueadas en la configuración de tu dispositivo'
+            : `No se pudieron activar las notificaciones (${detail})`,
+        duration: 15000,
       })
     } finally {
       setBusy(false)
