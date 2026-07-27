@@ -195,6 +195,7 @@ export default function AnunciosContainer({
             </div>
           </FormField>
 
+          {/* TEMP: WhatsApp disabled — 2026-07-27
           <FormField label="Enviar por">
             <div className="flex items-center gap-2">
               <input
@@ -219,6 +220,7 @@ export default function AnunciosContainer({
               </label>
             </div>
           </FormField>
+          */}
         </form>
       </FormModal>
 

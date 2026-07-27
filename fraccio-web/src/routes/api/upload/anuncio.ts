@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { backendFetch } from '@/lib/backend'
+// TEMP: WhatsApp disabled — 2026-07-27
+// import { backendFetch } from '@/lib/backend'
 import { s3Service } from '@/lib/s3'
 import { getSupabaseClient } from '@/lib/supabase'
 import { getUser } from '@/lib/user'
@@ -45,7 +46,8 @@ export const Route = createFileRoute('/api/upload/anuncio')({
           (formData.get('description') as string) || ''
         ).trim()
         const ownersOnly = formData.get('ownersOnly') === 'true'
-        const sendWhatsapp = formData.get('sendWhatsapp') === 'true'
+        // TEMP: WhatsApp disabled — 2026-07-27
+        // const sendWhatsapp = formData.get('sendWhatsapp') === 'true'
         const tenantId = formData.get('tenantId') as string
         const tenantPath = formData.get('tenantPath') as string
         const fileEntry = formData.get('file')
@@ -152,32 +154,33 @@ export const Route = createFileRoute('/api/upload/anuncio')({
           }
 
           // Announcement is saved; a WhatsApp failure must not fail the request
-          let whatsappError = false
-          if (sendWhatsapp) {
-            try {
-              const message = description
-                ? `*${title}*\n\n${description}`
-                : `*${title}*`
-              const media =
-                key && file
-                  ? {
-                      url: ownersOnly
-                        ? await s3Service.getPreSignedUrl(key)
-                        : s3Service.getFileUrl(key),
-                      filename: file.name,
-                    }
-                  : undefined
-              await backendFetch(`/api/v1/comms/tenants/${tenantId}/messages`, {
-                method: 'POST',
-                body: JSON.stringify({ message, media }),
-              })
-            } catch (waError) {
-              logger('error', 'Error sending announcement via WhatsApp', {
-                waError,
-              })
-              whatsappError = true
-            }
-          }
+          const whatsappError = false
+          // TEMP: WhatsApp disabled — 2026-07-27
+          // if (sendWhatsapp) {
+          //   try {
+          //     const message = description
+          //       ? `*${title}*\n\n${description}`
+          //       : `*${title}*`
+          //     const media =
+          //       key && file
+          //         ? {
+          //             url: ownersOnly
+          //               ? await s3Service.getPreSignedUrl(key)
+          //               : s3Service.getFileUrl(key),
+          //             filename: file.name,
+          //           }
+          //         : undefined
+          //     await backendFetch(`/api/v1/comms/tenants/${tenantId}/messages`, {
+          //       method: 'POST',
+          //       body: JSON.stringify({ message, media }),
+          //     })
+          //   } catch (waError) {
+          //     logger('error', 'Error sending announcement via WhatsApp', {
+          //       waError,
+          //     })
+          //     whatsappError = true
+          //   }
+          // }
 
           return new Response(
             JSON.stringify({ message: 'Announcement created', whatsappError }),

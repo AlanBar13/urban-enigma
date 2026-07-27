@@ -18,7 +18,8 @@ import {
   Mail,
   Megaphone,
   Menu,
-  MessageCircle,
+  // TEMP: WhatsApp disabled — 2026-07-27
+  // MessageCircle,
   User,
   UserPen,
   X,
@@ -182,13 +183,14 @@ function RouteComponent() {
       icon: BookOpen,
       allowedRoles: ['admin', 'superadmin'],
     },
-    {
-      id: '11',
-      label: 'WhatsApp',
-      path: `/${params.tenantId}/admin-whatsapp`,
-      icon: MessageCircle,
-      allowedRoles: ['admin', 'superadmin'],
-    },
+    // TEMP: WhatsApp disabled — 2026-07-27
+    // {
+    //   id: '11',
+    //   label: 'WhatsApp',
+    //   path: `/${params.tenantId}/admin-whatsapp`,
+    //   icon: MessageCircle,
+    //   allowedRoles: ['admin', 'superadmin'],
+    // },
   ]
 
   const filteredAdminItems = adminNavItems.filter(

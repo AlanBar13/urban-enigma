@@ -4,13 +4,19 @@ import WhatsappContainer from '@/components/admin/WhatsappContainer'
 
 export const Route = createFileRoute('/$tenantId/admin-whatsapp')({
   beforeLoad: ({ context }) => {
+    // TEMP: WhatsApp disabled — 2026-07-27
+    throw redirect({
+      to: `/$tenantId`,
+      params: { tenantId: context.tenant.path },
+    })
+
     // Check if user is admin or superadmin
-    if (context.user.role !== 'admin' && context.user.role !== 'superadmin') {
-      throw redirect({
-        to: `/$tenantId`,
-        params: { tenantId: context.tenant.path },
-      })
-    }
+    // if (context.user.role !== 'admin' && context.user.role !== 'superadmin') {
+    //   throw redirect({
+    //     to: `/$tenantId`,
+    //     params: { tenantId: context.tenant.path },
+    //   })
+    // }
   },
   loader: async ({ context }) => {
     const { session } = await getWhatsappStatusFn({
