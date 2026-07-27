@@ -7,7 +7,7 @@ export const Route = createFileRoute('/$tenantId/perfil')({
   component: RouteComponent,
 })
 
-const roleLabels: Record<string, string> = {
+const roleLabels: Partial<Record<string, string>> = {
   superadmin: 'Super Admin',
   admin: 'Administrador',
   user: 'Residente',
