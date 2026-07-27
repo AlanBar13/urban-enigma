@@ -173,58 +173,104 @@ function RouteComponent() {
             </p>
           </Card>
         ) : (
-          <DataTable
-            data={history}
-            columns={[
-              {
-                key: 'created_at',
-                label: 'Fecha',
-                render: (value: string) =>
-                  new Date(value).toLocaleDateString('es-MX', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  }),
-              },
-              {
-                key: 'description',
-                label: 'Concepto',
-              },
-              {
-                key: 'payment_type',
-                label: 'Tipo',
-                render: (value: string) => getPaymentTypeLabel(value),
-              },
-              {
-                key: 'amount',
-                label: 'Monto',
-                render: (value: number) => formatCurrency(value),
-              },
-              {
-                key: 'status',
-                label: 'Estado',
-                render: (value: string) => getStatusBadge(value),
-              },
-              {
-                key: 'receipt_url',
-                label: 'Recibo',
-                render: (value: string | null) =>
-                  value ? (
+          <>
+            {/* Stacked cards on phones — the 6-column table only scrolls sideways there */}
+            <div className="space-y-3 md:hidden">
+              {history.map((payment) => (
+                <Card key={payment.id} className="p-4 space-y-2">
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="font-medium min-w-0 break-words">
+                      {payment.description ??
+                        getPaymentTypeLabel(payment.payment_type)}
+                    </p>
+                    <span className="shrink-0">
+                      {getStatusBadge(payment.status)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 text-sm">
+                    <span className="text-gray-600">
+                      {new Date(payment.created_at).toLocaleDateString(
+                        'es-MX',
+                        {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        },
+                      )}
+                    </span>
+                    <span className="font-semibold tabular-nums">
+                      {formatCurrency(payment.amount)}
+                    </span>
+                  </div>
+                  {payment.receipt_url && (
                     <a
-                      href={value}
+                      href={payment.receipt_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline"
+                      className="text-blue-600 hover:underline text-sm"
                     >
                       Ver recibo
                     </a>
-                  ) : (
-                    <span className="text-gray-400">-</span>
-                  ),
-              },
-            ]}
-            striped
-          />
+                  )}
+                </Card>
+              ))}
+            </div>
+
+            <div className="hidden md:block">
+              <DataTable
+                data={history}
+                columns={[
+                  {
+                    key: 'created_at',
+                    label: 'Fecha',
+                    render: (value: string) =>
+                      new Date(value).toLocaleDateString('es-MX', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      }),
+                  },
+                  {
+                    key: 'description',
+                    label: 'Concepto',
+                  },
+                  {
+                    key: 'payment_type',
+                    label: 'Tipo',
+                    render: (value: string) => getPaymentTypeLabel(value),
+                  },
+                  {
+                    key: 'amount',
+                    label: 'Monto',
+                    render: (value: number) => formatCurrency(value),
+                  },
+                  {
+                    key: 'status',
+                    label: 'Estado',
+                    render: (value: string) => getStatusBadge(value),
+                  },
+                  {
+                    key: 'receipt_url',
+                    label: 'Recibo',
+                    render: (value: string | null) =>
+                      value ? (
+                        <a
+                          href={value}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline"
+                        >
+                          Ver recibo
+                        </a>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      ),
+                  },
+                ]}
+                striped
+              />
+            </div>
+          </>
         )}
       </div>
     </div>

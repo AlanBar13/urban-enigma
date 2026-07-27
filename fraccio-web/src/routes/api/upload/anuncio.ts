@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 // TEMP: WhatsApp disabled — 2026-07-27
 // import { backendFetch } from '@/lib/backend'
+import { sendPushToTenant } from '@/lib/push-send'
 import { s3Service } from '@/lib/s3'
 import { getSupabaseClient } from '@/lib/supabase'
 import { getUser } from '@/lib/user'
@@ -152,6 +153,15 @@ export const Route = createFileRoute('/api/upload/anuncio')({
               { status: 500 },
             )
           }
+
+          // Announcement is saved; notifying residents must never fail the request
+          await sendPushToTenant({
+            tenantId,
+            title,
+            body: description || 'Nuevo anuncio en tu fraccionamiento',
+            path: 'anuncios',
+            ownersOnly,
+          })
 
           // Announcement is saved; a WhatsApp failure must not fail the request
           const whatsappError = false

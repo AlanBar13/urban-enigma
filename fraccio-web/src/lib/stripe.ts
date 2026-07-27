@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { getSupabaseClient } from './supabase'
 import { getUser } from './user'
 import { backendFetch } from './backend'
+import { sendPushToTenant } from './push-send'
 import { logger } from '@/utils/logger'
 
 // Validation schemas
@@ -224,6 +225,17 @@ export const createPaymentItemFn = createServerFn({ method: 'POST' })
       itemId: item.id,
       name: data.name,
       amount: data.amount,
+    })
+
+    // Notify residents; sendPushToTenant never throws
+    await sendPushToTenant({
+      tenantId: data.tenantId,
+      title: 'Nuevo concepto de pago',
+      body: `${data.name} — ${new Intl.NumberFormat('es-MX', {
+        style: 'currency',
+        currency: 'MXN',
+      }).format(data.amount)}`,
+      path: 'pagos',
     })
 
     return item as PaymentItem

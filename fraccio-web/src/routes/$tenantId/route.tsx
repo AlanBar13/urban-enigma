@@ -193,8 +193,8 @@ function RouteComponent() {
     // },
   ]
 
-  const filteredAdminItems = adminNavItems.filter(
-    (item) => item.allowedRoles.includes(user.role),
+  const filteredAdminItems = adminNavItems.filter((item) =>
+    item.allowedRoles.includes(user.role),
   )
 
   const allNavItems = [...navItems, ...filteredAdminItems]
@@ -205,7 +205,7 @@ function RouteComponent() {
   return (
     <div className="min-h-screen bg-background">
       {/* Top Navbar - Mobile & Desktop */}
-      <header className="sticky top-0 z-50 bg-[var(--surface-container-low)]/95 backdrop-blur supports-[backdrop-filter]:bg-[var(--surface-container-low)]/80">
+      <header className="sticky top-0 z-50 pt-[env(safe-area-inset-top)] bg-[var(--surface-container-low)]/95 backdrop-blur supports-[backdrop-filter]:bg-[var(--surface-container-low)]/80">
         {/* Loading Bar */}
         {isLoading && <LoadingBar className="absolute top-0 left-0 right-0" />}
         <div className="flex h-16 items-center justify-between px-4 lg:px-6">
@@ -437,7 +437,7 @@ function RouteComponent() {
       </aside>
 
       {/* Main Content */}
-      <main className="p-4 md:p-6 lg:p-8 relative">
+      <main className="p-4 md:p-6 lg:p-8 pb-[calc(1rem+env(safe-area-inset-bottom))] relative">
         {isLoading && (
           <div className="absolute inset-0 bg-background/50 backdrop-blur-sm flex items-start justify-center pt-20 z-40">
             <div className="bg-white/80 backdrop-blur-[12px] rounded-xl shadow-[0_20px_40px_var(--ambient-shadow)] p-6 flex flex-col items-center gap-3">

@@ -49,11 +49,13 @@ function RouteComponent() {
           {announcements.map((announcement) => (
             <Card key={announcement.id} className="p-6">
               <div className="space-y-3">
-                <div className="flex items-start justify-between">
-                  <h2 className="text-xl font-semibold">
+                <div className="flex items-start justify-between gap-3">
+                  <h2 className="text-xl font-semibold min-w-0 break-words">
                     {announcement.title}
                   </h2>
-                  {getVisibilityBadge(announcement.owners_only)}
+                  <div className="shrink-0">
+                    {getVisibilityBadge(announcement.owners_only)}
+                  </div>
                 </div>
 
                 {announcement.description && (

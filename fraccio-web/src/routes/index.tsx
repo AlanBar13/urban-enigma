@@ -105,29 +105,33 @@ function App() {
       {/* Navigation */}
       <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Home className="h-8 w-8 text-primary" />
+          <div className="flex h-16 items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <Home className="h-8 w-8 shrink-0 text-primary" />
               <span className="text-2xl font-bold text-primary">Fraccio</span>
             </div>
-            <Button
-              variant="outline"
-              onClick={() => {
-                router.navigate({ to: '/login' })
-              }}
-            >
-              Iniciar Sesión
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                document
-                  .getElementById('contact-form')
-                  ?.scrollIntoView({ behavior: 'smooth' })
-              }}
-            >
-              Solicitar Acceso
-            </Button>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  router.navigate({ to: '/login' })
+                }}
+              >
+                Iniciar Sesión
+              </Button>
+              {/* Phones get this CTA from the hero section instead — three items don't fit */}
+              <Button
+                variant="outline"
+                className="hidden sm:inline-flex"
+                onClick={() => {
+                  document
+                    .getElementById('contact-form')
+                    ?.scrollIntoView({ behavior: 'smooth' })
+                }}
+              >
+                Solicitar Acceso
+              </Button>
+            </div>
           </div>
         </div>
       </nav>

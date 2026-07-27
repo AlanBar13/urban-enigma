@@ -191,14 +191,18 @@ function RouteComponent() {
 
       {/* House Information Card */}
       <Card className="p-6 mb-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+        <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="h-12 w-12 shrink-0 rounded-lg bg-primary/10 flex items-center justify-center">
               <Home className="h-6 w-6 text-primary" />
             </div>
-            <div>
-              <h2 className="text-2xl font-bold">{houseData.house.name}</h2>
-              <p className="text-muted-foreground">{houseData.house.address}</p>
+            <div className="min-w-0">
+              <h2 className="text-2xl font-bold break-words">
+                {houseData.house.name}
+              </h2>
+              <p className="text-muted-foreground break-words">
+                {houseData.house.address}
+              </p>
             </div>
           </div>
           {houseData.isOwner && (
@@ -233,12 +237,12 @@ function RouteComponent() {
 
       {/* House Users Card */}
       <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="h-10 w-10 shrink-0 rounded-lg bg-primary/10 flex items-center justify-center">
               <Users className="h-5 w-5 text-primary" />
             </div>
-            <div>
+            <div className="min-w-0">
               <h3 className="text-xl font-semibold">Usuarios de la Casa</h3>
               <p className="text-sm text-muted-foreground">
                 {houseData.users.length} de 5 usuarios
@@ -257,23 +261,25 @@ function RouteComponent() {
           {houseData.users.map((user) => (
             <div
               key={user.id}
-              className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+              className="flex items-center justify-between gap-3 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
             >
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="h-10 w-10 shrink-0 rounded-full bg-primary/10 flex items-center justify-center">
                   <span className="text-sm font-medium text-primary">
                     {user.full_name?.charAt(0).toUpperCase() ||
                       user.email.charAt(0).toUpperCase()}
                   </span>
                 </div>
-                <div>
-                  <p className="font-medium">
+                <div className="min-w-0">
+                  <p className="font-medium truncate">
                     {user.full_name || 'Sin nombre'}
                   </p>
-                  <p className="text-sm text-muted-foreground">{user.email}</p>
+                  <p className="text-sm text-muted-foreground truncate">
+                    {user.email}
+                  </p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 shrink-0">
                 <span
                   className={`px-3 py-1 text-xs font-medium rounded-full ${
                     user.role === 'admin'
