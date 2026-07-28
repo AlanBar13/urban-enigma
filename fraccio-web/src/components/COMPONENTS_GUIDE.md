@@ -2,6 +2,8 @@
 
 A modern, modular component library built with React, TypeScript, Tailwind CSS, Radix UI, and CVA (Class Variance Authority). This library is organized by feature domains and designed for a multi-tenant SaaS application.
 
+Writing a test for a component? See [TESTING.md](../../TESTING.md).
+
 ## 📁 Component Structure
 
 Components are organized into domain-based folders under `src/components/`:

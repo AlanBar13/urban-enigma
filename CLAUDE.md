@@ -59,7 +59,7 @@ The backend exists to run one WhatsApp Web client **per tenant** and expose grou
 
 ## fraccio-web
 
-See [fraccio-web/CLAUDE.md](fraccio-web/CLAUDE.md) for full details (TanStack Start routing, multi-tenant model, server functions in `src/lib/`, component library, Vitest suite). Quick start:
+See [fraccio-web/CLAUDE.md](fraccio-web/CLAUDE.md) for full details (TanStack Start routing, multi-tenant model, server functions in `src/lib/`, component library). Testing conventions live in [fraccio-web/TESTING.md](fraccio-web/TESTING.md). Quick start:
 
 ```bash
 cd fraccio-web
