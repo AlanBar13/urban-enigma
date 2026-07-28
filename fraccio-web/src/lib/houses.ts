@@ -2,6 +2,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { getSupabaseClient } from './supabase'
 import { getUser } from './user'
+import { assertAdmin, assertTenantAccess } from './auth'
 import { logger } from '@/utils/logger'
 
 const createHouseInputSchema = z.object({
@@ -16,9 +17,8 @@ export const getHousesFn = createServerFn({ method: 'GET' })
     const supabase = getSupabaseClient()
 
     const userData = await getUser()
-    if (userData.role !== 'admin' && userData.role !== 'superadmin') {
-      throw new Error('Unauthorized')
-    }
+    assertAdmin(userData)
+    assertTenantAccess(userData, data.tenantId)
 
     const { data: houses, error } = await supabase
       .from('houses')
@@ -41,9 +41,8 @@ export const createHouseFn = createServerFn({ method: 'POST' })
     const supabase = getSupabaseClient()
 
     const userData = await getUser()
-    if (userData.role !== 'admin' && userData.role !== 'superadmin') {
-      throw new Error('Unauthorized')
-    }
+    assertAdmin(userData)
+    assertTenantAccess(userData, data.tenantId)
 
     const { data: house, error } = await supabase
       .from('houses')

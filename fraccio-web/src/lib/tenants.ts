@@ -1,6 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { getSupabaseClient } from './supabase'
+import { getUser } from './user'
 import { logger } from '@/utils/logger'
 
 const createTenantSchema = z.object({
@@ -14,6 +15,26 @@ export const listTenantsFn = createServerFn({ method: 'GET' }).handler(
     const { data: tenants, error } = await supabase.from('tenants').select('*')
     if (error) {
       logger('error', 'Error fetching tenants:', { error })
+      throw error
+    }
+    return tenants
+  },
+)
+
+/** Every tenant the current user may access — powers the header tenant switcher. */
+export const listUserTenantsFn = createServerFn({ method: 'GET' }).handler(
+  async () => {
+    const supabase = getSupabaseClient()
+    const user = await getUser()
+
+    const query = supabase.from('tenants').select('*')
+    const { data: tenants, error } =
+      user.role === 'superadmin'
+        ? await query
+        : await query.in('id', user.tenantIds)
+
+    if (error) {
+      logger('error', 'Error fetching user tenants:', { error })
       throw error
     }
     return tenants

@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { s3Service } from './s3'
 import { getSupabaseClient } from './supabase'
 import { getUser } from './user'
+import { assertAdmin, assertTenantAccess } from './auth'
 import { logger } from '@/utils/logger'
 
 // Validation schemas
@@ -71,16 +72,7 @@ export const getAnunciosFn = createServerFn({ method: 'POST' })
 
     // Get authenticated user
     const user = await getUser()
-
-    // Verify user belongs to the tenant
-    if (user.tenantId !== data.tenantId && user.role !== 'superadmin') {
-      logger('error', 'User does not belong to tenant', {
-        userId: user.email,
-        requestedTenant: data.tenantId,
-        userTenant: user.tenantId,
-      })
-      throw new Error('Unauthorized: User does not belong to this tenant')
-    }
+    assertTenantAccess(user, data.tenantId)
 
     // Check if user is a house owner
     const { data: houseOwnerRecord } = await supabase
@@ -125,25 +117,8 @@ export const getAdminAnunciosFn = createServerFn({ method: 'POST' })
 
     // Get authenticated user
     const user = await getUser()
-
-    // Verify user is admin or superadmin
-    if (user.role !== 'admin' && user.role !== 'superadmin') {
-      logger('error', 'User is not authorized to view admin announcements', {
-        userId: user.email,
-        role: user.role,
-      })
-      throw new Error('Unauthorized: Only admins can view all announcements')
-    }
-
-    // Verify user belongs to the tenant
-    if (user.tenantId !== data.tenantId) {
-      logger('error', 'User does not belong to tenant', {
-        userId: user.email,
-        requestedTenant: data.tenantId,
-        userTenant: user.tenantId,
-      })
-      throw new Error('Unauthorized: User does not belong to this tenant')
-    }
+    assertAdmin(user, 'view all announcements')
+    assertTenantAccess(user, data.tenantId)
 
     // Fetch all announcements (no filtering)
     const { data: announcements, error } = await supabase

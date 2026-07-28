@@ -36,6 +36,9 @@ export async function requireTenantAuth(request: FastifyRequest, reply: FastifyR
         .eq("id", sub)
         .single();
     // ponytail: one profiles query per request; cache by sub if traffic ever matters
+    // ponytail: home tenant only — the web app also honours `tenant_admins` grants
+    // (fraccio-web/src/lib/auth.ts). Add the same lookup here when a multi-tenant
+    // admin actually needs the WhatsApp routes (currently disabled in the UI).
     if (!profile || (profile.role !== "superadmin" && profile.tenant_id !== tenantId)) {
         return reply.status(403).send({ success: false, message: "Forbidden" });
     }

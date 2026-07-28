@@ -1,6 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { getSupabaseClient } from './supabase'
+import { assertTenantAccess } from './auth'
 import { createHouseOwnerQuery } from './house_owners/queries'
 import { createHouseUserQuery } from './house_users/queries'
 import { getTenantUsersQuery } from './profiles/queries'
@@ -35,6 +36,7 @@ export const getUserSchema = z.object({
   id: z.uuid(),
   email: z.email().optional(),
   tenantId: z.uuid(),
+  tenantIds: z.array(z.uuid()),
   role: z.string(),
   full_name: z.string().nullable(),
 })
@@ -56,7 +58,7 @@ export const getUser = createServerFn({ method: 'GET' }).handler(async () => {
 
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('full_name, role, tenant_id')
+    .select('full_name, role, tenant_id, tenant_admins (tenant_id)')
     .eq('id', data.user.id)
     .single()
   if (!profile) {
@@ -67,7 +69,15 @@ export const getUser = createServerFn({ method: 'GET' }).handler(async () => {
   return {
     id: data.user.id,
     email: data.user.email,
+    // Home tenant. Kept for the post-login redirect and for house/profile queries.
     tenantId: profile.tenant_id,
+    // Every tenant the user may access: home tenant + tenant_admins grants.
+    tenantIds: [
+      ...new Set([
+        profile.tenant_id,
+        ...profile.tenant_admins.map((t) => t.tenant_id),
+      ]),
+    ],
     role: profile.role,
     full_name: profile.full_name,
   }
@@ -274,6 +284,8 @@ export const getTenantUsersFn = createServerFn({ method: 'POST' })
   .inputValidator(z.object({ tenantId: z.uuid() }))
   .handler(async ({ data }) => {
     const supabase = getSupabaseClient()
+    assertTenantAccess(await getUser(), data.tenantId)
+
     const { data: users, error } = await getTenantUsersQuery(
       supabase,
       data.tenantId,

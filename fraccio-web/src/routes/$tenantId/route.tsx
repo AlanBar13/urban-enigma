@@ -26,8 +26,9 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { useToast } from '@/components/notifications'
-import { getTenantFn } from '@/lib/tenants'
+import { getTenantFn, listUserTenantsFn } from '@/lib/tenants'
 import { getUser, logoutFn } from '@/lib/user'
+import { TenantSelector } from '@/components/tenant'
 import { logger } from '@/utils/logger'
 import { Button } from '@/components/ui/button'
 import { LoadingBar } from '@/components/ui/spinner'
@@ -43,13 +44,9 @@ export const Route = createFileRoute('/$tenantId')({
       }
 
       const user = await getUser()
-      // Check if user is superadmin, if it is, allow access
-      if (user.role === 'superadmin') {
-        return { tenant, user }
-      }
 
-      // Check if user belongs to tenant
-      if (user.tenantId !== tenant.id) {
+      // Superadmins reach every tenant; everyone else needs a membership.
+      if (user.role !== 'superadmin' && !user.tenantIds.includes(tenant.id)) {
         logger('warn', 'User does not belong to tenant:', {
           userEmail: user.email,
           tenantId: tenant.id,
@@ -57,7 +54,13 @@ export const Route = createFileRoute('/$tenantId')({
         throw redirect({ to: '/user-not-in-fracc' })
       }
 
-      return { tenant, user }
+      // Only multi-tenant users need the switcher list.
+      const tenants =
+        user.role === 'superadmin' || user.tenantIds.length > 1
+          ? await listUserTenantsFn()
+          : [tenant]
+
+      return { tenant, user, tenants }
     } catch (error) {
       if (isRedirect(error)) throw error
       throw redirect({ to: '/login' })
@@ -79,7 +82,7 @@ export const Route = createFileRoute('/$tenantId')({
 
 function RouteComponent() {
   const { addToast } = useToast()
-  const { tenant, user } = Route.useRouteContext()
+  const { tenant, user, tenants } = Route.useRouteContext()
   const router = useRouter()
   const routerState = useRouterState()
   const params = Route.useParams()
@@ -97,6 +100,14 @@ function RouteComponent() {
         description: 'Error al cerrar sesión. Inténtalo de nuevo.',
         duration: 10000,
       })
+    }
+  }
+
+  const onSwitchTenant = (id: string) => {
+    const target = tenants.find((t) => t.id === id)
+    if (target && target.id !== tenant.id) {
+      setIsSidebarOpen(false)
+      router.navigate({ to: '/$tenantId', params: { tenantId: target.path } })
     }
   }
 
@@ -236,6 +247,16 @@ function RouteComponent() {
                 <p className="text-xs text-muted-foreground">/{tenant.path}</p>
               </div>
             </Link>
+            {tenants.length > 1 && (
+              <div className="hidden lg:block w-56">
+                <TenantSelector
+                  tenants={tenants}
+                  selectedTenantId={tenant.id}
+                  onSelect={onSwitchTenant}
+                  label="Cambiar fraccionamiento"
+                />
+              </div>
+            )}
           </div>
 
           {/* Desktop Navigation */}
@@ -373,6 +394,16 @@ function RouteComponent() {
                 </p>
               </div>
             </div>
+            {tenants.length > 1 && (
+              <div className="mt-3">
+                <TenantSelector
+                  tenants={tenants}
+                  selectedTenantId={tenant.id}
+                  onSelect={onSwitchTenant}
+                  label="Cambiar fraccionamiento"
+                />
+              </div>
+            )}
           </div>
 
           {/* Navigation Links */}

@@ -2,6 +2,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { getSupabaseClient } from './supabase'
 import { getUser } from './user'
+import { assertTenantAccess } from './auth'
 import { logger } from '@/utils/logger'
 
 // Validation schemas
@@ -59,16 +60,7 @@ export const getUserHouseFn = createServerFn({ method: 'POST' })
 
     // Get authenticated user
     const user = await getUser()
-
-    // Verify user belongs to the tenant
-    if (user.tenantId !== data.tenantId && user.role !== 'superadmin') {
-      logger('error', 'User does not belong to tenant', {
-        userId: user.email,
-        requestedTenant: data.tenantId,
-        userTenant: user.tenantId,
-      })
-      throw new Error('Unauthorized: User does not belong to this tenant')
-    }
+    assertTenantAccess(user, data.tenantId)
 
     // Check if user is a house owner
     const { data: houseOwnerRecord } = await supabase

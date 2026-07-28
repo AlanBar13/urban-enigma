@@ -2,6 +2,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { getSupabaseClient } from './supabase'
 import { getUser } from './user'
+import { assertAdmin, assertTenantAccess } from './auth'
 import { backendFetch } from './backend'
 import { sendPushToTenant } from './push-send'
 import { logger } from '@/utils/logger'
@@ -120,11 +121,7 @@ export const getPaymentHistoryFn = createServerFn({ method: 'POST' })
     // Get authenticated user
     const user = await getUser()
 
-    // Verify user belongs to the tenant
-    if (user.tenantId !== data.tenantId && user.role !== 'superadmin') {
-      logger('error', 'User does not belong to tenant')
-      throw new Error('Unauthorized')
-    }
+    assertTenantAccess(user, data.tenantId)
 
     // Fetch user's payment history
     const { data: payments, error } = await supabase
@@ -153,11 +150,7 @@ export const getPaymentItemsFn = createServerFn({ method: 'POST' })
     // Get authenticated user
     const user = await getUser()
 
-    // Verify user belongs to the tenant
-    if (user.tenantId !== data.tenantId && user.role !== 'superadmin') {
-      logger('error', 'User does not belong to tenant')
-      throw new Error('Unauthorized')
-    }
+    assertTenantAccess(user, data.tenantId)
 
     // Fetch active payment items for the tenant
     const { data: items, error } = await supabase
@@ -186,20 +179,8 @@ export const createPaymentItemFn = createServerFn({ method: 'POST' })
     // Get authenticated user
     const user = await getUser()
 
-    // Verify user belongs to the tenant
-    if (user.tenantId !== data.tenantId) {
-      logger('error', 'User does not belong to tenant')
-      throw new Error('Unauthorized')
-    }
-
-    // Verify user is admin or superadmin
-    if (user.role !== 'admin' && user.role !== 'superadmin') {
-      logger('error', 'User is not authorized to create payment items', {
-        userId: user.email,
-        role: user.role,
-      })
-      throw new Error('Unauthorized: Admin access required')
-    }
+    assertTenantAccess(user, data.tenantId)
+    assertAdmin(user, 'create payment items')
 
     // Create payment item
     const { data: item, error } = await supabase
@@ -252,17 +233,8 @@ export const getAdminPaymentsFn = createServerFn({ method: 'POST' })
     // Get authenticated user
     const user = await getUser()
 
-    // Verify user belongs to the tenant
-    if (user.tenantId !== data.tenantId && user.role !== 'superadmin') {
-      logger('error', 'User does not belong to tenant')
-      throw new Error('Unauthorized')
-    }
-
-    // Verify user is admin or superadmin
-    if (user.role !== 'admin' && user.role !== 'superadmin') {
-      logger('error', 'User is not authorized to view all payments')
-      throw new Error('Unauthorized: Admin access required')
-    }
+    assertTenantAccess(user, data.tenantId)
+    assertAdmin(user, 'view all payments')
 
     // Fetch all payments for the tenant
     const { data: payments, error } = await supabase

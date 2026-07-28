@@ -4,6 +4,7 @@ import { getAllUsersFn } from '@/lib/admin-users'
 import { Badge } from '@/components/ui/badge'
 import { listTenantsFn } from '@/lib/tenants'
 import SAUserForm from '@/components/admin/SAUserForm'
+import SAUserTenantsModal from '@/components/admin/SAUserTenantsModal'
 
 export const Route = createFileRoute('/admin/usuarios')({
   loader: async () => {
@@ -152,6 +153,9 @@ function RouteComponent() {
                 <th className="px-6 py-3 text-left text-sm font-semibold">
                   Fecha de Registro
                 </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold">
+                  Acciones
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -188,7 +192,12 @@ function RouteComponent() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <Building className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">{user.tenant_name}</span>
+                        <span className="text-sm">
+                          {[
+                            user.tenant_name,
+                            ...user.extra_tenants.map((t) => t.name),
+                          ].join(', ')}
+                        </span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -197,11 +206,16 @@ function RouteComponent() {
                         <span>{formatDate(user.created_at)}</span>
                       </div>
                     </td>
+                    <td className="px-6 py-4">
+                      {user.role === 'admin' && (
+                        <SAUserTenantsModal user={user} tenants={tenants} />
+                      )}
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center">
+                  <td colSpan={6} className="px-6 py-12 text-center">
                     <Users className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-20" />
                     <p className="text-muted-foreground">
                       No hay usuarios registrados

@@ -5,6 +5,7 @@ import { sendPushToTenant } from '@/lib/push-send'
 import { s3Service } from '@/lib/s3'
 import { getSupabaseClient } from '@/lib/supabase'
 import { getUser } from '@/lib/user'
+import { canAccessTenant, isAdmin } from '@/lib/auth'
 import { logger } from '@/utils/logger'
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
@@ -28,7 +29,7 @@ export const Route = createFileRoute('/api/upload/anuncio')({
         const user = await getUser()
 
         // Verify user is admin or superadmin
-        if (user.role !== 'admin' && user.role !== 'superadmin') {
+        if (!isAdmin(user)) {
           logger('error', 'User is not authorized to create announcements', {
             userId: user.email,
             role: user.role,
@@ -67,11 +68,10 @@ export const Route = createFileRoute('/api/upload/anuncio')({
         }
 
         // Verify user belongs to the tenant
-        if (user.tenantId !== tenantId) {
+        if (!canAccessTenant(user, tenantId)) {
           logger('error', 'User does not belong to tenant', {
             userId: user.email,
             requestedTenant: tenantId,
-            userTenant: user.tenantId,
           })
           return new Response(
             JSON.stringify({

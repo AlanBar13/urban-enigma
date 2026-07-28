@@ -14,7 +14,7 @@ export const Route = createFileRoute('/$tenantId/admin-documentos')({
   },
   loader: async ({ context }) => {
     const documents = await getAdminDocumentsFn({
-      data: { tenantId: context.tenant.id, user: context.user },
+      data: { tenantId: context.tenant.id },
     })
     return { documents }
   },

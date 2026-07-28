@@ -2,12 +2,12 @@ import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { s3Service } from './s3'
 import { getSupabaseClient } from './supabase'
-import { getUser, getUserSchema } from './user'
+import { getUser } from './user'
+import { assertAdmin, assertTenantAccess } from './auth'
 import { logger } from '@/utils/logger'
 
 const getDocumentsSchema = z.object({
   tenantId: z.uuid(),
-  user: getUserSchema,
 })
 
 const deleteDocumentSchema = z.object({
@@ -37,17 +37,8 @@ export const getDocumentsFn = createServerFn({ method: 'POST' })
   .inputValidator(getDocumentsSchema)
   .handler(async ({ data }) => {
     const supabase = getSupabaseClient()
-    const user = data.user
-
-    // Verify user belongs to the tenant
-    if (user.tenantId !== data.tenantId && user.role !== 'superadmin') {
-      logger('error', 'User does not belong to tenant', {
-        userId: user.email,
-        requestedTenant: data.tenantId,
-        userTenant: user.tenantId,
-      })
-      throw new Error('Unauthorized: User does not belong to this tenant')
-    }
+    const user = await getUser()
+    assertTenantAccess(user, data.tenantId)
 
     let shouldSeeOwnerDocuments = false
     if (user.role !== 'admin' && user.role !== 'superadmin') {
@@ -116,25 +107,8 @@ export const getAdminDocumentsFn = createServerFn({ method: 'POST' })
 
     // Get authenticated user
     const user = await getUser()
-
-    // Verify user is admin or superadmin
-    if (user.role !== 'admin' && user.role !== 'superadmin') {
-      logger('error', 'User is not authorized to view admin documents', {
-        userId: user.email,
-        role: user.role,
-      })
-      throw new Error('Unauthorized: Only admins can view all documents')
-    }
-
-    // Verify user belongs to the tenant
-    if (user.tenantId !== data.tenantId) {
-      logger('error', 'User does not belong to tenant', {
-        userId: user.email,
-        requestedTenant: data.tenantId,
-        userTenant: user.tenantId,
-      })
-      throw new Error('Unauthorized: User does not belong to this tenant')
-    }
+    assertAdmin(user, 'view all documents')
+    assertTenantAccess(user, data.tenantId)
 
     // Fetch all documents (no filtering)
     const { data: documents, error } = await supabase
@@ -179,16 +153,7 @@ export const deleteDocumentFn = createServerFn({ method: 'POST' })
     const supabase = getSupabaseClient()
 
     // Get authenticated user
-    const user = await getUser()
-
-    // Verify user is admin or superadmin
-    if (user.role !== 'admin' && user.role !== 'superadmin') {
-      logger('error', 'User is not authorized to delete documents', {
-        userId: user.email,
-        role: user.role,
-      })
-      throw new Error('Unauthorized: Only admins can delete documents')
-    }
+    assertAdmin(await getUser(), 'delete documents')
 
     try {
       // Delete from S3
