@@ -5,6 +5,7 @@ import { useEffect } from 'react'
 import appCss from '../styles.css?url'
 import { logger } from '@/utils/logger'
 import { ToastContainer, ToastProvider } from '@/components/notifications'
+import { Analytics } from "@vercel/analytics/react"
 
 export const Route = createRootRoute({
   head: () => ({
@@ -82,6 +83,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           {children}
           <ToastContainer />
         </ToastProvider>
+        <Analytics />
         <TanStackDevtools
           config={{
             position: 'bottom-right',
