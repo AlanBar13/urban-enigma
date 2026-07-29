@@ -39,9 +39,9 @@ const TenantSelector: React.FC<TenantSelectorProps> = ({
     <SelectPrimitive.Root value={selectedTenantId} onValueChange={onSelect}>
       <SelectPrimitive.Trigger asChild>
         <Button
+          type="button"
           variant="outline"
           className="w-full justify-between gap-2"
-          onClick={(e) => e.preventDefault()}
         >
           <div className="flex items-center gap-2 flex-1 min-w-0">
             {selectedTenant && (
