@@ -62,7 +62,7 @@ const benefits = [
   'Invitaciones por correo con roles y permisos por colono',
   'Anuncios con notificaciones push en el navegador',
   'Pagos de cuotas en línea con Stripe',
-  'Avisos al grupo de WhatsApp del fraccionamiento',
+  // 'Avisos al grupo de WhatsApp del fraccionamiento',
   'Acceso desde cualquier dispositivo',
 ]
 
@@ -148,7 +148,7 @@ export default function LandingContainer() {
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8">
             <Zap className="h-4 w-4 text-primary" />
             <span className="text-sm font-medium text-primary">
-              Plataforma de Gestión Moderna
+              Alpha cerrado · Acceso por invitación
             </span>
           </div>
 
@@ -299,8 +299,8 @@ export default function LandingContainer() {
               Solicita acceso a Fraccio
             </h2>
             <p className="text-xl text-muted-foreground">
-              Completa el formulario y nos pondremos en contacto contigo para
-              brindarte acceso a la plataforma
+              Fraccio está en alpha cerrado y el acceso es por invitación.
+              Completa el formulario y nos pondremos en contacto contigo.
             </p>
           </div>
 

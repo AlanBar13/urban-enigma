@@ -19,6 +19,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as TenantIdIndexRouteImport } from './routes/$tenantId/index'
 import { Route as AdminUsuariosRouteImport } from './routes/admin/usuarios'
+import { Route as AdminSolicitudesRouteImport } from './routes/admin/solicitudes'
 import { Route as AdminFraccionamientosRouteImport } from './routes/admin/fraccionamientos'
 import { Route as TenantIdUsuariosRouteImport } from './routes/$tenantId/usuarios'
 import { Route as TenantIdPerfilRouteImport } from './routes/$tenantId/perfil'
@@ -84,6 +85,11 @@ const TenantIdIndexRoute = TenantIdIndexRouteImport.update({
 const AdminUsuariosRoute = AdminUsuariosRouteImport.update({
   id: '/usuarios',
   path: '/usuarios',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminSolicitudesRoute = AdminSolicitudesRouteImport.update({
+  id: '/solicitudes',
+  path: '/solicitudes',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminFraccionamientosRoute = AdminFraccionamientosRouteImport.update({
@@ -186,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/$tenantId/perfil': typeof TenantIdPerfilRoute
   '/$tenantId/usuarios': typeof TenantIdUsuariosRoute
   '/admin/fraccionamientos': typeof AdminFraccionamientosRoute
+  '/admin/solicitudes': typeof AdminSolicitudesRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/$tenantId/': typeof TenantIdIndexRoute
   '/admin/': typeof AdminIndexRoute
@@ -212,6 +219,7 @@ export interface FileRoutesByTo {
   '/$tenantId/perfil': typeof TenantIdPerfilRoute
   '/$tenantId/usuarios': typeof TenantIdUsuariosRoute
   '/admin/fraccionamientos': typeof AdminFraccionamientosRoute
+  '/admin/solicitudes': typeof AdminSolicitudesRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/$tenantId': typeof TenantIdIndexRoute
   '/admin': typeof AdminIndexRoute
@@ -241,6 +249,7 @@ export interface FileRoutesById {
   '/$tenantId/perfil': typeof TenantIdPerfilRoute
   '/$tenantId/usuarios': typeof TenantIdUsuariosRoute
   '/admin/fraccionamientos': typeof AdminFraccionamientosRoute
+  '/admin/solicitudes': typeof AdminSolicitudesRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/$tenantId/': typeof TenantIdIndexRoute
   '/admin/': typeof AdminIndexRoute
@@ -271,6 +280,7 @@ export interface FileRouteTypes {
     | '/$tenantId/perfil'
     | '/$tenantId/usuarios'
     | '/admin/fraccionamientos'
+    | '/admin/solicitudes'
     | '/admin/usuarios'
     | '/$tenantId/'
     | '/admin/'
@@ -297,6 +307,7 @@ export interface FileRouteTypes {
     | '/$tenantId/perfil'
     | '/$tenantId/usuarios'
     | '/admin/fraccionamientos'
+    | '/admin/solicitudes'
     | '/admin/usuarios'
     | '/$tenantId'
     | '/admin'
@@ -325,6 +336,7 @@ export interface FileRouteTypes {
     | '/$tenantId/perfil'
     | '/$tenantId/usuarios'
     | '/admin/fraccionamientos'
+    | '/admin/solicitudes'
     | '/admin/usuarios'
     | '/$tenantId/'
     | '/admin/'
@@ -417,6 +429,13 @@ declare module '@tanstack/react-router' {
       path: '/usuarios'
       fullPath: '/admin/usuarios'
       preLoaderRoute: typeof AdminUsuariosRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/solicitudes': {
+      id: '/admin/solicitudes'
+      path: '/solicitudes'
+      fullPath: '/admin/solicitudes'
+      preLoaderRoute: typeof AdminSolicitudesRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/fraccionamientos': {
@@ -574,12 +593,14 @@ const TenantIdRouteRouteWithChildren = TenantIdRouteRoute._addFileChildren(
 
 interface AdminRouteRouteChildren {
   AdminFraccionamientosRoute: typeof AdminFraccionamientosRoute
+  AdminSolicitudesRoute: typeof AdminSolicitudesRoute
   AdminUsuariosRoute: typeof AdminUsuariosRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminFraccionamientosRoute: AdminFraccionamientosRoute,
+  AdminSolicitudesRoute: AdminSolicitudesRoute,
   AdminUsuariosRoute: AdminUsuariosRoute,
   AdminIndexRoute: AdminIndexRoute,
 }

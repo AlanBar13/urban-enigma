@@ -12,6 +12,7 @@ import {
   Home,
   LayoutDashboard,
   LogOut,
+  Mail,
   Menu,
   Shield,
   Users,
@@ -85,6 +86,12 @@ function RouteComponent() {
       label: 'Usuarios',
       path: '/admin/usuarios',
       icon: Users,
+    },
+    {
+      id: '4',
+      label: 'Solicitudes',
+      path: '/admin/solicitudes',
+      icon: Mail,
     },
   ]
 
