@@ -1,7 +1,6 @@
 import * as React from 'react'
 import * as SelectPrimitive from '@radix-ui/react-select'
 import { Check, ChevronDown } from 'lucide-react'
-import { Avatar, AvatarFallback, AvatarImage } from '../shared'
 import { Button } from '../ui/button'
 import { cn } from '@/lib/utils'
 
@@ -27,14 +26,6 @@ const TenantSelector: React.FC<TenantSelectorProps> = ({
 }) => {
   const selectedTenant = tenants.find((t) => t.id === selectedTenantId)
 
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((word) => word[0])
-      .join('')
-      .toUpperCase()
-  }
-
   return (
     <SelectPrimitive.Root value={selectedTenantId} onValueChange={onSelect}>
       <SelectPrimitive.Trigger asChild>
@@ -46,12 +37,6 @@ const TenantSelector: React.FC<TenantSelectorProps> = ({
           <div className="flex items-center gap-2 flex-1 min-w-0">
             {selectedTenant && (
               <>
-                <Avatar size="sm">
-                  <AvatarImage src={selectedTenant.logo} />
-                  <AvatarFallback>
-                    {getInitials(selectedTenant.name)}
-                  </AvatarFallback>
-                </Avatar>
                 <span className="truncate">{selectedTenant.name}</span>
               </>
             )}
@@ -87,10 +72,6 @@ const TenantSelector: React.FC<TenantSelectorProps> = ({
                       <Check className="h-4 w-4" />
                     </SelectPrimitive.ItemIndicator>
                   </span>
-                  <Avatar size="sm">
-                    <AvatarImage src={tenant.logo} />
-                    <AvatarFallback>{getInitials(tenant.name)}</AvatarFallback>
-                  </Avatar>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">{tenant.name}</p>
                     {tenant.role && (

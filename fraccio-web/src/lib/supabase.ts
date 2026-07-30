@@ -16,7 +16,10 @@ export function getSupabaseClient() {
       },
       setAll(cookies) {
         cookies.forEach((cookie) => {
-          setCookie(cookie.name, cookie.value)
+          // Options carry maxAge/path/sameSite — and encode deletions as
+          // maxAge: 0. Dropping them turns a delete into a permanent empty
+          // cookie and orphans chunked token cookies.
+          setCookie(cookie.name, cookie.value, cookie.options)
         })
       },
     },
