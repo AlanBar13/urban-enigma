@@ -2,7 +2,19 @@ import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { getSupabaseClient } from './supabase'
 import { getUser } from './user'
+import type { Json } from '@/database.types'
 import { logger } from '@/utils/logger'
+
+export type FeatureName = 'payments'
+
+// Missing key = disabled: features must be explicitly enabled per tenant
+export const isFeatureEnabled = (
+  features: Json | null,
+  feature: FeatureName,
+): boolean => {
+  const map = features as { [key: string]: Json | undefined } | null
+  return map?.[feature] === true
+}
 
 const createTenantSchema = z.object({
   name: z.string().min(3),

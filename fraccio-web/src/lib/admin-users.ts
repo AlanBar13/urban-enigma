@@ -16,7 +16,7 @@ export interface AdminUser {
   extra_tenants: Array<{ id: string; name: string }>
 }
 
-async function requireSuperadmin() {
+export async function requireSuperadmin() {
   const user = await getUser()
   if (user.role !== 'superadmin') {
     logger('error', 'Superadmin access required', { userId: user.email })

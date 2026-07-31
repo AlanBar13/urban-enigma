@@ -26,7 +26,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { useToast } from '@/components/notifications'
-import { getTenantFn, listUserTenantsFn } from '@/lib/tenants'
+import { getTenantFn, isFeatureEnabled, listUserTenantsFn } from '@/lib/tenants'
 import { getUser, logoutFn } from '@/lib/user'
 import { TenantSelector } from '@/components/tenant'
 import { logger } from '@/utils/logger'
@@ -124,6 +124,8 @@ function RouteComponent() {
     }
   }
 
+  const paymentsOn = isFeatureEnabled(tenant.features, 'payments')
+
   const navItems = [
     {
       id: '1',
@@ -156,7 +158,7 @@ function RouteComponent() {
       path: `/${params.tenantId}/documentos`,
       icon: BookOpen,
     },
-  ]
+  ].filter((item) => paymentsOn || !item.path.includes('pagos'))
 
   const adminNavItems = [
     {
@@ -202,7 +204,7 @@ function RouteComponent() {
     //   icon: MessageCircle,
     //   allowedRoles: ['admin', 'superadmin'],
     // },
-  ]
+  ].filter((item) => paymentsOn || !item.path.includes('pagos'))
 
   const filteredAdminItems = adminNavItems.filter((item) =>
     item.allowedRoles.includes(user.role),

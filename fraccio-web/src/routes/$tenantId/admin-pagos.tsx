@@ -8,6 +8,7 @@ import {
   getPaymentItemsFn,
   getStripeAccountStatusFn,
 } from '@/lib/stripe'
+import { isFeatureEnabled } from '@/lib/tenants'
 import PaymentItemsContainer from '@/components/admin/PaymentItemsContainer'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -17,6 +18,13 @@ import { logger } from '@/utils/logger'
 
 export const Route = createFileRoute('/$tenantId/admin-pagos')({
   beforeLoad: ({ context }) => {
+    // Before the role check — its /pagos redirect would loop when payments is off
+    if (!isFeatureEnabled(context.tenant.features, 'payments')) {
+      throw redirect({
+        to: '/$tenantId',
+        params: { tenantId: context.tenant.path },
+      })
+    }
     // Check if user is admin or superadmin
     if (context.user.role !== 'admin' && context.user.role !== 'superadmin') {
       throw redirect({

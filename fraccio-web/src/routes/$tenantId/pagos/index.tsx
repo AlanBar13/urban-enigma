@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { useState } from 'react'
 import {
@@ -6,6 +6,7 @@ import {
   getPaymentHistoryFn,
   getPaymentItemsFn,
 } from '@/lib/stripe'
+import { isFeatureEnabled } from '@/lib/tenants'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/shared'
@@ -13,6 +14,14 @@ import { useToast } from '@/components/notifications'
 import { logger } from '@/utils/logger'
 
 export const Route = createFileRoute('/$tenantId/pagos/')({
+  beforeLoad: ({ context }) => {
+    if (!isFeatureEnabled(context.tenant.features, 'payments')) {
+      throw redirect({
+        to: '/$tenantId',
+        params: { tenantId: context.tenant.path },
+      })
+    }
+  },
   loader: async ({ context }) => {
     const itemsReq = getPaymentItemsFn({
       data: { tenantId: context.tenant.id },

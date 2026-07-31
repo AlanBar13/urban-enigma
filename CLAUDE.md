@@ -71,3 +71,5 @@ pnpm check          # Prettier --write + ESLint --fix
 ## Shared domain model
 
 A **tenant** is a `fraccionamiento` (residential subdivision). The web app manages tenants, houses, owners, and documents in Supabase; the backend adds a per-tenant WhatsApp session so a tenant's residents can be messaged as a WhatsApp group. The backend's `whatsapp_sessions` table is keyed by the same `tenant_id`.
+
+Tenant-wide **feature toggles** live in the `tenants.features` jsonb column (missing key = disabled), managed by superadmins from `/admin/fraccionamientos`. See "Feature Toggles" in [fraccio-web/CLAUDE.md](fraccio-web/CLAUDE.md) for how to add one.

@@ -1,4 +1,4 @@
-import { Link, createFileRoute } from '@tanstack/react-router'
+import { Link, createFileRoute, useRouter } from '@tanstack/react-router'
 import {
   Building,
   Calendar,
@@ -6,17 +6,19 @@ import {
   Home,
   MapPin,
   Plus,
+  Settings,
   TrendingUp,
   Users,
 } from 'lucide-react'
 import { useState } from 'react'
 import { useServerFn } from '@tanstack/react-start'
-import { getTenantsWithStatsFn } from '@/lib/admin-tenants'
+import type { TenantWithStats } from '@/lib/admin-tenants'
+import { getTenantsWithStatsFn, setTenantFeatureFn } from '@/lib/admin-tenants'
 import { Button } from '@/components/ui/button'
 import { FormModal } from '@/components/modals'
 import { FormField } from '@/components/forms'
 import { Input } from '@/components/ui/input'
-import { createTenantFn } from '@/lib/tenants'
+import { createTenantFn, isFeatureEnabled } from '@/lib/tenants'
 import { useToast } from '@/components/notifications'
 import { logger } from '@/utils/logger'
 
@@ -44,7 +46,46 @@ function RouteComponent() {
   const [subdomain, setSubdomain] = useState('')
   const [address, setAddress] = useState('')
   const createTenant = useServerFn(createTenantFn)
+  const setTenantFeature = useServerFn(setTenantFeatureFn)
   const { addToast } = useToast()
+  const router = useRouter()
+
+  const [featuresTenant, setFeaturesTenant] = useState<TenantWithStats | null>(
+    null,
+  )
+  const [paymentsOn, setPaymentsOn] = useState(false)
+
+  const openFeatures = (tenant: TenantWithStats) => {
+    setPaymentsOn(isFeatureEnabled(tenant.features, 'payments'))
+    setFeaturesTenant(tenant)
+  }
+
+  const onSaveFeatures = async () => {
+    if (!featuresTenant) return
+    try {
+      await setTenantFeature({
+        data: {
+          tenantId: featuresTenant.id,
+          feature: 'payments',
+          enabled: paymentsOn,
+        },
+      })
+      await router.invalidate()
+      setFeaturesTenant(null)
+      addToast({
+        type: 'success',
+        description: 'Funciones actualizadas',
+        duration: 5000,
+      })
+    } catch (error) {
+      logger('error', 'Error updating tenant features:', { error })
+      addToast({
+        type: 'error',
+        description: 'Error al actualizar las funciones',
+        duration: 10000,
+      })
+    }
+  }
 
   const onSubmit = async () => {
     try {
@@ -214,6 +255,21 @@ function RouteComponent() {
                   </div>
                 </div>
 
+                {/* Feature toggles */}
+                <div className="flex items-center justify-between pt-4 border-t mb-4">
+                  <span className="text-sm text-muted-foreground">
+                    Funciones
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => openFeatures(tenant)}
+                  >
+                    <Settings className="h-4 w-4 mr-2" />
+                    Editar
+                  </Button>
+                </div>
+
                 {/* Footer */}
                 <div className="flex items-center justify-between pt-4 border-t">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -246,6 +302,31 @@ function RouteComponent() {
           </div>
         )}
       </div>
+
+      {/* Features Modal */}
+      <FormModal
+        open={featuresTenant !== null}
+        onOpenChange={(modalOpen: boolean) =>
+          !modalOpen && setFeaturesTenant(null)
+        }
+        title={`Funciones — ${featuresTenant?.name ?? ''}`}
+        onSubmit={onSaveFeatures}
+      >
+        <label className="flex items-center gap-3 text-sm cursor-pointer">
+          <input
+            type="checkbox"
+            className="h-4 w-4 accent-primary"
+            checked={paymentsOn}
+            onChange={(e) => setPaymentsOn(e.target.checked)}
+          />
+          <span>
+            Pagos
+            <span className="block text-xs text-muted-foreground">
+              Habilita la sección de pagos para este fraccionamiento
+            </span>
+          </span>
+        </label>
+      </FormModal>
 
       {/* Create Modal */}
       <FormModal
