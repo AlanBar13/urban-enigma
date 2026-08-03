@@ -24,6 +24,9 @@ SUPABASE_PUBLISHABLE_KEY=
 SUPABASE_JWKS_URL=
 STRIPE_SECRET_KEY=
 STRIPE_CONNECT_WEBHOOK_SECRET=
+MAILGUN_API_KEY=
+MAILGUN_DOMAIN=
+MAILGUN_FROM=
 ```
 
 ## Running locally (no containers)
@@ -70,7 +73,7 @@ On both `api` and `worker`:
 
 - **Watch paths**: `fraccio-backend/**` — web-only commits don't trigger backend deploys.
 - **Wait for CI**: enabled — deploys only after the commit's GitHub checks (`ci-backend`) pass.
-- **Variables**: `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD` as reference variables from the Redis service, plus `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_JWKS_URL`, `STRIPE_SECRET_KEY`, `STRIPE_CONNECT_WEBHOOK_SECRET`.
+- **Variables**: `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD` as reference variables from the Redis service, plus `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_JWKS_URL`, `STRIPE_SECRET_KEY`, `STRIPE_CONNECT_WEBHOOK_SECRET`, `MAILGUN_API_KEY`, `MAILGUN_DOMAIN`, `MAILGUN_FROM`.
 
 `docker-compose.yml` is the local-dev story only; Railway builds straight from the `Dockerfile`.
 

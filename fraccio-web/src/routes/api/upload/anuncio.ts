@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 // TEMP: WhatsApp disabled — 2026-07-27
 // import { backendFetch } from '@/lib/backend'
 import { sendPushToTenant } from '@/lib/push-send'
+import { sendAnnouncementEmail } from '@/lib/email-send'
 import { s3Service } from '@/lib/s3'
 import { getSupabaseClient } from '@/lib/supabase'
 import { getUser } from '@/lib/user'
@@ -48,6 +49,7 @@ export const Route = createFileRoute('/api/upload/anuncio')({
           (formData.get('description') as string) || ''
         ).trim()
         const ownersOnly = formData.get('ownersOnly') === 'true'
+        const sendEmail = formData.get('sendEmail') === 'true'
         // TEMP: WhatsApp disabled — 2026-07-27
         // const sendWhatsapp = formData.get('sendWhatsapp') === 'true'
         const tenantId = formData.get('tenantId') as string
@@ -163,6 +165,16 @@ export const Route = createFileRoute('/api/upload/anuncio')({
             ownersOnly,
           })
 
+          // Announcement is saved; an email failure must not fail the request
+          let emailError = false
+          if (sendEmail) {
+            emailError = !(await sendAnnouncementEmail(tenantId, {
+              title,
+              description: description || undefined,
+              ownersOnly,
+            }))
+          }
+
           // Announcement is saved; a WhatsApp failure must not fail the request
           const whatsappError = false
           // TEMP: WhatsApp disabled — 2026-07-27
@@ -193,7 +205,11 @@ export const Route = createFileRoute('/api/upload/anuncio')({
           // }
 
           return new Response(
-            JSON.stringify({ message: 'Announcement created', whatsappError }),
+            JSON.stringify({
+              message: 'Announcement created',
+              whatsappError,
+              emailError,
+            }),
             { status: 200 },
           )
         } catch (error) {

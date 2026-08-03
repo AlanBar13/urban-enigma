@@ -5,6 +5,7 @@ import { assertTenantAccess } from './auth'
 import { createHouseOwnerQuery } from './house_owners/queries'
 import { createHouseUserQuery } from './house_users/queries'
 import { getTenantUsersQuery } from './profiles/queries'
+import { sendInviteEmail } from './email-send'
 import { logger } from '@/utils/logger'
 
 const loginSchema = z.object({
@@ -238,7 +239,7 @@ export const inviteUserFn = createServerFn({ method: 'POST' })
   .inputValidator(inviteUserSchema)
   .handler(async ({ data }) => {
     const supabase = getSupabaseClient()
-    console.log('Inviting user with data:', data)
+    assertTenantAccess(await getUser(), data.tenantId)
 
     const { data: existingInvite } = await supabase
       .from('invites')
@@ -276,7 +277,7 @@ export const inviteUserFn = createServerFn({ method: 'POST' })
       throw error
     }
 
-    // send email to user with invite link (${DOMAIN}/accept-invite?token=${inviteData.id})
+    await sendInviteEmail(data.tenantId, inviteData.id)
     return { error: false, message: 'User invited', data: inviteData }
   })
 

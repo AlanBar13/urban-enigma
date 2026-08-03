@@ -28,7 +28,7 @@ The API and the worker are **two separate processes** and both must run for end-
 
 ### Required environment (`.env` in `fraccio-backend/`)
 
-`REDIS_HOST`, `REDIS_PORT` (BullMQ/Redis — Redis must be running), `SUPABASE_URL`, `SUPABASE_SECRET_KEY` (service key; used by the singleton client). Also present: `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_JWKS_URL`.
+`REDIS_HOST`, `REDIS_PORT` (BullMQ/Redis — Redis must be running), `SUPABASE_URL`, `SUPABASE_SECRET_KEY` (service key; used by the singleton client), `MAILGUN_API_KEY`, `MAILGUN_DOMAIN`, `MAILGUN_FROM` (email sending via `/api/v1/email` routes). Also present: `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_JWKS_URL`.
 
 ### Architecture
 

@@ -54,9 +54,11 @@ function RouteComponent() {
     null,
   )
   const [paymentsOn, setPaymentsOn] = useState(false)
+  const [emailOn, setEmailOn] = useState(false)
 
   const openFeatures = (tenant: TenantWithStats) => {
     setPaymentsOn(isFeatureEnabled(tenant.features, 'payments'))
+    setEmailOn(isFeatureEnabled(tenant.features, 'email'))
     setFeaturesTenant(tenant)
   }
 
@@ -68,6 +70,13 @@ function RouteComponent() {
           tenantId: featuresTenant.id,
           feature: 'payments',
           enabled: paymentsOn,
+        },
+      })
+      await setTenantFeature({
+        data: {
+          tenantId: featuresTenant.id,
+          feature: 'email',
+          enabled: emailOn,
         },
       })
       await router.invalidate()
@@ -323,6 +332,20 @@ function RouteComponent() {
             Pagos
             <span className="block text-xs text-muted-foreground">
               Habilita la sección de pagos para este fraccionamiento
+            </span>
+          </span>
+        </label>
+        <label className="flex items-center gap-3 text-sm cursor-pointer mt-3">
+          <input
+            type="checkbox"
+            className="h-4 w-4 accent-primary"
+            checked={emailOn}
+            onChange={(e) => setEmailOn(e.target.checked)}
+          />
+          <span>
+            Email
+            <span className="block text-xs text-muted-foreground">
+              Permite enviar anuncios por email a los residentes
             </span>
           </span>
         </label>

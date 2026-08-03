@@ -12,12 +12,14 @@ import { logger } from '@/utils/logger'
 interface Props {
   tenantId: string
   tenantPath: string
+  emailEnabled: boolean
   announcements: Array<AnnouncementWithUrl>
 }
 
 export default function AnunciosContainer({
   tenantId,
   tenantPath,
+  emailEnabled,
   announcements,
 }: Props) {
   const { addToast } = useToast()
@@ -34,6 +36,7 @@ export default function AnunciosContainer({
     const file = formData.get('file') as File
     const ownersOnly = formData.get('ownersOnly') === 'on'
     const sendWhatsapp = formData.get('sendWhatsapp') === 'on'
+    const sendEmail = formData.get('sendEmail') === 'on'
 
     if (title.length < 3) {
       addToast({
@@ -83,6 +86,7 @@ export default function AnunciosContainer({
       formData.set('tenantPath', tenantPath)
       formData.set('ownersOnly', ownersOnly.toString())
       formData.set('sendWhatsapp', sendWhatsapp.toString())
+      formData.set('sendEmail', sendEmail.toString())
 
       const response = await fetch('/api/upload/anuncio', {
         method: 'POST',
@@ -107,6 +111,14 @@ export default function AnunciosContainer({
           type: 'error',
           description:
             'El anuncio se guardó pero no se pudo enviar por WhatsApp',
+          duration: 10000,
+        })
+      }
+
+      if (result.emailError) {
+        addToast({
+          type: 'error',
+          description: 'El anuncio se guardó pero no se pudo enviar por email',
           duration: 10000,
         })
       }
@@ -195,6 +207,22 @@ export default function AnunciosContainer({
             </div>
           </FormField>
 
+          {emailEnabled && (
+            <FormField label="">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="sendEmail"
+                  name="sendEmail"
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor="sendEmail" className="text-sm text-gray-700">
+                  Enviar por email
+                </label>
+              </div>
+            </FormField>
+          )}
+
           {/* TEMP: WhatsApp disabled — 2026-07-27
           <FormField label="Enviar por">
             <div className="flex items-center gap-2">
@@ -206,17 +234,6 @@ export default function AnunciosContainer({
               />
               <label htmlFor="sendWhatsapp" className="text-sm text-gray-700">
                 WhatsApp
-              </label>
-            </div>
-            <div className="flex items-center gap-2 mt-1">
-              <input
-                type="checkbox"
-                id="sendEmail"
-                disabled
-                className="w-4 h-4 bg-gray-100 border-gray-300 rounded"
-              />
-              <label htmlFor="sendEmail" className="text-sm text-gray-400">
-                Email (próximamente)
               </label>
             </div>
           </FormField>

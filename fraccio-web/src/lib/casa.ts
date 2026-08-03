@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { getSupabaseClient } from './supabase'
 import { getUser } from './user'
 import { assertTenantAccess } from './auth'
+import { sendInviteEmail } from './email-send'
 import { logger } from '@/utils/logger'
 
 // Validation schemas
@@ -315,6 +316,8 @@ export const addHouseUserFn = createServerFn({ method: 'POST' })
       houseId: data.houseId,
       inviteId: invite.id,
     })
+
+    await sendInviteEmail(house.tenant_id, invite.id)
 
     return invite
   })

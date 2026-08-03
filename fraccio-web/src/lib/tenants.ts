@@ -5,7 +5,7 @@ import { getUser } from './user'
 import type { Json } from '@/database.types'
 import { logger } from '@/utils/logger'
 
-export type FeatureName = 'payments'
+export type FeatureName = 'payments' | 'email'
 
 // Missing key = disabled: features must be explicitly enabled per tenant
 export const isFeatureEnabled = (

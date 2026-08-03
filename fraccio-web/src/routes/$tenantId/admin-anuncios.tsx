@@ -1,5 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { getAdminAnunciosFn } from '@/lib/anuncios'
+import { isFeatureEnabled } from '@/lib/tenants'
 import AnunciosContainer from '@/components/admin/AnunciosContainer'
 
 export const Route = createFileRoute('/$tenantId/admin-anuncios')({
@@ -38,6 +39,7 @@ function RouteComponent() {
         <AnunciosContainer
           tenantId={tenant.id}
           tenantPath={tenant.path}
+          emailEnabled={isFeatureEnabled(tenant.features, 'email')}
           announcements={announcements}
         />
       </div>
