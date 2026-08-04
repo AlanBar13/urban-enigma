@@ -6,7 +6,9 @@ export const getTenantUsersQuery = (
 ) =>
   supabase
     .from('profiles')
-    .select('id, full_name, email, house_owner, house_users (houses (name))')
+    .select(
+      'id, full_name, email, house_owner, is_active, house_users (houses (name))',
+    )
     .eq('tenant_id', tenantId)
 
 export type GetTenantUsersQueryResult = QueryData<

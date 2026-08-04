@@ -139,11 +139,7 @@ export default function DocumentsContainer({
     }
   }
 
-  const handleDelete = async (
-    documentId: string,
-    s3Key: string,
-    documentName: string,
-  ) => {
+  const handleDelete = async (documentId: string, documentName: string) => {
     if (
       !confirm(
         `¿Estás seguro de que deseas eliminar el documento "${documentName}"?`,
@@ -155,8 +151,8 @@ export default function DocumentsContainer({
     try {
       await deleteDocument({
         data: {
+          tenantId,
           documentId,
-          s3Key,
         },
       })
 
@@ -298,7 +294,7 @@ export default function DocumentsContainer({
                     </a>
                   )}
                   <button
-                    onClick={() => handleDelete(row.id, row.s3_key, row.name)}
+                    onClick={() => handleDelete(row.id, row.name)}
                     className="text-red-600 hover:text-red-800"
                     title="Eliminar documento"
                   >

@@ -1,7 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { getSupabaseClient } from './supabase'
-import { assertTenantAccess } from './auth'
+import { assertAdmin, assertTenantAccess } from './auth'
 import { createHouseOwnerQuery } from './house_owners/queries'
 import { createHouseUserQuery } from './house_users/queries'
 import { getTenantUsersQuery } from './profiles/queries'
@@ -59,12 +59,18 @@ export const getUser = createServerFn({ method: 'GET' }).handler(async () => {
 
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('full_name, role, tenant_id, tenant_admins (tenant_id)')
+    .select('full_name, role, tenant_id, is_active, tenant_admins (tenant_id)')
     .eq('id', data.user.id)
     .single()
   if (!profile) {
     logger('error', 'Error fetching profile:', { error: profileError })
     throw new Error('Profile not found')
+  }
+  if (!profile.is_active) {
+    logger('warn', 'Deactivated user attempted access:', {
+      userId: data.user.id,
+    })
+    throw new Error('Cuenta desactivada')
   }
 
   return {
@@ -103,7 +109,7 @@ export const loginFn = createServerFn({ method: 'POST' })
 
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('role, tenant_id')
+      .select('role, tenant_id, is_active')
       .eq('id', auth.user.id)
       .single()
     if (!profile) {
@@ -113,6 +119,13 @@ export const loginFn = createServerFn({ method: 'POST' })
       return {
         error: true,
         message: 'Profile not found',
+      }
+    }
+    if (!profile.is_active) {
+      await supabase.auth.signOut()
+      return {
+        error: true,
+        message: 'Tu cuenta ha sido desactivada',
       }
     }
 
@@ -301,4 +314,41 @@ export const getTenantUsersFn = createServerFn({ method: 'POST' })
     }
 
     return users
+  })
+
+/**
+ * Soft-deletes (or restores) a tenant user. Deactivated users are refused by
+ * `getUser` and `loginFn`, so their history and payments stay intact.
+ */
+export const setUserActiveFn = createServerFn({ method: 'POST' })
+  .inputValidator(
+    z.object({
+      tenantId: z.uuid(),
+      userId: z.uuid(),
+      active: z.boolean(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const supabase = getSupabaseClient()
+
+    const user = await getUser()
+    assertAdmin(user, 'deactivate users')
+    assertTenantAccess(user, data.tenantId)
+
+    if (data.userId === user.id) {
+      throw new Error('No puedes desactivar tu propia cuenta')
+    }
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ is_active: data.active })
+      .eq('id', data.userId)
+      .eq('tenant_id', data.tenantId)
+
+    if (error) {
+      logger('error', 'Error updating user active state:', { error })
+      throw error
+    }
+
+    return { success: true }
   })

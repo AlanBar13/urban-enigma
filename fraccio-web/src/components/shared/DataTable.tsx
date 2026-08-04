@@ -48,6 +48,11 @@ export const DataTable = React.forwardRef<
     },
     ref,
   ) => {
+    // An action column only renders if it has a handler — a button that does
+    // nothing is worse than no button.
+    const showEdit = actions && !!onEdit
+    const showDelete = actions && !!onDelete
+
     const handleSort = (key: any) => {
       if (!onSort) return
       const newDirection =
@@ -95,15 +100,15 @@ export const DataTable = React.forwardRef<
                   )}
                 </th>
               ))}
-              {actions && (
-                <>
-                  <th>
-                    <span>Editar</span>
-                  </th>
-                  <th>
-                    <span>Borrar</span>
-                  </th>
-                </>
+              {showEdit && (
+                <th>
+                  <span>Editar</span>
+                </th>
+              )}
+              {showDelete && (
+                <th>
+                  <span>Borrar</span>
+                </th>
               )}
             </tr>
           </thead>
@@ -147,29 +152,29 @@ export const DataTable = React.forwardRef<
                         : String(row[col.key] || '')}
                     </td>
                   ))}
-                  {actions && (
-                    <>
-                      <td className="text-center">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onEdit && onEdit(row)}
-                          className="text-blue-500 hover:text-blue-700"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                      </td>
-                      <td className="text-center">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onDelete && onDelete(row)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <Trash className="h-4 w-4" />
-                        </Button>
-                      </td>
-                    </>
+                  {showEdit && (
+                    <td className="text-center">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onEdit(row)}
+                        className="text-blue-500 hover:text-blue-700"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </td>
+                  )}
+                  {showDelete && (
+                    <td className="text-center">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onDelete(row)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <Trash className="h-4 w-4" />
+                      </Button>
+                    </td>
                   )}
                 </tr>
               ))

@@ -26,7 +26,6 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { signupFn } from '@/lib/user'
-import { removeInviteFn } from '@/lib/invites/functions'
 import { logger } from '@/utils/logger'
 
 interface Props {
@@ -43,7 +42,6 @@ export default function Signup({ invite }: Props) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const signupWithTenant = useServerFn(signupFn)
-  const removeInvite = useServerFn(removeInviteFn)
 
   useEffect(() => {
     setEmail(invite.email)
@@ -90,8 +88,7 @@ export default function Signup({ invite }: Props) {
         return
       }
 
-      await removeInvite({ data: { token: invite.id } })
-
+      // signupFn already deletes the consumed invite.
       addToast({
         type: 'success',
         description:

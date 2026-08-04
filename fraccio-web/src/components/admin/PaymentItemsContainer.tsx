@@ -4,9 +4,9 @@ import { useRouter } from '@tanstack/react-router'
 import { Input } from '../ui/input'
 import { DataTable } from '../shared'
 import { useToast } from '@/components/notifications'
-import { createPaymentItemFn } from '@/lib/stripe'
+import { createPaymentItemFn, setPaymentItemActiveFn } from '@/lib/stripe'
 import { Button } from '@/components/ui/button'
-import { FormModal } from '@/components/modals'
+import { ConfirmDialog, FormModal } from '@/components/modals'
 import { FormField, Select } from '@/components/forms'
 import { logger } from '@/utils/logger'
 
@@ -37,7 +37,9 @@ export default function PaymentItemsContainer({ tenantId, items }: Props) {
   const [paymentType, setPaymentType] = useState<
     'maintenance' | 'assessment' | 'fine'
   >('maintenance')
+  const [pendingToggle, setPendingToggle] = useState<PaymentItem | null>(null)
   const createPaymentItem = useServerFn(createPaymentItemFn)
+  const setPaymentItemActive = useServerFn(setPaymentItemActiveFn)
 
   const onSubmit = async () => {
     if (!name.trim()) {
@@ -91,6 +93,29 @@ export default function PaymentItemsContainer({ tenantId, items }: Props) {
       setAmount('')
       setPaymentType('maintenance')
       setOpen(false)
+    }
+  }
+
+  const onConfirmToggle = async () => {
+    if (!pendingToggle) return
+    const activating = !pendingToggle.is_active
+    try {
+      await setPaymentItemActive({
+        data: { tenantId, itemId: pendingToggle.id, active: activating },
+      })
+      addToast({
+        type: 'success',
+        description: `Concepto "${pendingToggle.name}" ${activating ? 'activado' : 'desactivado'} correctamente`,
+        duration: 5000,
+      })
+      router.invalidate()
+    } catch (error: any) {
+      logger('error', 'Error updating payment item state:', { error })
+      addToast({
+        type: 'error',
+        description: error.message || 'Error al actualizar el concepto de pago',
+        duration: 10000,
+      })
     }
   }
 
@@ -216,8 +241,28 @@ export default function PaymentItemsContainer({ tenantId, items }: Props) {
             },
           ]}
           striped
+          actions
+          onDelete={setPendingToggle}
         />
       </div>
+      <ConfirmDialog
+        open={!!pendingToggle}
+        onOpenChange={(o) => !o && setPendingToggle(null)}
+        title={
+          pendingToggle?.is_active
+            ? 'Desactivar concepto de pago'
+            : 'Activar concepto de pago'
+        }
+        description={
+          pendingToggle?.is_active
+            ? `"${pendingToggle.name}" dejará de aparecer para los residentes. Los pagos ya realizados no se modifican.`
+            : `"${pendingToggle?.name}" volverá a aparecer para los residentes.`
+        }
+        confirmText={pendingToggle?.is_active ? 'Desactivar' : 'Activar'}
+        cancelText="Cancelar"
+        variant={pendingToggle?.is_active ? 'destructive' : 'default'}
+        onConfirm={onConfirmToggle}
+      />
     </div>
   )
 }

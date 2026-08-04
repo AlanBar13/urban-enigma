@@ -1,11 +1,13 @@
 import { useRef, useState } from 'react'
 import { useRouter } from '@tanstack/react-router'
+import { useServerFn } from '@tanstack/react-start'
 import { Input } from '../ui/input'
 import { DataTable } from '../shared'
 import type { AnnouncementWithUrl } from '@/lib/anuncios'
+import { deleteAnuncioFn } from '@/lib/anuncios'
 import { useToast } from '@/components/notifications'
 import { Button } from '@/components/ui/button'
-import { FormModal } from '@/components/modals'
+import { ConfirmDialog, FormModal } from '@/components/modals'
 import { FormField } from '@/components/forms'
 import { logger } from '@/utils/logger'
 
@@ -26,6 +28,9 @@ export default function AnunciosContainer({
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [pendingDelete, setPendingDelete] =
+    useState<AnnouncementWithUrl | null>(null)
+  const deleteAnuncio = useServerFn(deleteAnuncioFn)
   const formRef = useRef<HTMLFormElement>(null)
 
   const onSubmit = async () => {
@@ -136,6 +141,28 @@ export default function AnunciosContainer({
       })
     } finally {
       setUploading(false)
+    }
+  }
+
+  const onConfirmDelete = async () => {
+    if (!pendingDelete) return
+    try {
+      await deleteAnuncio({
+        data: { tenantId, announcementId: pendingDelete.id },
+      })
+      addToast({
+        type: 'success',
+        description: `Anuncio "${pendingDelete.title}" eliminado correctamente`,
+        duration: 5000,
+      })
+      router.invalidate()
+    } catch (error: any) {
+      logger('error', 'Error deleting announcement:', { error })
+      addToast({
+        type: 'error',
+        description: error.message || 'Error al eliminar el anuncio',
+        duration: 10000,
+      })
     }
   }
 
@@ -297,8 +324,22 @@ export default function AnunciosContainer({
             },
           ]}
           striped
+          actions
+          onDelete={setPendingDelete}
         />
       </div>
+      <ConfirmDialog
+        open={!!pendingDelete}
+        onOpenChange={(o) => !o && setPendingDelete(null)}
+        title="Eliminar anuncio"
+        description={`Se eliminará el anuncio "${pendingDelete?.title}"${
+          pendingDelete?.attachment_s3_key ? ' junto con su adjunto' : ''
+        }. Esta acción no se puede deshacer.`}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="destructive"
+        onConfirm={onConfirmDelete}
+      />
     </div>
   )
 }

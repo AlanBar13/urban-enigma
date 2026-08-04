@@ -1,10 +1,17 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { Building, Calendar, Mail, Shield, Users } from 'lucide-react'
-import { getAllUsersFn } from '@/lib/admin-users'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
+import { useServerFn } from '@tanstack/react-start'
+import { useState } from 'react'
+import { Building, Calendar, Mail, Shield, Trash2, Users } from 'lucide-react'
+import type { AdminUser } from '@/lib/admin-users'
+import { deleteUserFn, getAllUsersFn } from '@/lib/admin-users'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/modals'
+import { useToast } from '@/components/notifications'
 import { listTenantsFn } from '@/lib/tenants'
 import SAUserForm from '@/components/admin/SAUserForm'
 import SAUserTenantsModal from '@/components/admin/SAUserTenantsModal'
+import { logger } from '@/utils/logger'
 
 export const Route = createFileRoute('/admin/usuarios')({
   loader: async () => {
@@ -18,6 +25,30 @@ export const Route = createFileRoute('/admin/usuarios')({
 
 function RouteComponent() {
   const { users, tenants } = Route.useLoaderData()
+  const { addToast } = useToast()
+  const router = useRouter()
+  const deleteUser = useServerFn(deleteUserFn)
+  const [pendingDelete, setPendingDelete] = useState<AdminUser | null>(null)
+
+  const onConfirmDelete = async () => {
+    if (!pendingDelete) return
+    try {
+      await deleteUser({ data: { userId: pendingDelete.id } })
+      addToast({
+        type: 'success',
+        description: `Usuario ${pendingDelete.email} eliminado permanentemente`,
+        duration: 5000,
+      })
+      router.invalidate()
+    } catch (error: any) {
+      logger('error', 'Error deleting user:', { error })
+      addToast({
+        type: 'error',
+        description: error.message || 'Error al eliminar el usuario',
+        duration: 10000,
+      })
+    }
+  }
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -207,9 +238,19 @@ function RouteComponent() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      {user.role === 'admin' && (
-                        <SAUserTenantsModal user={user} tenants={tenants} />
-                      )}
+                      <div className="flex items-center gap-2">
+                        {user.role === 'admin' && (
+                          <SAUserTenantsModal user={user} tenants={tenants} />
+                        )}
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          title="Eliminar permanentemente"
+                          onClick={() => setPendingDelete(user)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -227,6 +268,17 @@ function RouteComponent() {
           </table>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={!!pendingDelete}
+        onOpenChange={(o) => !o && setPendingDelete(null)}
+        title="Eliminar usuario permanentemente"
+        description={`Se eliminará ${pendingDelete?.full_name} (${pendingDelete?.email}), su cuenta de acceso y sus asignaciones de casa en todos los fraccionamientos. Esta acción no se puede deshacer — para algo reversible, desactívalo desde su fraccionamiento.`}
+        confirmText="Eliminar permanentemente"
+        cancelText="Cancelar"
+        variant="destructive"
+        onConfirm={onConfirmDelete}
+      />
     </div>
   )
 }

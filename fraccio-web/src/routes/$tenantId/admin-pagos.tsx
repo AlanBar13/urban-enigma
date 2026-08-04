@@ -35,7 +35,7 @@ export const Route = createFileRoute('/$tenantId/admin-pagos')({
   },
   loader: async ({ context }) => {
     const itemsReq = getPaymentItemsFn({
-      data: { tenantId: context.tenant.id },
+      data: { tenantId: context.tenant.id, includeInactive: true },
     })
     const paymentsReq = getAdminPaymentsFn({
       data: { tenantId: context.tenant.id },

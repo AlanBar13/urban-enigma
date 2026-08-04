@@ -108,6 +108,53 @@ export const getAnunciosFn = createServerFn({ method: 'POST' })
   })
 
 /**
+ * Deletes an announcement and its S3 attachment (admin/superadmin only)
+ */
+export const deleteAnuncioFn = createServerFn({ method: 'POST' })
+  .inputValidator(z.object({ tenantId: z.uuid(), announcementId: z.number() }))
+  .handler(async ({ data }) => {
+    const supabase = getSupabaseClient()
+
+    const user = await getUser()
+    assertAdmin(user, 'delete announcements')
+    assertTenantAccess(user, data.tenantId)
+
+    // Read the key from the row rather than trusting the client with an S3 path.
+    const { data: announcement, error: fetchError } = await supabase
+      .from('announcements')
+      .select('attachment_s3_key')
+      .eq('id', data.announcementId)
+      .eq('tenant_id', data.tenantId)
+      .single()
+
+    // .single() errors when the row is missing, which also covers a forged
+    // announcementId from another tenant.
+    if (fetchError) {
+      logger('error', 'Error fetching announcement to delete', {
+        error: fetchError,
+      })
+      throw new Error('Anuncio no encontrado')
+    }
+
+    if (announcement.attachment_s3_key) {
+      await s3Service.deleteFile(announcement.attachment_s3_key)
+    }
+
+    const { error } = await supabase
+      .from('announcements')
+      .delete()
+      .eq('id', data.announcementId)
+      .eq('tenant_id', data.tenantId)
+
+    if (error) {
+      logger('error', 'Error deleting announcement', { error })
+      throw new Error('Failed to delete announcement')
+    }
+
+    return { success: true }
+  })
+
+/**
  * Gets all announcements for admin view (no filtering)
  */
 export const getAdminAnunciosFn = createServerFn({ method: 'POST' })

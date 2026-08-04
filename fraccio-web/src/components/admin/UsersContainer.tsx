@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import { useServerFn } from '@tanstack/react-start'
+import { useRouter } from '@tanstack/react-router'
 import { Input } from '../ui/input'
 import { DataTable } from '../shared'
 import type { Database } from '@/database.types'
 import type { GetTenantUsersQueryResult } from '@/lib/profiles/queries'
 import { useToast } from '@/components/notifications'
-import { inviteUserFn } from '@/lib/user'
+import { inviteUserFn, setUserActiveFn } from '@/lib/user'
 import { Button } from '@/components/ui/button'
-import { FormModal } from '@/components/modals'
+import { ConfirmDialog, FormModal } from '@/components/modals'
 import { FormField, Select } from '@/components/forms'
 import { logger } from '@/utils/logger'
 
@@ -24,7 +25,12 @@ export default function UsersContainer({ tenantId, houses, users }: Props) {
   const [email, setEmail] = useState('')
   const [houseId, setHouseId] = useState<number>(0)
   const [owner, setOwner] = useState<boolean>(false)
+  const [pendingToggle, setPendingToggle] = useState<
+    GetTenantUsersQueryResult[number] | null
+  >(null)
   const inviteUser = useServerFn(inviteUserFn)
+  const setUserActive = useServerFn(setUserActiveFn)
+  const router = useRouter()
 
   const onSubmit = async () => {
     try {
@@ -55,6 +61,29 @@ export default function UsersContainer({ tenantId, houses, users }: Props) {
       setHouseId(0)
       setOwner(false)
       setOpen(false)
+    }
+  }
+
+  const onConfirmToggle = async () => {
+    if (!pendingToggle) return
+    const activating = !pendingToggle.is_active
+    try {
+      await setUserActive({
+        data: { tenantId, userId: pendingToggle.id, active: activating },
+      })
+      addToast({
+        type: 'success',
+        description: `Usuario ${activating ? 'reactivado' : 'desactivado'} correctamente`,
+        duration: 5000,
+      })
+      router.invalidate()
+    } catch (error: any) {
+      logger('error', 'Error updating user active state:', { error })
+      addToast({
+        type: 'error',
+        description: error.message || 'Error al actualizar el usuario',
+        duration: 10000,
+      })
     }
   }
 
@@ -120,13 +149,33 @@ export default function UsersContainer({ tenantId, houses, users }: Props) {
               },
             },
             { key: 'house_owner', label: 'Es dueño de la casa' },
+            {
+              key: 'is_active',
+              label: 'Estado',
+              render: (value: boolean) => (value ? 'Activo' : 'Desactivado'),
+            },
           ]}
           striped
           actions
-          onEdit={() => {}}
-          onDelete={() => {}}
+          onDelete={setPendingToggle}
         />
       </div>
+      <ConfirmDialog
+        open={!!pendingToggle}
+        onOpenChange={(o) => !o && setPendingToggle(null)}
+        title={
+          pendingToggle?.is_active ? 'Desactivar usuario' : 'Reactivar usuario'
+        }
+        description={
+          pendingToggle?.is_active
+            ? `${pendingToggle.full_name || pendingToggle.email} no podrá iniciar sesión. Su historial y sus pagos se conservan.`
+            : `${pendingToggle?.full_name || pendingToggle?.email} podrá volver a iniciar sesión.`
+        }
+        confirmText={pendingToggle?.is_active ? 'Desactivar' : 'Reactivar'}
+        cancelText="Cancelar"
+        variant={pendingToggle?.is_active ? 'destructive' : 'default'}
+        onConfirm={onConfirmToggle}
+      />
     </div>
   )
 }

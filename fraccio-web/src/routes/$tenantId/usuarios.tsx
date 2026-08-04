@@ -1,9 +1,17 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import UsersContainer from '@/components/admin/UsersContainer'
 import { getHousesFn } from '@/lib/houses'
 import { getTenantUsersFn } from '@/lib/user'
 
 export const Route = createFileRoute('/$tenantId/usuarios')({
+  beforeLoad: ({ context }) => {
+    if (context.user.role !== 'admin' && context.user.role !== 'superadmin') {
+      throw redirect({
+        to: '/$tenantId',
+        params: { tenantId: context.tenant.path },
+      })
+    }
+  },
   loader: async ({ context }) => {
     const housesReq = getHousesFn({ data: { tenantId: context.tenant.id } })
     const usersReq = getTenantUsersFn({ data: { tenantId: context.tenant.id } })

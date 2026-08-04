@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import { useServerFn } from '@tanstack/react-start'
+import { useRouter } from '@tanstack/react-router'
 import { Button } from '../ui/button'
-import { FormModal } from '../modals'
+import { ConfirmDialog, FormModal } from '../modals'
 import { FormField } from '../forms'
 import { Input } from '../ui/input'
 import { DataTable } from '../shared'
 import { useToast } from '../notifications'
 import type { Database } from '@/database.types'
-import { createHouseFn } from '@/lib/houses'
+import { createHouseFn, deleteHouseFn } from '@/lib/houses'
 import { logger } from '@/utils/logger'
 
 interface Props {
@@ -15,11 +16,16 @@ interface Props {
   tenantId: string
 }
 
+type House = Database['public']['Tables']['houses']['Row']
+
 export default function CasasContainer({ houses, tenantId }: Props) {
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
   const [address, setAddress] = useState('')
+  const [pendingDelete, setPendingDelete] = useState<House | null>(null)
   const createHouse = useServerFn(createHouseFn)
+  const deleteHouse = useServerFn(deleteHouseFn)
+  const router = useRouter()
   const { addToast } = useToast()
 
   const onSubmit = async () => {
@@ -50,12 +56,24 @@ export default function CasasContainer({ houses, tenantId }: Props) {
     }
   }
 
-  const onEdit = (house: Database['public']['Tables']['houses']['Row']) => {
-    console.log('Edit house:', house)
-  }
-
-  const onDelete = (house: Database['public']['Tables']['houses']['Row']) => {
-    console.log('Delete house:', house)
+  const onConfirmDelete = async () => {
+    if (!pendingDelete) return
+    try {
+      await deleteHouse({ data: { tenantId, houseId: pendingDelete.id } })
+      addToast({
+        type: 'success',
+        description: `Casa "${pendingDelete.name}" eliminada correctamente`,
+        duration: 5000,
+      })
+      router.invalidate()
+    } catch (error: any) {
+      logger('error', 'Error deleting house:', { error })
+      addToast({
+        type: 'error',
+        description: error.message || 'Error al eliminar la casa',
+        duration: 10000,
+      })
+    }
   }
 
   return (
@@ -93,10 +111,19 @@ export default function CasasContainer({ houses, tenantId }: Props) {
           ]}
           striped
           actions
-          onEdit={onEdit}
-          onDelete={onDelete}
+          onDelete={setPendingDelete}
         />
       </div>
+      <ConfirmDialog
+        open={!!pendingDelete}
+        onOpenChange={(o) => !o && setPendingDelete(null)}
+        title="Eliminar casa"
+        description={`Se eliminará la casa "${pendingDelete?.name}" junto con sus habitantes e invitaciones pendientes. Esta acción no se puede deshacer.`}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="destructive"
+        onConfirm={onConfirmDelete}
+      />
     </div>
   )
 }

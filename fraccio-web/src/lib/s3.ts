@@ -95,6 +95,7 @@ class S3Service {
         Bucket: this.bucketName,
         Key: key,
       })
+      console.log('Deleting file from S3:', key)
       await this.client.send(command)
       return true
     } catch (error) {

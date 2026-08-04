@@ -80,6 +80,83 @@ export const getAllUsersFn = createServerFn({ method: 'GET' }).handler(
 )
 
 /**
+ * Permanently deletes a user from any tenant, including their auth account.
+ * Superadmin only — tenant admins can merely deactivate (`setUserActiveFn`),
+ * which is reversible. This is not.
+ */
+export const deleteUserFn = createServerFn({ method: 'POST' })
+  .inputValidator(z.object({ userId: z.uuid() }))
+  .handler(async ({ data }) => {
+    const superadmin = await requireSuperadmin()
+    const supabase = getSupabaseClient()
+
+    if (data.userId === superadmin.id) {
+      throw new Error('No puedes eliminar tu propia cuenta')
+    }
+
+    // Payments must never be orphaned — deactivate that user instead.
+    const { data: payment } = await supabase
+      .from('payments')
+      .select('id')
+      .eq('user_id', data.userId)
+      .limit(1)
+      .maybeSingle()
+
+    if (payment) {
+      throw new Error(
+        'No se puede eliminar un usuario con pagos registrados. Desactívalo en su fraccionamiento.',
+      )
+    }
+
+    // ponytail: dependents deleted explicitly — the FK delete rules live in the
+    // Supabase dashboard and aren't visible here, so we don't rely on cascade.
+    for (const table of [
+      'house_owners',
+      'house_users',
+      'tenant_admins',
+      'push_subscriptions',
+    ] as const) {
+      const { error } = await supabase
+        .from(table)
+        .delete()
+        .eq('user_id', data.userId)
+      if (error) {
+        logger('error', `Error deleting ${table} for user:`, { error })
+        throw error
+      }
+    }
+
+    // Before the profile row: without a profile `getUser` throws for everyone,
+    // so a failure here must not leave the auth account without one.
+    const { error: authError } = await supabase.auth.admin.deleteUser(
+      data.userId,
+    )
+    if (authError) {
+      logger('error', 'Error deleting auth user:', { error: authError })
+      throw new Error(
+        'No se pudo eliminar la cuenta de acceso del usuario. No se eliminó nada más.',
+      )
+    }
+
+    // No-op when deleting the auth user already cascaded the profile.
+    const { error } = await supabase
+      .from('profiles')
+      .delete()
+      .eq('id', data.userId)
+    if (error) {
+      logger('error', 'Error deleting profile:', { error })
+      throw error
+    }
+
+    logger('info', 'User permanently deleted', {
+      userId: data.userId,
+      by: superadmin.email,
+    })
+
+    return { success: true }
+  })
+
+/**
  * Replaces the set of extra tenants an admin can access. Superadmin only —
  * this grants cross-tenant access.
  */

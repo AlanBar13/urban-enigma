@@ -1,7 +1,12 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
+import { useServerFn } from '@tanstack/react-start'
+import { useState } from 'react'
 import { Mail } from 'lucide-react'
 import { DataTable } from '@/components/shared'
-import { getContactRequestsFn } from '@/lib/contact'
+import { ConfirmDialog } from '@/components/modals'
+import { useToast } from '@/components/notifications'
+import { deleteContactRequestFn, getContactRequestsFn } from '@/lib/contact'
+import { logger } from '@/utils/logger'
 
 export const Route = createFileRoute('/admin/solicitudes')({
   loader: async () => {
@@ -20,8 +25,36 @@ const formatDate = (value: string) =>
     minute: '2-digit',
   }).format(new Date(value))
 
+type ContactRequest = (typeof Route)['types']['loaderData']['requests'][number]
+
 function RouteComponent() {
   const { requests } = Route.useLoaderData()
+  const { addToast } = useToast()
+  const router = useRouter()
+  const deleteContactRequest = useServerFn(deleteContactRequestFn)
+  const [pendingDelete, setPendingDelete] = useState<ContactRequest | null>(
+    null,
+  )
+
+  const onConfirmDelete = async () => {
+    if (!pendingDelete) return
+    try {
+      await deleteContactRequest({ data: { id: pendingDelete.id } })
+      addToast({
+        type: 'success',
+        description: 'Solicitud eliminada correctamente',
+        duration: 5000,
+      })
+      router.invalidate()
+    } catch (error: any) {
+      logger('error', 'Error deleting contact request:', { error })
+      addToast({
+        type: 'error',
+        description: error.message || 'Error al eliminar la solicitud',
+        duration: 10000,
+      })
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -73,6 +106,8 @@ function RouteComponent() {
             },
           ]}
           data={requests}
+          actions
+          onDelete={setPendingDelete}
         />
       ) : (
         <div className="bg-card border rounded-xl text-center py-12 text-muted-foreground">
@@ -80,6 +115,17 @@ function RouteComponent() {
           <p>No hay solicitudes pendientes</p>
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!pendingDelete}
+        onOpenChange={(o) => !o && setPendingDelete(null)}
+        title="Eliminar solicitud"
+        description={`Se eliminará la solicitud de ${pendingDelete?.name}. Esta acción no se puede deshacer.`}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="destructive"
+        onConfirm={onConfirmDelete}
+      />
     </div>
   )
 }

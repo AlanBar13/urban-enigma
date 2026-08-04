@@ -7,15 +7,20 @@ import {
   MapPin,
   Plus,
   Settings,
+  Trash2,
   TrendingUp,
   Users,
 } from 'lucide-react'
 import { useState } from 'react'
 import { useServerFn } from '@tanstack/react-start'
 import type { TenantWithStats } from '@/lib/admin-tenants'
-import { getTenantsWithStatsFn, setTenantFeatureFn } from '@/lib/admin-tenants'
+import {
+  deleteTenantFn,
+  getTenantsWithStatsFn,
+  setTenantFeatureFn,
+} from '@/lib/admin-tenants'
 import { Button } from '@/components/ui/button'
-import { FormModal } from '@/components/modals'
+import { ConfirmDialog, FormModal } from '@/components/modals'
 import { FormField } from '@/components/forms'
 import { Input } from '@/components/ui/input'
 import { createTenantFn, isFeatureEnabled } from '@/lib/tenants'
@@ -55,6 +60,30 @@ function RouteComponent() {
   )
   const [paymentsOn, setPaymentsOn] = useState(false)
   const [emailOn, setEmailOn] = useState(false)
+  const [pendingDelete, setPendingDelete] = useState<TenantWithStats | null>(
+    null,
+  )
+  const deleteTenant = useServerFn(deleteTenantFn)
+
+  const onConfirmDelete = async () => {
+    if (!pendingDelete) return
+    try {
+      await deleteTenant({ data: { tenantId: pendingDelete.id } })
+      addToast({
+        type: 'success',
+        description: `Fraccionamiento "${pendingDelete.name}" eliminado`,
+        duration: 5000,
+      })
+      await router.invalidate()
+    } catch (error: any) {
+      logger('error', 'Error deleting tenant:', { error })
+      addToast({
+        type: 'error',
+        description: error.message || 'Error al eliminar el fraccionamiento',
+        duration: 10000,
+      })
+    }
+  }
 
   const openFeatures = (tenant: TenantWithStats) => {
     setPaymentsOn(isFeatureEnabled(tenant.features, 'payments'))
@@ -269,14 +298,23 @@ function RouteComponent() {
                   <span className="text-sm text-muted-foreground">
                     Funciones
                   </span>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => openFeatures(tenant)}
-                  >
-                    <Settings className="h-4 w-4 mr-2" />
-                    Editar
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => openFeatures(tenant)}
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
+                      Editar
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => setPendingDelete(tenant)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Footer */}
@@ -391,6 +429,17 @@ function RouteComponent() {
           </FormField>
         </div>
       </FormModal>
+
+      <ConfirmDialog
+        open={!!pendingDelete}
+        onOpenChange={(o) => !o && setPendingDelete(null)}
+        title="Eliminar fraccionamiento"
+        description={`Se eliminará "${pendingDelete?.name}". Solo es posible si no tiene usuarios, casas ni pagos registrados.`}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="destructive"
+        onConfirm={onConfirmDelete}
+      />
     </div>
   )
 }

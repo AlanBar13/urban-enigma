@@ -23,6 +23,8 @@ const getPaymentHistorySchema = z.object({
 
 const getPaymentItemsSchema = z.object({
   tenantId: z.string().uuid(),
+  // Admins need to see deactivated items to be able to reactivate them.
+  includeInactive: z.boolean().default(false),
 })
 
 const createPaymentItemSchema = z.object({
@@ -152,13 +154,20 @@ export const getPaymentItemsFn = createServerFn({ method: 'POST' })
 
     assertTenantAccess(user, data.tenantId)
 
-    // Fetch active payment items for the tenant
-    const { data: items, error } = await supabase
+    let query = supabase
       .from('payment_items')
       .select('*')
       .eq('tenant_id', data.tenantId)
-      .eq('is_active', true)
-      .order('created_at', { ascending: false })
+
+    if (data.includeInactive) {
+      assertAdmin(user, 'view inactive payment items')
+    } else {
+      query = query.eq('is_active', true)
+    }
+
+    const { data: items, error } = await query.order('created_at', {
+      ascending: false,
+    })
 
     if (error) {
       logger('error', 'Failed to fetch payment items', { error })
@@ -220,6 +229,39 @@ export const createPaymentItemFn = createServerFn({ method: 'POST' })
     })
 
     return item as PaymentItem
+  })
+
+/**
+ * Activates or deactivates a payment item (admin only). Deactivated items drop
+ * out of `getPaymentItemsFn`, so past `payments` rows keep their meaning.
+ */
+export const setPaymentItemActiveFn = createServerFn({ method: 'POST' })
+  .inputValidator(
+    z.object({
+      tenantId: z.uuid(),
+      itemId: z.number(),
+      active: z.boolean(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const supabase = getSupabaseClient()
+
+    const user = await getUser()
+    assertTenantAccess(user, data.tenantId)
+    assertAdmin(user, 'update payment items')
+
+    const { error } = await supabase
+      .from('payment_items')
+      .update({ is_active: data.active })
+      .eq('id', data.itemId)
+      .eq('tenant_id', data.tenantId)
+
+    if (error) {
+      logger('error', 'Failed to update payment item state', { error })
+      throw new Error('Failed to update payment item')
+    }
+
+    return { success: true }
   })
 
 /**

@@ -61,3 +61,51 @@ export const createHouseFn = createServerFn({ method: 'POST' })
 
     return house
   })
+
+export const deleteHouseFn = createServerFn({ method: 'POST' })
+  .inputValidator(z.object({ tenantId: z.uuid(), houseId: z.number() }))
+  .handler(async ({ data }) => {
+    const supabase = getSupabaseClient()
+
+    const userData = await getUser()
+    assertAdmin(userData)
+    assertTenantAccess(userData, data.tenantId)
+
+    // Payments must never be orphaned — refuse instead of cascading.
+    const { data: payment } = await supabase
+      .from('payments')
+      .select('id')
+      .eq('house_id', data.houseId)
+      .limit(1)
+      .maybeSingle()
+
+    if (payment) {
+      throw new Error('No se puede eliminar una casa con pagos registrados')
+    }
+
+    // ponytail: dependents deleted explicitly — the FK delete rules live in the
+    // Supabase dashboard and aren't visible here, so we don't rely on cascade.
+    for (const table of ['house_users', 'house_owners', 'invites'] as const) {
+      const { error } = await supabase
+        .from(table)
+        .delete()
+        .eq('house_id', data.houseId)
+      if (error) {
+        logger('error', `Error deleting ${table} for house:`, { error })
+        throw error
+      }
+    }
+
+    const { error } = await supabase
+      .from('houses')
+      .delete()
+      .eq('id', data.houseId)
+      .eq('tenant_id', data.tenantId)
+
+    if (error) {
+      logger('error', 'Error deleting house:', { error })
+      throw error
+    }
+
+    return { success: true }
+  })

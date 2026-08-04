@@ -57,6 +57,51 @@ export const setTenantFeatureFn = createServerFn({ method: 'POST' })
     return { features }
   })
 
+/**
+ * Deletes an empty tenant. Refuses when anything still references it — nearly
+ * every table FKs to `tenants` and the cascade rules aren't visible from here,
+ * so wiping a live fraccionamiento must never be one button.
+ */
+export const deleteTenantFn = createServerFn({ method: 'POST' })
+  .inputValidator(z.object({ tenantId: z.uuid() }))
+  .handler(async ({ data }) => {
+    await requireSuperadmin()
+    const supabase = getSupabaseClient()
+
+    const blockers: Array<string> = []
+    const tables = [
+      ['profiles', 'usuarios'],
+      ['houses', 'casas'],
+      ['payments', 'pagos'],
+    ] as const
+
+    for (const [table, label] of tables) {
+      const { count } = await supabase
+        .from(table)
+        .select('*', { count: 'exact', head: true })
+        .eq('tenant_id', data.tenantId)
+      if (count) blockers.push(`${count} ${label}`)
+    }
+
+    if (blockers.length > 0) {
+      throw new Error(
+        `No se puede eliminar: el fraccionamiento tiene ${blockers.join(' y ')}`,
+      )
+    }
+
+    const { error } = await supabase
+      .from('tenants')
+      .delete()
+      .eq('id', data.tenantId)
+
+    if (error) {
+      logger('error', 'Error deleting tenant:', { error })
+      throw error
+    }
+
+    return { success: true }
+  })
+
 export const getTenantsWithStatsFn = createServerFn({ method: 'GET' }).handler(
   async (): Promise<Array<TenantWithStats>> => {
     const supabase = getSupabaseClient()

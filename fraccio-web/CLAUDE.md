@@ -13,11 +13,13 @@ pnpm check        # Prettier --write + ESLint --fix (auto-fix everything)
 ```
 
 Add shadcn components:
+
 ```bash
 pnpm dlx shadcn@latest add <component>
 ```
 
 Test commands:
+
 ```bash
 pnpm test                                                  # Run all tests
 pnpm test:watch                                            # Watch mode
@@ -25,7 +27,7 @@ pnpm vitest run -t "toggles sort"                          # Run tests matching 
 pnpm vitest run src/components/shared/DataTable.test.tsx   # Run a single file
 ```
 
-Tests are co-located (`Foo.tsx` → `Foo.test.tsx`), run under jsdom, and use `@testing-library/react` without `jest-dom`/`user-event`. Route *loaders* are tested; route components are not rendered.
+Tests are co-located (`Foo.tsx` → `Foo.test.tsx`), run under jsdom, and use `@testing-library/react` without `jest-dom`/`user-event`. Route _loaders_ are tested; route components are not rendered.
 
 **Read [TESTING.md](./TESTING.md) before writing a test** — it has the copyable templates and says what does and doesn't warrant a test.
 
@@ -38,6 +40,7 @@ Tests are co-located (`Foo.tsx` → `Foo.test.tsx`), run under jsdom, and use `@
 Routes live in `src/routes/`. The route tree is auto-generated into `src/routeTree.gen.ts`.
 
 Key route segments:
+
 - `/` — landing/login
 - `/admin/` — super-admin area (fraccionamientos, usuarios)
 - `/$tenantId/` — per-tenant workspace (parameterized by tenant slug)
@@ -51,36 +54,36 @@ Each tenant route segment (`/$tenantId/route.tsx`) acts as a layout wrapper that
 
 Business logic and Supabase queries are organized by domain in `src/lib/`. These are called from route loaders/actions as TanStack Start server functions. Key files:
 
-| File | Responsibility |
-|------|---------------|
-| `supabase.ts` | Creates Supabase client (SSR-aware) |
-| `user.ts` | Auth, session, profile |
-| `tenants.ts` | Tenant lookups |
-| `casa.ts` / `houses.ts` | Property management |
-| `anuncios.ts` | Announcements CRUD |
-| `documents.ts` | Doc management (calls S3) |
-| `s3.ts` | AWS S3 presigned URLs |
-| `stripe.ts` | Payment processing |
-| `admin.ts` / `admin-tenants.ts` / `admin-users.ts` | Super-admin operations |
-| `invites/` | Invite token flow |
-| `profiles/queries.ts` | User profile queries |
-| `house_owners/queries.ts` | Owner assignment queries |
+| File                                               | Responsibility                      |
+| -------------------------------------------------- | ----------------------------------- |
+| `supabase.ts`                                      | Creates Supabase client (SSR-aware) |
+| `user.ts`                                          | Auth, session, profile              |
+| `tenants.ts`                                       | Tenant lookups                      |
+| `casa.ts` / `houses.ts`                            | Property management                 |
+| `anuncios.ts`                                      | Announcements CRUD                  |
+| `documents.ts`                                     | Doc management (calls S3)           |
+| `s3.ts`                                            | AWS S3 presigned URLs               |
+| `stripe.ts`                                        | Payment processing                  |
+| `admin.ts` / `admin-tenants.ts` / `admin-users.ts` | Super-admin operations              |
+| `invites/`                                         | Invite token flow                   |
+| `profiles/queries.ts`                              | User profile queries                |
+| `house_owners/queries.ts`                          | Owner assignment queries            |
 
 ### Component Library — `src/components/`
 
 Custom domain-organized components (not just shadcn). See `src/components/COMPONENTS_GUIDE.md` for full API docs.
 
-| Folder | Contents |
-|--------|----------|
-| `ui/` | shadcn base primitives (button, card, input, badge, label, spinner) |
-| `layouts/` | DashboardLayout, PageHeader, Section, Stack, Grid |
-| `shared/` | DataTable, Badge, Avatar, List, Skeleton |
-| `forms/` | FormField, MultiStepForm, DynamicFieldArray, CheckboxGroup, RadioGroup, Select, Textarea |
-| `modals/` | Dialog, ConfirmDialog, AlertDialog, FormModal, Drawer |
-| `navigation/` | SidebarNav, Breadcrumbs, Tabs, Pagination |
-| `notifications/` | Alert, Callout, SnackBar, Toast (via `useToast` hook) |
-| `tenant/` | TenantSelector, TenantHeader, RoleBadge |
-| `admin/` | Container components for admin CRUD pages |
+| Folder           | Contents                                                                                 |
+| ---------------- | ---------------------------------------------------------------------------------------- |
+| `ui/`            | shadcn base primitives (button, card, input, badge, label, spinner)                      |
+| `layouts/`       | DashboardLayout, PageHeader, Section, Stack, Grid                                        |
+| `shared/`        | DataTable, Badge, Avatar, List, Skeleton                                                 |
+| `forms/`         | FormField, MultiStepForm, DynamicFieldArray, CheckboxGroup, RadioGroup, Select, Textarea |
+| `modals/`        | Dialog, ConfirmDialog, AlertDialog, FormModal, Drawer                                    |
+| `navigation/`    | SidebarNav, Breadcrumbs, Tabs, Pagination                                                |
+| `notifications/` | Alert, Callout, SnackBar, Toast (via `useToast` hook)                                    |
+| `tenant/`        | TenantSelector, TenantHeader, RoleBadge                                                  |
+| `admin/`         | Container components for admin CRUD pages                                                |
 
 Toast notifications require `<ToastProvider>` + `<ToastContainer>` in `__root.tsx` (already configured). Use `useToast()` → `addToast({ type, title, description })` anywhere in the tree.
 

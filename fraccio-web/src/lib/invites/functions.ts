@@ -22,6 +22,11 @@ export const getInviteFn = createServerFn({ method: 'POST' })
     return invite
   })
 
+/**
+ * Deletes an *expired* invite. Called from unauthenticated contexts, so it
+ * cannot require a session — scoping it to expired rows is what makes it safe
+ * to call with a guessed id. Consumed invites are deleted by `signupFn`.
+ */
 export const removeInviteFn = createServerFn({ method: 'POST' })
   .inputValidator(z.object({ token: z.string() }))
   .handler(async ({ data }) => {
@@ -30,6 +35,7 @@ export const removeInviteFn = createServerFn({ method: 'POST' })
       .from('invites')
       .delete()
       .eq('id', data.token)
+      .lt('expires_at', new Date().toISOString())
     if (error) {
       logger('error', 'Error removing invite:', { error })
       throw error

@@ -11,8 +11,8 @@ const getDocumentsSchema = z.object({
 })
 
 const deleteDocumentSchema = z.object({
+  tenantId: z.uuid(),
   documentId: z.uuid(),
-  s3Key: z.string(),
 })
 
 // Types
@@ -152,18 +152,35 @@ export const deleteDocumentFn = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const supabase = getSupabaseClient()
 
-    // Get authenticated user
-    assertAdmin(await getUser(), 'delete documents')
+    const user = await getUser()
+    assertAdmin(user, 'delete documents')
+    assertTenantAccess(user, data.tenantId)
 
     try {
-      // Delete from S3
-      await s3Service.deleteFile(data.s3Key)
+      // Read the key from the row rather than trusting the client with an S3 path.
+      const { data: document, error: fetchError } = await supabase
+        .from('documents')
+        .select('s3_key')
+        .eq('id', data.documentId)
+        .eq('tenant_id', data.tenantId)
+        .single()
 
-      // Delete from database
+      // .single() errors when the row is missing, which also covers a forged
+      // documentId from another tenant.
+      if (fetchError) {
+        logger('error', 'Error fetching document to delete', {
+          error: fetchError,
+        })
+        throw new Error('Documento no encontrado')
+      }
+
+      await s3Service.deleteFile(document.s3_key)
+
       const { error } = await supabase
         .from('documents')
         .delete()
         .eq('id', data.documentId)
+        .eq('tenant_id', data.tenantId)
 
       if (error) {
         logger('error', 'Error deleting document from database', { error })

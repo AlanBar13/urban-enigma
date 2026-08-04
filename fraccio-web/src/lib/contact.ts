@@ -1,6 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { getSupabaseClient } from './supabase'
+import { requireSuperadmin } from './admin-users'
 import { logger } from '@/utils/logger'
 
 /** Superadmin-only: access is gated by the `/admin` route's beforeLoad. */
@@ -17,6 +18,23 @@ export const getContactRequestsFn = createServerFn({ method: 'GET' }).handler(
     return data
   },
 )
+
+/** Superadmin-only: clears a handled access request. */
+export const deleteContactRequestFn = createServerFn({ method: 'POST' })
+  .inputValidator(z.object({ id: z.uuid() }))
+  .handler(async ({ data }) => {
+    await requireSuperadmin()
+
+    const { error } = await getSupabaseClient()
+      .from('contact_requests')
+      .delete()
+      .eq('id', data.id)
+    if (error) {
+      logger('error', 'Error deleting contact request:', { error })
+      throw error
+    }
+    return { success: true }
+  })
 
 /** Public, unauthenticated endpoint — the landing page access request form. */
 export const submitContactRequestFn = createServerFn({ method: 'POST' })
