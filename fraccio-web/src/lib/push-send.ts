@@ -52,6 +52,8 @@ export async function sendPushToTenant(options: {
   path: string
   /** Mirrors announcements.owners_only — restricts delivery to house owners */
   ownersOnly?: boolean
+  /** Restricts delivery to these profile ids (e.g. an assigned payment item) */
+  userIds?: Array<string>
 }): Promise<void> {
   try {
     if (!configureVapid()) return
@@ -70,6 +72,13 @@ export async function sendPushToTenant(options: {
 
     let targets = subscriptions as Array<PushSubscriptionRow>
     if (targets.length === 0) return
+
+    // Same visibility rule as getPaymentItemsFn: an assigned item only reaches its targets
+    if (options.userIds) {
+      const wanted = new Set(options.userIds)
+      targets = targets.filter((t) => wanted.has(t.user_id))
+      if (targets.length === 0) return
+    }
 
     // Same visibility rule as getAnunciosFn: non-owners never see owners-only content
     if (options.ownersOnly) {

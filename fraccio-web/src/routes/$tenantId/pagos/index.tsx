@@ -1,6 +1,7 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { useState } from 'react'
+import { CheckCircle } from 'lucide-react'
 import {
   createCheckoutSessionFn,
   getPaymentHistoryFn,
@@ -44,6 +45,14 @@ function RouteComponent() {
   const [loading, setLoading] = useState<number | null>(null)
   // UX only — the backend rejects checkout (409) until the tenant finishes Stripe onboarding
   const paymentsEnabled = tenant.stripe_charges_enabled
+
+  // Concepts this user has already paid at least once. Paying again stays allowed —
+  // a concept can be recurring, and nothing here should block a second payment.
+  const paidItemIds = new Set(
+    history
+      .filter((p) => p.status === 'completed' && p.payment_item_id !== null)
+      .map((p) => p.payment_item_id),
+  )
 
   const handlePayment = async (itemId: number) => {
     setLoading(itemId)
@@ -141,33 +150,47 @@ function RouteComponent() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {items.map((item) => (
-              <Card key={item.id} className="p-6 flex flex-col">
-                <div className="flex-1">
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="text-lg font-semibold">{item.name}</h3>
-                    <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded">
-                      {getPaymentTypeLabel(item.payment_type)}
-                    </span>
+            {items.map((item) => {
+              const paid = paidItemIds.has(item.id)
+              return (
+                <Card key={item.id} className="p-6 flex flex-col">
+                  <div className="flex-1">
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="text-lg font-semibold">{item.name}</h3>
+                      <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded">
+                        {getPaymentTypeLabel(item.payment_type)}
+                      </span>
+                    </div>
+                    {paid && (
+                      <span className="inline-flex items-center gap-1 text-xs px-2 py-1 mb-2 rounded bg-green-100 text-green-800">
+                        <CheckCircle className="w-3 h-3" />
+                        Pagado
+                      </span>
+                    )}
+                    {item.description && (
+                      <p className="text-gray-600 text-sm mb-4">
+                        {item.description}
+                      </p>
+                    )}
+                    <div className="text-2xl font-bold text-green-600 mb-4">
+                      {formatCurrency(item.amount)}
+                    </div>
                   </div>
-                  {item.description && (
-                    <p className="text-gray-600 text-sm mb-4">
-                      {item.description}
-                    </p>
-                  )}
-                  <div className="text-2xl font-bold text-green-600 mb-4">
-                    {formatCurrency(item.amount)}
-                  </div>
-                </div>
-                <Button
-                  onClick={() => handlePayment(item.id)}
-                  disabled={loading !== null || !paymentsEnabled}
-                  className="w-full"
-                >
-                  {loading === item.id ? 'Procesando...' : 'Pagar'}
-                </Button>
-              </Card>
-            ))}
+                  <Button
+                    onClick={() => handlePayment(item.id)}
+                    disabled={loading !== null || !paymentsEnabled}
+                    variant={paid ? 'outline' : 'default'}
+                    className="w-full"
+                  >
+                    {loading === item.id
+                      ? 'Procesando...'
+                      : paid
+                        ? 'Pagar de nuevo'
+                        : 'Pagar'}
+                  </Button>
+                </Card>
+              )
+            })}
           </div>
         )}
       </div>

@@ -100,6 +100,21 @@ describe('sendPushToTenant', () => {
     })
   })
 
+  it('restricts an assigned payment item to its targets', async () => {
+    await sendPushToTenant({
+      tenantId: 't',
+      title: 'Multa',
+      body: 'b',
+      path: 'pagos',
+      userIds: ['renter-user'],
+    })
+
+    expect(sendNotification).toHaveBeenCalledTimes(1)
+    expect(sendNotification.mock.calls[0][0]).toMatchObject({
+      endpoint: 'https://push.example/2',
+    })
+  })
+
   it('deletes subscriptions the push service reports as gone', async () => {
     sendNotification
       .mockRejectedValueOnce({ statusCode: 410 })

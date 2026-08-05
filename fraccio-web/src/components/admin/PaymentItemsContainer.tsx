@@ -4,10 +4,14 @@ import { useRouter } from '@tanstack/react-router'
 import { Input } from '../ui/input'
 import { DataTable } from '../shared'
 import { useToast } from '@/components/notifications'
-import { createPaymentItemFn, setPaymentItemActiveFn } from '@/lib/stripe'
+import {
+  createPaymentItemFn,
+  setPaymentItemActiveFn,
+  setPaymentItemAssigneesFn,
+} from '@/lib/stripe'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog, FormModal } from '@/components/modals'
-import { FormField, Select } from '@/components/forms'
+import { CheckboxGroup, FormField, Select } from '@/components/forms'
 import { logger } from '@/utils/logger'
 
 interface PaymentItem {
@@ -19,15 +23,28 @@ interface PaymentItem {
   currency: string
   payment_type: string
   is_active: boolean
+  /** null = visible to the whole tenant; otherwise only these profile ids */
+  assigned_user_ids: Array<string> | null
   created_at: string
+}
+
+interface TenantUser {
+  id: string
+  full_name: string | null
+  is_active: boolean | null
 }
 
 interface Props {
   tenantId: string
   items: Array<PaymentItem>
+  users: Array<TenantUser>
 }
 
-export default function PaymentItemsContainer({ tenantId, items }: Props) {
+export default function PaymentItemsContainer({
+  tenantId,
+  items,
+  users,
+}: Props) {
   const { addToast } = useToast()
   const router = useRouter()
   const [open, setOpen] = useState(false)
@@ -37,9 +54,24 @@ export default function PaymentItemsContainer({ tenantId, items }: Props) {
   const [paymentType, setPaymentType] = useState<
     'maintenance' | 'assessment' | 'fine'
   >('maintenance')
+  const [scope, setScope] = useState<'all' | 'specific'>('all')
+  const [assignedIds, setAssignedIds] = useState<Array<string>>([])
   const [pendingToggle, setPendingToggle] = useState<PaymentItem | null>(null)
+  const [editing, setEditing] = useState<PaymentItem | null>(null)
+  const [editingIds, setEditingIds] = useState<Array<string>>([])
   const createPaymentItem = useServerFn(createPaymentItemFn)
   const setPaymentItemActive = useServerFn(setPaymentItemActiveFn)
+  const setPaymentItemAssignees = useServerFn(setPaymentItemAssigneesFn)
+
+  // Deactivated users can't log in, so offering them as targets is a dead end
+  const selectableUsers = users.filter((u) => u.is_active !== false)
+  const userOptions = selectableUsers.map((u) => ({
+    label: u.full_name || u.id,
+    value: u.id,
+  }))
+  const namesById = new Map(
+    users.map((u) => [u.id, u.full_name || 'Usuario sin nombre']),
+  )
 
   const onSubmit = async () => {
     if (!name.trim()) {
@@ -61,6 +93,16 @@ export default function PaymentItemsContainer({ tenantId, items }: Props) {
       return
     }
 
+    // Falling back to "todos" here would silently bill the whole fraccionamiento
+    if (scope === 'specific' && assignedIds.length === 0) {
+      addToast({
+        type: 'error',
+        description: 'Selecciona al menos un usuario',
+        duration: 5000,
+      })
+      return
+    }
+
     try {
       await createPaymentItem({
         data: {
@@ -69,6 +111,7 @@ export default function PaymentItemsContainer({ tenantId, items }: Props) {
           description: description.trim() || undefined,
           amount: amountNum,
           paymentType,
+          assignedUserIds: scope === 'specific' ? assignedIds : undefined,
         },
       })
 
@@ -92,7 +135,33 @@ export default function PaymentItemsContainer({ tenantId, items }: Props) {
       setDescription('')
       setAmount('')
       setPaymentType('maintenance')
+      setScope('all')
+      setAssignedIds([])
       setOpen(false)
+    }
+  }
+
+  const onSaveAssignees = async () => {
+    if (!editing) return
+    try {
+      await setPaymentItemAssignees({
+        data: { tenantId, itemId: editing.id, assignedUserIds: editingIds },
+      })
+      addToast({
+        type: 'success',
+        description: `Visibilidad de "${editing.name}" actualizada`,
+        duration: 5000,
+      })
+      router.invalidate()
+    } catch (error: any) {
+      logger('error', 'Error updating payment item assignees:', { error })
+      addToast({
+        type: 'error',
+        description: error.message || 'Error al actualizar la visibilidad',
+        duration: 10000,
+      })
+    } finally {
+      setEditing(null)
     }
   }
 
@@ -202,6 +271,42 @@ export default function PaymentItemsContainer({ tenantId, items }: Props) {
             <option value="fine">Multa</option>
           </Select>
         </FormField>
+
+        <FormField label="¿Quién puede ver y pagar este concepto?">
+          <Select
+            value={scope}
+            onChange={(e) => setScope(e.target.value as 'all' | 'specific')}
+          >
+            <option value="all">Todos los residentes</option>
+            <option value="specific">Solo usuarios seleccionados</option>
+          </Select>
+        </FormField>
+
+        {scope === 'specific' && (
+          <div className="max-h-64 overflow-y-auto rounded border p-3">
+            <CheckboxGroup
+              options={userOptions}
+              value={assignedIds}
+              onChange={setAssignedIds}
+            />
+          </div>
+        )}
+      </FormModal>
+
+      <FormModal
+        open={!!editing}
+        onOpenChange={(o) => !o && setEditing(null)}
+        title={`Visibilidad de "${editing?.name ?? ''}"`}
+        description="Sin usuarios seleccionados, el concepto es visible para todos los residentes."
+        onSubmit={onSaveAssignees}
+      >
+        <div className="max-h-64 overflow-y-auto rounded border p-3">
+          <CheckboxGroup
+            options={userOptions}
+            value={editingIds}
+            onChange={setEditingIds}
+          />
+        </div>
       </FormModal>
 
       <div className="mt-6">
@@ -225,6 +330,16 @@ export default function PaymentItemsContainer({ tenantId, items }: Props) {
               render: (value: number) => formatCurrency(value),
             },
             {
+              key: 'assigned_user_ids',
+              label: 'Visible para',
+              render: (value: Array<string> | null) => {
+                if (!value || value.length === 0) return 'Todos'
+                if (value.length <= 3)
+                  return value.map((id) => namesById.get(id) || id).join(', ')
+                return `${value.length} usuarios`
+              },
+            },
+            {
               key: 'is_active',
               label: 'Estado',
               render: (value: boolean) => getStatusBadge(value),
@@ -242,6 +357,10 @@ export default function PaymentItemsContainer({ tenantId, items }: Props) {
           ]}
           striped
           actions
+          onEdit={(item: PaymentItem) => {
+            setEditingIds(item.assigned_user_ids ?? [])
+            setEditing(item)
+          }}
           onDelete={setPendingToggle}
         />
       </div>

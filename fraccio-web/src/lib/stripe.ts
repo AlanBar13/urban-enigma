@@ -33,6 +33,14 @@ const createPaymentItemSchema = z.object({
   description: z.string().optional(),
   amount: z.number().positive('Amount must be positive'),
   paymentType: z.enum(['maintenance', 'assessment', 'fine']),
+  // Empty/omitted = visible to the whole tenant
+  assignedUserIds: z.array(z.string().uuid()).optional(),
+})
+
+const setPaymentItemAssigneesSchema = z.object({
+  tenantId: z.string().uuid(),
+  itemId: z.number(),
+  assignedUserIds: z.array(z.string().uuid()),
 })
 
 const getAdminPaymentsSchema = z.object({
@@ -49,6 +57,8 @@ interface PaymentItem {
   currency: string
   payment_type: string
   is_active: boolean
+  /** null = every member of the tenant; otherwise only these profile ids */
+  assigned_user_ids: Array<string> | null
   created_at: string
 }
 
@@ -57,6 +67,8 @@ interface Payment {
   tenant_id: string
   user_id: string
   house_id: number
+  /** null on rows created before the column existed */
+  payment_item_id: number | null
   amount: number
   currency: string
   status: string
@@ -162,7 +174,13 @@ export const getPaymentItemsFn = createServerFn({ method: 'POST' })
     if (data.includeInactive) {
       assertAdmin(user, 'view inactive payment items')
     } else {
-      query = query.eq('is_active', true)
+      // Unassigned items are tenant-wide; assigned ones only reach their targets.
+      // The backend re-checks this at checkout — this filter is visibility only.
+      // ponytail: uuid[] column, no join table. Move to `payment_item_targets`
+      // if a target ever needs its own metadata (amount, due date, paid flag).
+      query = query
+        .eq('is_active', true)
+        .or(`assigned_user_ids.is.null,assigned_user_ids.cs.{${user.id}}`)
     }
 
     const { data: items, error } = await query.order('created_at', {
@@ -202,6 +220,9 @@ export const createPaymentItemFn = createServerFn({ method: 'POST' })
         currency: 'mxn',
         payment_type: data.paymentType,
         is_active: true,
+        assigned_user_ids: data.assignedUserIds?.length
+          ? data.assignedUserIds
+          : null,
       })
       .select()
       .single()
@@ -226,6 +247,9 @@ export const createPaymentItemFn = createServerFn({ method: 'POST' })
         currency: 'MXN',
       }).format(data.amount)}`,
       path: 'pagos',
+      ...(data.assignedUserIds?.length
+        ? { userIds: data.assignedUserIds }
+        : {}),
     })
 
     return item as PaymentItem
@@ -258,6 +282,37 @@ export const setPaymentItemActiveFn = createServerFn({ method: 'POST' })
 
     if (error) {
       logger('error', 'Failed to update payment item state', { error })
+      throw new Error('Failed to update payment item')
+    }
+
+    return { success: true }
+  })
+
+/**
+ * Replaces the list of users a payment item is assigned to (admin only).
+ * An empty list means "visible to the whole tenant".
+ */
+export const setPaymentItemAssigneesFn = createServerFn({ method: 'POST' })
+  .inputValidator(setPaymentItemAssigneesSchema)
+  .handler(async ({ data }) => {
+    const supabase = getSupabaseClient()
+
+    const user = await getUser()
+    assertTenantAccess(user, data.tenantId)
+    assertAdmin(user, 'update payment items')
+
+    const { error } = await supabase
+      .from('payment_items')
+      .update({
+        assigned_user_ids: data.assignedUserIds.length
+          ? data.assignedUserIds
+          : null,
+      })
+      .eq('id', data.itemId)
+      .eq('tenant_id', data.tenantId)
+
+    if (error) {
+      logger('error', 'Failed to update payment item assignees', { error })
       throw new Error('Failed to update payment item')
     }
 

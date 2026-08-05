@@ -8,6 +8,7 @@ import {
   getPaymentItemsFn,
   getStripeAccountStatusFn,
 } from '@/lib/stripe'
+import { getTenantUsersFn } from '@/lib/user'
 import { isFeatureEnabled } from '@/lib/tenants'
 import PaymentItemsContainer from '@/components/admin/PaymentItemsContainer'
 import { Card } from '@/components/ui/card'
@@ -44,19 +45,23 @@ export const Route = createFileRoute('/$tenantId/admin-pagos')({
       data: { tenantId: context.tenant.id },
     })
 
-    const [items, payments, stripeStatus] = await Promise.all([
+    // Needed so the admin can assign a payment item to specific residents
+    const usersReq = getTenantUsersFn({ data: { tenantId: context.tenant.id } })
+
+    const [items, payments, stripeStatus, users] = await Promise.all([
       itemsReq,
       paymentsReq,
       stripeStatusReq,
+      usersReq,
     ])
-    return { items, payments, stripeStatus }
+    return { items, payments, stripeStatus, users }
   },
   component: RouteComponent,
 })
 
 function RouteComponent() {
   const { tenant } = Route.useRouteContext()
-  const { items, payments, stripeStatus } = Route.useLoaderData()
+  const { items, payments, stripeStatus, users } = Route.useLoaderData()
   const { addToast } = useToast()
   const createOnboardingLink = useServerFn(createStripeOnboardingLinkFn)
   const [connecting, setConnecting] = useState(false)
@@ -223,7 +228,11 @@ function RouteComponent() {
       {/* Payment Items Management */}
       <div>
         <h2 className="text-xl font-semibold mb-4">Conceptos de Pago</h2>
-        <PaymentItemsContainer tenantId={tenant.id} items={items} />
+        <PaymentItemsContainer
+          tenantId={tenant.id}
+          items={items}
+          users={users}
+        />
       </div>
 
       {/* All Payments Table */}

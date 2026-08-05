@@ -124,6 +124,12 @@ class PaymentsController {
             throw new Error("Payment item not found or inactive");
         }
 
+        // null assigned_user_ids = tenant-wide. The web only hides these items;
+        // this is the check that actually prevents paying someone else's charge.
+        if (paymentItem.assigned_user_ids && !paymentItem.assigned_user_ids.includes(userId)) {
+            throw new Error("This payment is not assigned to you");
+        }
+
         const { data: houseUser, error: houseError } = await this.supabase
             .from("house_users")
             .select("house_id, houses(tenant_id)")
@@ -143,6 +149,8 @@ class PaymentsController {
                 tenant_id: tenantId,
                 user_id: userId,
                 house_id: houseUser.house_id,
+                // Lets the resident's /pagos page mark the concept as already paid
+                payment_item_id: paymentItem.id,
                 amount: paymentItem.amount,
                 currency: paymentItem.currency,
                 status: "pending",
