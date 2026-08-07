@@ -18,18 +18,26 @@ import {
   getPaymentItemsFn,
 } from '@/lib/stripe'
 import { getHousesFn } from '@/lib/houses'
+import { isFeatureEnabled } from '@/lib/tenants'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 
 export const Route = createFileRoute('/$tenantId/')({
+  // ponytail: user/tenant come through the loader, not useRouteContext — the
+  // context is empty on the first render after a beforeLoad redirect lands here
   loader: async ({ context }) => {
     const isAdmin =
       context.user.role === 'admin' || context.user.role === 'superadmin'
+    const paymentsOn = isFeatureEnabled(context.tenant.features, 'payments')
 
     const [announcements, paymentHistory, paymentItems] = await Promise.all([
       getAnunciosFn({ data: { tenantId: context.tenant.id } }),
-      getPaymentHistoryFn({ data: { tenantId: context.tenant.id } }),
-      getPaymentItemsFn({ data: { tenantId: context.tenant.id } }),
+      paymentsOn
+        ? getPaymentHistoryFn({ data: { tenantId: context.tenant.id } })
+        : [],
+      paymentsOn
+        ? getPaymentItemsFn({ data: { tenantId: context.tenant.id } })
+        : [],
     ])
 
     let adminPayments: Awaited<ReturnType<typeof getAdminPaymentsFn>> | null =
@@ -38,7 +46,9 @@ export const Route = createFileRoute('/$tenantId/')({
 
     if (isAdmin) {
       ;[adminPayments, houses] = await Promise.all([
-        getAdminPaymentsFn({ data: { tenantId: context.tenant.id } }),
+        paymentsOn
+          ? getAdminPaymentsFn({ data: { tenantId: context.tenant.id } })
+          : [],
         getHousesFn({ data: { tenantId: context.tenant.id } }),
       ])
     }
@@ -49,18 +59,28 @@ export const Route = createFileRoute('/$tenantId/')({
       paymentItems,
       adminPayments,
       houses,
+      isAdmin,
+      paymentsOn,
+      tenantName: context.tenant.name,
+      userName: context.user.full_name ?? context.user.email ?? 'Usuario',
     }
   },
   component: RouteComponent,
 })
 
 function RouteComponent() {
-  const { tenant, user } = Route.useRouteContext()
-  const { announcements, paymentHistory, paymentItems, adminPayments, houses } =
-    Route.useLoaderData()
+  const {
+    announcements,
+    paymentHistory,
+    paymentItems,
+    adminPayments,
+    houses,
+    isAdmin,
+    paymentsOn,
+    tenantName,
+    userName,
+  } = Route.useLoaderData()
   const params = Route.useParams()
-
-  const isAdmin = user.role === 'admin' || user.role === 'superadmin'
 
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat('es-MX', {
@@ -128,79 +148,91 @@ function RouteComponent() {
     return map[type] ?? type
   }
 
-  const statsCards = isAdmin
-    ? [
-        {
-          title: 'Ingresos Totales',
-          value: formatCurrency(adminTotalRevenue),
-          icon: DollarSign,
-          color: 'text-green-600',
-          bg: 'bg-green-100',
-        },
-        {
-          title: 'Pagos Completados',
-          value: adminCompleted.length.toString(),
-          icon: CheckCircle,
-          color: 'text-blue-600',
-          bg: 'bg-blue-100',
-        },
-        {
-          title: 'Pagos Pendientes',
-          value: adminPending.length.toString(),
-          icon: Clock,
-          color: 'text-yellow-600',
-          bg: 'bg-yellow-100',
-        },
-        {
-          title: 'Pagos Fallidos',
-          value: adminFailed.length.toString(),
-          icon: XCircle,
-          color: 'text-red-600',
-          bg: 'bg-red-100',
-        },
-        {
-          title: 'Total de Casas',
-          value: (houses?.length ?? 0).toString(),
-          icon: Building,
-          color: 'text-purple-600',
-          bg: 'bg-purple-100',
-        },
-        {
-          title: 'Total Anuncios',
-          value: announcements.length.toString(),
-          icon: Bell,
-          color: 'text-indigo-600',
-          bg: 'bg-indigo-100',
-        },
-      ]
-    : [
-        {
-          title: 'Total Pagado',
-          value: formatCurrency(userTotalPaid),
-          icon: DollarSign,
-          color: 'text-green-600',
-          bg: 'bg-green-100',
-        },
-        {
-          title: 'Pagos Realizados',
-          value: userCompleted.length.toString(),
-          icon: CheckCircle,
-          color: 'text-blue-600',
-          bg: 'bg-blue-100',
-        },
-        {
-          title: 'Pagos Pendientes',
-          value: userPending.length.toString(),
-          icon: Clock,
-          color: 'text-yellow-600',
-          bg: 'bg-yellow-100',
-        },
-      ]
+  const paymentStats = !paymentsOn
+    ? []
+    : isAdmin
+      ? [
+          {
+            title: 'Ingresos Totales',
+            value: formatCurrency(adminTotalRevenue),
+            icon: DollarSign,
+            color: 'text-green-600',
+            bg: 'bg-green-100',
+          },
+          {
+            title: 'Pagos Completados',
+            value: adminCompleted.length.toString(),
+            icon: CheckCircle,
+            color: 'text-blue-600',
+            bg: 'bg-blue-100',
+          },
+          {
+            title: 'Pagos Pendientes',
+            value: adminPending.length.toString(),
+            icon: Clock,
+            color: 'text-yellow-600',
+            bg: 'bg-yellow-100',
+          },
+          {
+            title: 'Pagos Fallidos',
+            value: adminFailed.length.toString(),
+            icon: XCircle,
+            color: 'text-red-600',
+            bg: 'bg-red-100',
+          },
+        ]
+      : [
+          {
+            title: 'Total Pagado',
+            value: formatCurrency(userTotalPaid),
+            icon: DollarSign,
+            color: 'text-green-600',
+            bg: 'bg-green-100',
+          },
+          {
+            title: 'Pagos Realizados',
+            value: userCompleted.length.toString(),
+            icon: CheckCircle,
+            color: 'text-blue-600',
+            bg: 'bg-blue-100',
+          },
+          {
+            title: 'Pagos Pendientes',
+            value: userPending.length.toString(),
+            icon: Clock,
+            color: 'text-yellow-600',
+            bg: 'bg-yellow-100',
+          },
+        ]
+
+  const statsCards = [
+    ...paymentStats,
+    ...(isAdmin
+      ? [
+          {
+            title: 'Total de Casas',
+            value: (houses?.length ?? 0).toString(),
+            icon: Building,
+            color: 'text-purple-600',
+            bg: 'bg-purple-100',
+          },
+          {
+            title: 'Total Anuncios',
+            value: announcements.length.toString(),
+            icon: Bell,
+            color: 'text-indigo-600',
+            bg: 'bg-indigo-100',
+          },
+        ]
+      : []),
+  ]
 
   const quickLinks = [
     { label: 'Anuncios', path: `/${params.tenantId}/anuncios`, icon: Bell },
     { label: 'Mi Casa', path: `/${params.tenantId}/casa`, icon: Home },
-    { label: 'Pagos', path: `/${params.tenantId}/pagos`, icon: Banknote },
+    ...(paymentsOn
+      ? [{ label: 'Pagos', path: `/${params.tenantId}/pagos`, icon: Banknote }]
+      : []),
     {
       label: 'Documentos',
       path: `/${params.tenantId}/documentos`,
@@ -213,10 +245,9 @@ function RouteComponent() {
       {/* Welcome */}
       <div>
         <h1 className="text-2xl font-bold">
-          Bienvenido,{' '}
-          {(user.full_name ?? user.email ?? 'Usuario').split(' ')[0]}
+          Bienvenido, {userName.split(' ')[0]}
         </h1>
-        <p className="text-muted-foreground mt-0.5">{tenant.name}</p>
+        <p className="text-muted-foreground mt-0.5">{tenantName}</p>
       </div>
 
       {/* Stats Cards */}
@@ -244,7 +275,9 @@ function RouteComponent() {
       </div>
 
       {/* Announcements + Payments */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div
+        className={`grid grid-cols-1 ${paymentsOn ? 'lg:grid-cols-2' : ''} gap-6`}
+      >
         {/* Recent Announcements */}
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
@@ -302,65 +335,68 @@ function RouteComponent() {
         </Card>
 
         {/* Recent Payments */}
-        <Card className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Banknote className="w-4 h-4 text-muted-foreground" />
-              <h2 className="text-base font-semibold">
-                {isAdmin ? 'Pagos Recientes' : 'Mis Pagos Recientes'}
-              </h2>
-            </div>
-            <Link
-              to={isAdmin ? '/$tenantId/admin-pagos' : '/$tenantId/pagos'}
-              params={{ tenantId: params.tenantId }}
-            >
-              <Button
-                variant="ghost"
-                size="sm"
-                className="gap-1 text-xs h-7 px-2"
+        {paymentsOn && (
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Banknote className="w-4 h-4 text-muted-foreground" />
+                <h2 className="text-base font-semibold">
+                  {isAdmin ? 'Pagos Recientes' : 'Mis Pagos Recientes'}
+                </h2>
+              </div>
+              <Link
+                to={isAdmin ? '/$tenantId/admin-pagos' : '/$tenantId/pagos'}
+                params={{ tenantId: params.tenantId }}
               >
-                Ver todos <ArrowRight className="w-3 h-3" />
-              </Button>
-            </Link>
-          </div>
-
-          {recentPayments.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">
-              No hay pagos registrados
-            </p>
-          ) : (
-            <div className="divide-y divide-[var(--surface-container-highest)]">
-              {recentPayments.map((payment) => {
-                const p = payment as typeof payment & {
-                  profiles?: { full_name: string }
-                  houses?: { name: string }
-                }
-                return (
-                  <div key={p.id} className="flex items-center gap-3 py-2.5">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">
-                        {isAdmin
-                          ? (p.profiles?.full_name ?? 'Usuario')
-                          : (p.description ?? paymentTypeLabel(p.payment_type))}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {isAdmin
-                          ? `${(p.houses as { name: string } | undefined)?.name ?? '-'} · ${formatDate(p.created_at)}`
-                          : formatDate(p.created_at)}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-sm font-semibold tabular-nums">
-                        {formatCurrency(p.amount)}
-                      </span>
-                      {getStatusBadge(p.status)}
-                    </div>
-                  </div>
-                )
-              })}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1 text-xs h-7 px-2"
+                >
+                  Ver todos <ArrowRight className="w-3 h-3" />
+                </Button>
+              </Link>
             </div>
-          )}
-        </Card>
+
+            {recentPayments.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">
+                No hay pagos registrados
+              </p>
+            ) : (
+              <div className="divide-y divide-[var(--surface-container-highest)]">
+                {recentPayments.map((payment) => {
+                  const p = payment as typeof payment & {
+                    profiles?: { full_name: string }
+                    houses?: { name: string }
+                  }
+                  return (
+                    <div key={p.id} className="flex items-center gap-3 py-2.5">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">
+                          {isAdmin
+                            ? (p.profiles?.full_name ?? 'Usuario')
+                            : (p.description ??
+                              paymentTypeLabel(p.payment_type))}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {isAdmin
+                            ? `${(p.houses as { name: string } | undefined)?.name ?? '-'} · ${formatDate(p.created_at)}`
+                            : formatDate(p.created_at)}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-sm font-semibold tabular-nums">
+                          {formatCurrency(p.amount)}
+                        </span>
+                        {getStatusBadge(p.status)}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </Card>
+        )}
       </div>
 
       {/* Payment Items Available */}
