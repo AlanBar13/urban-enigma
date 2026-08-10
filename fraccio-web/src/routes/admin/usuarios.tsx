@@ -11,20 +11,27 @@ import { useToast } from '@/components/notifications'
 import { listTenantsFn } from '@/lib/tenants'
 import SAUserForm from '@/components/admin/SAUserForm'
 import SAUserTenantsModal from '@/components/admin/SAUserTenantsModal'
+import PendingInvites from '@/components/admin/PendingInvites'
+import { getAllInvitesFn } from '@/lib/invites/functions'
 import { logger } from '@/utils/logger'
 
 export const Route = createFileRoute('/admin/usuarios')({
   loader: async () => {
     const usersReq = getAllUsersFn()
     const tenantsReq = listTenantsFn()
-    const [users, tenants] = await Promise.all([usersReq, tenantsReq])
-    return { users, tenants }
+    const invitesReq = getAllInvitesFn()
+    const [users, tenants, invites] = await Promise.all([
+      usersReq,
+      tenantsReq,
+      invitesReq,
+    ])
+    return { users, tenants, invites }
   },
   component: RouteComponent,
 })
 
 function RouteComponent() {
-  const { users, tenants } = Route.useLoaderData()
+  const { users, tenants, invites } = Route.useLoaderData()
   const { addToast } = useToast()
   const router = useRouter()
   const deleteUser = useServerFn(deleteUserFn)
@@ -272,6 +279,8 @@ function RouteComponent() {
           </table>
         </div>
       </div>
+
+      <PendingInvites invites={invites} showTenant />
 
       <ConfirmDialog
         open={!!pendingDelete}

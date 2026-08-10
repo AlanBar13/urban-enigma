@@ -3,6 +3,8 @@ import { useServerFn } from '@tanstack/react-start'
 import { useRouter } from '@tanstack/react-router'
 import { Input } from '../ui/input'
 import { DataTable } from '../shared'
+import PendingInvites from './PendingInvites'
+import type { PendingInvite } from './PendingInvites'
 import type { Database } from '@/database.types'
 import type { GetTenantUsersQueryResult } from '@/lib/profiles/queries'
 import { useToast } from '@/components/notifications'
@@ -16,9 +18,15 @@ interface Props {
   tenantId: string
   houses: Array<Database['public']['Tables']['houses']['Row']>
   users: GetTenantUsersQueryResult
+  invites: Array<PendingInvite>
 }
 
-export default function UsersContainer({ tenantId, houses, users }: Props) {
+export default function UsersContainer({
+  tenantId,
+  houses,
+  users,
+  invites,
+}: Props) {
   const { addToast } = useToast()
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
@@ -37,7 +45,7 @@ export default function UsersContainer({ tenantId, houses, users }: Props) {
 
   const onSubmit = async () => {
     try {
-      await inviteUser({
+      const result = await inviteUser({
         data: {
           email,
           name,
@@ -48,11 +56,21 @@ export default function UsersContainer({ tenantId, houses, users }: Props) {
           house_owner: isGuardInvite ? false : owner,
         },
       })
+      if (result.error) {
+        // Almost always "already invited" — the pending list below shows it.
+        addToast({
+          type: 'error',
+          description: `${email} ya tiene una invitación pendiente`,
+          duration: 10000,
+        })
+        return
+      }
       addToast({
         type: 'success',
         description: `Invitación enviada a ${email} correctamente`,
         duration: 5000,
       })
+      router.invalidate()
     } catch (error) {
       logger('error', 'Error inviting user:', { error })
       addToast({
@@ -179,6 +197,7 @@ export default function UsersContainer({ tenantId, houses, users }: Props) {
           onDelete={setPendingToggle}
         />
       </div>
+      <PendingInvites invites={invites} />
       <ConfirmDialog
         open={!!pendingToggle}
         onOpenChange={(o) => !o && setPendingToggle(null)}
