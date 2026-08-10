@@ -25,12 +25,15 @@ export default function UsersContainer({ tenantId, houses, users }: Props) {
   const [email, setEmail] = useState('')
   const [houseId, setHouseId] = useState<number>(0)
   const [owner, setOwner] = useState<boolean>(false)
+  const [role, setRole] = useState<'user' | 'guard'>('user')
   const [pendingToggle, setPendingToggle] = useState<
     GetTenantUsersQueryResult[number] | null
   >(null)
   const inviteUser = useServerFn(inviteUserFn)
   const setUserActive = useServerFn(setUserActiveFn)
   const router = useRouter()
+
+  const isGuardInvite = role === 'guard'
 
   const onSubmit = async () => {
     try {
@@ -39,8 +42,10 @@ export default function UsersContainer({ tenantId, houses, users }: Props) {
           email,
           name,
           tenantId,
-          house_id: houseId,
-          house_owner: owner,
+          role,
+          // Guards are staff — no house, no ownership.
+          house_id: isGuardInvite ? undefined : houseId,
+          house_owner: isGuardInvite ? false : owner,
         },
       })
       addToast({
@@ -60,6 +65,7 @@ export default function UsersContainer({ tenantId, houses, users }: Props) {
       setEmail('')
       setHouseId(0)
       setOwner(false)
+      setRole('user')
       setOpen(false)
     }
   }
@@ -98,6 +104,15 @@ export default function UsersContainer({ tenantId, houses, users }: Props) {
         title="Invitar Usuario"
         onSubmit={onSubmit}
       >
+        <FormField label="Tipo de usuario">
+          <Select
+            value={role}
+            onChange={(e) => setRole(e.target.value as 'user' | 'guard')}
+          >
+            <option value="user">Residente</option>
+            <option value="guard">Vigilante</option>
+          </Select>
+        </FormField>
         <FormField label="Nombre del colono">
           <Input
             placeholder="Juan Perez"
@@ -112,27 +127,31 @@ export default function UsersContainer({ tenantId, houses, users }: Props) {
             onChange={(e) => setEmail(e.target.value)}
           />
         </FormField>
-        <FormField label="Casa del colono">
-          <Select
-            value={houseId}
-            onChange={(e) => setHouseId(Number(e.target.value))}
-          >
-            {houses.map((house) => (
-              <option key={house.id} value={house.id}>
-                {house.name}
-              </option>
-            ))}
-          </Select>
-        </FormField>
-        <FormField label="Es dueño de la casa?">
-          <input
-            type="checkbox"
-            id="house_owner"
-            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-            checked={owner}
-            onChange={(e) => setOwner(e.target.checked)}
-          />
-        </FormField>
+        {!isGuardInvite && (
+          <>
+            <FormField label="Casa del colono">
+              <Select
+                value={houseId}
+                onChange={(e) => setHouseId(Number(e.target.value))}
+              >
+                {houses.map((house) => (
+                  <option key={house.id} value={house.id}>
+                    {house.name}
+                  </option>
+                ))}
+              </Select>
+            </FormField>
+            <FormField label="Es dueño de la casa?">
+              <input
+                type="checkbox"
+                id="house_owner"
+                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                checked={owner}
+                onChange={(e) => setOwner(e.target.checked)}
+              />
+            </FormField>
+          </>
+        )}
       </FormModal>
       <div className="mt-6">
         <DataTable

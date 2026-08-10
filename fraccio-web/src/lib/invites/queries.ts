@@ -4,7 +4,7 @@ export const getInviteQuery = (supabase: SupabaseClient, token: string) =>
   supabase
     .from('invites')
     .select(
-      'id, email, name, expires_at, tenant_id, house_owner, house_id, is_admin, tenants (name)',
+      'id, email, name, expires_at, tenant_id, house_owner, house_id, is_admin, role, tenants (name)',
     )
     .eq('id', token)
     .single()

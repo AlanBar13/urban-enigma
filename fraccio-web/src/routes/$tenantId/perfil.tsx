@@ -11,6 +11,7 @@ const roleLabels: Partial<Record<string, string>> = {
   superadmin: 'Super Admin',
   admin: 'Administrador',
   user: 'Residente',
+  guard: 'Vigilante',
 }
 
 function RouteComponent() {

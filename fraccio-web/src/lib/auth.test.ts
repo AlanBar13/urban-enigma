@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { assertAdmin, assertTenantAccess, canAccessTenant } from './auth'
+import {
+  assertAdmin,
+  assertTenantAccess,
+  canAccessTenant,
+  canGuardAccess,
+} from './auth'
 
 const HOME = '11111111-1111-1111-1111-111111111111'
 const EXTRA = '22222222-2222-2222-2222-222222222222'
@@ -37,5 +42,28 @@ describe('assertAdmin', () => {
     expect(() => assertAdmin({ role: 'user', tenantIds: [] })).toThrow(
       'Unauthorized',
     )
+  })
+
+  it('rejects a guard', () => {
+    expect(() => assertAdmin({ role: 'guard', tenantIds: [] })).toThrow(
+      'Unauthorized',
+    )
+  })
+})
+
+describe('canGuardAccess', () => {
+  it.each(['/lomas/anuncios', '/lomas/perfil'])('allows %s', (path) => {
+    expect(canGuardAccess(path, 'lomas')).toBe(true)
+  })
+
+  it.each([
+    '/lomas/', // dashboard
+    '/lomas/casa',
+    '/lomas/pagos',
+    '/lomas/documentos',
+    '/lomas/admin-anuncios',
+    '/otro/anuncios', // right section, wrong tenant
+  ])('rejects %s', (path) => {
+    expect(canGuardAccess(path, 'lomas')).toBe(false)
   })
 })

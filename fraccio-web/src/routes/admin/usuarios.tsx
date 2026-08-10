@@ -71,6 +71,8 @@ function RouteComponent() {
         return 'default'
       case 'user':
         return 'secondary'
+      case 'guard':
+        return 'outline'
       default:
         return 'outline'
     }
@@ -84,6 +86,8 @@ function RouteComponent() {
         return 'Administrador'
       case 'user':
         return 'Usuario'
+      case 'guard':
+        return 'Vigilante'
       default:
         return role
     }

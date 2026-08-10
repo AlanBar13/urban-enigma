@@ -22,6 +22,7 @@ const signupSchema = z.object({
   houseId: z.number().optional(),
   houseOwner: z.boolean().default(false),
   is_admin: z.boolean().default(false),
+  role: z.enum(['user', 'guard']).default('user'),
 })
 
 const inviteUserSchema = z.object({
@@ -31,6 +32,7 @@ const inviteUserSchema = z.object({
   house_owner: z.boolean().optional(),
   name: z.string(),
   is_admin: z.boolean().default(false),
+  role: z.enum(['user', 'guard']).default('user'),
 })
 
 export const getUserSchema = z.object({
@@ -156,7 +158,7 @@ export const signupFn = createServerFn({ method: 'POST' })
           data: {
             tenant_id: data.tenantId,
             full_name: data.name,
-            role: 'user',
+            role: data.role,
             house_owner: data.houseOwner,
           },
         },
@@ -278,6 +280,7 @@ export const inviteUserFn = createServerFn({ method: 'POST' })
         house_owner: data.house_owner,
         name: data.name,
         is_admin: data.is_admin,
+        role: data.role,
         expires_at: new Date(
           Date.now() + 7 * 24 * 60 * 60 * 1000,
         ).toISOString(), // Expires in 7 days

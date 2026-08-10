@@ -79,6 +79,7 @@ export default function Signup({ invite }: Props) {
           houseId: invite.house_id ?? undefined,
           houseOwner: invite.house_owner ?? false,
           is_admin: invite.is_admin ?? false,
+          role: invite.role === 'guard' ? 'guard' : 'user',
         },
       })
 
@@ -108,6 +109,9 @@ export default function Signup({ invite }: Props) {
   const getRoleBadgeString = (): string => {
     if (invite.is_admin) {
       return 'Administrador'
+    }
+    if (invite.role === 'guard') {
+      return 'Vigilante'
     }
     return invite.house_owner ? 'Propietario' : 'Residente'
   }

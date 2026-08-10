@@ -27,6 +27,7 @@ import {
 import { useState } from 'react'
 import { useToast } from '@/components/notifications'
 import { getTenantFn, isFeatureEnabled, listUserTenantsFn } from '@/lib/tenants'
+import { canGuardAccess, isGuard } from '@/lib/auth'
 import { getUser, logoutFn } from '@/lib/user'
 import { TenantSelector } from '@/components/tenant'
 import { logger } from '@/utils/logger'
@@ -35,7 +36,7 @@ import { LoadingBar } from '@/components/ui/spinner'
 import { cn } from '@/lib/utils'
 
 export const Route = createFileRoute('/$tenantId')({
-  beforeLoad: async ({ params }) => {
+  beforeLoad: async ({ params, location }) => {
     try {
       const tenant = await getTenantFn({ data: { path: params.tenantId } })
       if (!tenant) {
@@ -52,6 +53,18 @@ export const Route = createFileRoute('/$tenantId')({
           tenantId: tenant.id,
         })
         throw redirect({ to: '/user-not-in-fracc' })
+      }
+
+      // ponytail: one guard on the tenant layout covers every child route —
+      // dashboard, casa, pagos, documentos and all admin-* pages.
+      if (
+        isGuard(user) &&
+        !canGuardAccess(location.pathname, params.tenantId)
+      ) {
+        throw redirect({
+          to: '/$tenantId/anuncios',
+          params: { tenantId: params.tenantId },
+        })
       }
 
       // Only multi-tenant users need the switcher list.
@@ -119,6 +132,8 @@ function RouteComponent() {
         return 'Administrador'
       case 'user':
         return 'Residente'
+      case 'guard':
+        return 'Vigilante'
       default:
         return role
     }
@@ -158,7 +173,11 @@ function RouteComponent() {
       path: `/${params.tenantId}/documentos`,
       icon: BookOpen,
     },
-  ].filter((item) => paymentsOn || !item.path.includes('pagos'))
+  ]
+    .filter((item) => paymentsOn || !item.path.includes('pagos'))
+    .filter(
+      (item) => !isGuard(user) || canGuardAccess(item.path, params.tenantId),
+    )
 
   const adminNavItems = [
     {

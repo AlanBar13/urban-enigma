@@ -14,6 +14,29 @@ export function isAdmin(user: Pick<SessionUser, 'role'>) {
   return user.role === 'admin' || user.role === 'superadmin'
 }
 
+/**
+ * Path suffixes (under `/$tenantId`) a `guard` may reach. Widen this list to
+ * open up more sections to guards — the tenant layout's route guard and its nav
+ * filter both read it.
+ *
+ * ponytail: hidden nav + the layout redirect are the whole enforcement layer,
+ * same posture as the feature flags. A guard can still call e.g.
+ * `getPaymentHistoryFn` directly (it only asserts tenant access). Add per-fn
+ * checks if guards ever handle data residents shouldn't reach.
+ */
+const GUARD_SECTIONS = ['/anuncios', '/perfil']
+
+export function isGuard(user: Pick<SessionUser, 'role'>) {
+  return user.role === 'guard'
+}
+
+/** Whether a guard may reach `pathname` inside the tenant at `tenantPath`. */
+export function canGuardAccess(pathname: string, tenantPath: string) {
+  return GUARD_SECTIONS.some((section) =>
+    pathname.startsWith(`/${tenantPath}${section}`),
+  )
+}
+
 export function canAccessTenant(user: SessionUser, tenantId: string) {
   return user.role === 'superadmin' || user.tenantIds.includes(tenantId)
 }
