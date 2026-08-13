@@ -10,8 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UserNotInFraccRouteImport } from './routes/user-not-in-fracc'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as NotFoundRouteImport } from './routes/not-found'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as TenantIdRouteRouteImport } from './routes/$tenantId/route'
@@ -44,6 +46,11 @@ const UserNotInFraccRoute = UserNotInFraccRouteImport.update({
   path: '/user-not-in-fracc',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const NotFoundRoute = NotFoundRouteImport.update({
   id: '/not-found',
   path: '/not-found',
@@ -52,6 +59,11 @@ const NotFoundRoute = NotFoundRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AcceptInviteRoute = AcceptInviteRouteImport.update({
@@ -190,8 +202,10 @@ export interface FileRoutesByFullPath {
   '/$tenantId': typeof TenantIdRouteRouteWithChildren
   '/admin': typeof AdminRouteRouteWithChildren
   '/accept-invite': typeof AcceptInviteRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/not-found': typeof NotFoundRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/user-not-in-fracc': typeof UserNotInFraccRoute
   '/$tenantId/admin-anuncios': typeof TenantIdAdminAnunciosRoute
   '/$tenantId/admin-documentos': typeof TenantIdAdminDocumentosRoute
@@ -219,8 +233,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/accept-invite': typeof AcceptInviteRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/not-found': typeof NotFoundRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/user-not-in-fracc': typeof UserNotInFraccRoute
   '/$tenantId/admin-anuncios': typeof TenantIdAdminAnunciosRoute
   '/$tenantId/admin-documentos': typeof TenantIdAdminDocumentosRoute
@@ -251,8 +267,10 @@ export interface FileRoutesById {
   '/$tenantId': typeof TenantIdRouteRouteWithChildren
   '/admin': typeof AdminRouteRouteWithChildren
   '/accept-invite': typeof AcceptInviteRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/not-found': typeof NotFoundRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/user-not-in-fracc': typeof UserNotInFraccRoute
   '/$tenantId/admin-anuncios': typeof TenantIdAdminAnunciosRoute
   '/$tenantId/admin-documentos': typeof TenantIdAdminDocumentosRoute
@@ -284,8 +302,10 @@ export interface FileRouteTypes {
     | '/$tenantId'
     | '/admin'
     | '/accept-invite'
+    | '/forgot-password'
     | '/login'
     | '/not-found'
+    | '/reset-password'
     | '/user-not-in-fracc'
     | '/$tenantId/admin-anuncios'
     | '/$tenantId/admin-documentos'
@@ -313,8 +333,10 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/accept-invite'
+    | '/forgot-password'
     | '/login'
     | '/not-found'
+    | '/reset-password'
     | '/user-not-in-fracc'
     | '/$tenantId/admin-anuncios'
     | '/$tenantId/admin-documentos'
@@ -344,8 +366,10 @@ export interface FileRouteTypes {
     | '/$tenantId'
     | '/admin'
     | '/accept-invite'
+    | '/forgot-password'
     | '/login'
     | '/not-found'
+    | '/reset-password'
     | '/user-not-in-fracc'
     | '/$tenantId/admin-anuncios'
     | '/$tenantId/admin-documentos'
@@ -376,8 +400,10 @@ export interface RootRouteChildren {
   TenantIdRouteRoute: typeof TenantIdRouteRouteWithChildren
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   AcceptInviteRoute: typeof AcceptInviteRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
   NotFoundRoute: typeof NotFoundRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   UserNotInFraccRoute: typeof UserNotInFraccRoute
   ApiUploadAnuncioRoute: typeof ApiUploadAnuncioRoute
   ApiUploadDocumentRoute: typeof ApiUploadDocumentRoute
@@ -392,6 +418,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UserNotInFraccRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/not-found': {
       id: '/not-found'
       path: '/not-found'
@@ -404,6 +437,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/accept-invite': {
@@ -656,8 +696,10 @@ const rootRouteChildren: RootRouteChildren = {
   TenantIdRouteRoute: TenantIdRouteRouteWithChildren,
   AdminRouteRoute: AdminRouteRouteWithChildren,
   AcceptInviteRoute: AcceptInviteRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
   NotFoundRoute: NotFoundRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   UserNotInFraccRoute: UserNotInFraccRoute,
   ApiUploadAnuncioRoute: ApiUploadAnuncioRoute,
   ApiUploadDocumentRoute: ApiUploadDocumentRoute,

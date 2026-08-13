@@ -239,6 +239,85 @@ export const signupFn = createServerFn({ method: 'POST' })
     }
   })
 
+/**
+ * Sends Supabase's recovery email. Always reports success — telling the caller
+ * whether the address exists would turn this into an account enumeration oracle.
+ * The emailed link is built by the "Reset Password" template in the Supabase
+ * dashboard and must point at `{{ .SiteURL }}/reset-password?token_hash={{ .TokenHash }}&type=recovery`,
+ * because this app has no browser Supabase client to read an implicit-flow fragment.
+ */
+export const requestPasswordResetFn = createServerFn({ method: 'POST' })
+  .inputValidator(z.object({ email: z.email() }))
+  .handler(async ({ data }) => {
+    const supabase = getSupabaseClient()
+    const { error } = await supabase.auth.resetPasswordForEmail(data.email)
+    if (error) {
+      logger('error', 'Error sending password reset email:', { error })
+    }
+    return { error: false, message: 'Password reset requested' }
+  })
+
+export const resetPasswordFn = createServerFn({ method: 'POST' })
+  .inputValidator(
+    z.object({ tokenHash: z.string(), password: z.string().min(6) }),
+  )
+  .handler(async ({ data }) => {
+    const supabase = getSupabaseClient()
+
+    const { error: otpError } = await supabase.auth.verifyOtp({
+      type: 'recovery',
+      token_hash: data.tokenHash,
+    })
+    if (otpError) {
+      logger('error', 'Error verifying recovery token:', { error: otpError })
+      return { error: true, message: 'El enlace es inválido o ya expiró' }
+    }
+
+    const { error } = await supabase.auth.updateUser({
+      password: data.password,
+    })
+    if (error) {
+      logger('error', 'Error resetting password:', { error })
+      return { error: true, message: 'No se pudo actualizar la contraseña' }
+    }
+
+    // The recovery session only existed to authorize this change.
+    await supabase.auth.signOut()
+    return { error: false, message: 'Password reset' }
+  })
+
+export const changePasswordFn = createServerFn({ method: 'POST' })
+  .inputValidator(
+    z.object({ currentPassword: z.string(), password: z.string().min(6) }),
+  )
+  .handler(async ({ data }) => {
+    const supabase = getSupabaseClient()
+    const user = await getUser()
+    if (!user.email) {
+      return { error: true, message: 'Tu cuenta no tiene correo asociado' }
+    }
+
+    // Re-auth is the trust boundary: without it a hijacked session could lock
+    // the real owner out.
+    const { error: reauthError } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password: data.currentPassword,
+    })
+    if (reauthError) {
+      return { error: true, message: 'La contraseña actual es incorrecta' }
+    }
+
+    const { error } = await supabase.auth.updateUser({
+      password: data.password,
+    })
+    if (error) {
+      logger('error', 'Error changing password:', { error })
+      return { error: true, message: 'No se pudo actualizar la contraseña' }
+    }
+
+    return { error: false, message: 'Password changed' }
+  })
+
 export const logoutFn = createServerFn({ method: 'POST' }).handler(async () => {
   const supabase = await getSupabaseClient()
   const { error } = await supabase.auth.signOut()

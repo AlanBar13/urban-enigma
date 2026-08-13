@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { Mail, User } from 'lucide-react'
 import { PushToggle } from '@/components/PushToggle'
+import { ChangePasswordCard } from '@/components/ChangePasswordCard'
 import { Card } from '@/components/ui/card'
 
 export const Route = createFileRoute('/$tenantId/perfil')({
@@ -48,6 +49,8 @@ function RouteComponent() {
           </div>
         </div>
       </Card>
+
+      <ChangePasswordCard />
 
       <PushToggle tenantId={tenant.id} />
     </div>
