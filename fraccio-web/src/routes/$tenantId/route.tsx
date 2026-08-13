@@ -21,13 +21,14 @@ import {
   // TEMP: WhatsApp disabled — 2026-07-27
   // MessageCircle,
   User,
+  UserCheck,
   UserPen,
   X,
 } from 'lucide-react'
 import { useState } from 'react'
 import { useToast } from '@/components/notifications'
 import { getTenantFn, isFeatureEnabled, listUserTenantsFn } from '@/lib/tenants'
-import { canGuardAccess, isGuard } from '@/lib/auth'
+import { canGuardAccess, isAdmin, isGuard } from '@/lib/auth'
 import { getUser, logoutFn } from '@/lib/user'
 import { TenantSelector } from '@/components/tenant'
 import { logger } from '@/utils/logger'
@@ -140,6 +141,8 @@ function RouteComponent() {
   }
 
   const paymentsOn = isFeatureEnabled(tenant.features, 'payments')
+  const visitorsOn = isFeatureEnabled(tenant.features, 'visitors')
+  const isStaff = isAdmin(user) || isGuard(user)
 
   const navItems = [
     {
@@ -173,8 +176,17 @@ function RouteComponent() {
       path: `/${params.tenantId}/documentos`,
       icon: BookOpen,
     },
+    {
+      id: '11',
+      label: 'Visitas',
+      path: `/${params.tenantId}/visitas`,
+      icon: UserCheck,
+    },
   ]
     .filter((item) => paymentsOn || !item.path.includes('pagos'))
+    .filter((item) => visitorsOn || !item.path.includes('visitas'))
+    // Staff use the caseta view below; this one is the resident's own list
+    .filter((item) => !item.path.endsWith('/visitas') || !isStaff)
     .filter(
       (item) => !isGuard(user) || canGuardAccess(item.path, params.tenantId),
     )
@@ -215,6 +227,13 @@ function RouteComponent() {
       icon: BookOpen,
       allowedRoles: ['admin', 'superadmin'],
     },
+    {
+      id: '12',
+      label: 'Visitas (Caseta)',
+      path: `/${params.tenantId}/admin-visitas`,
+      icon: UserCheck,
+      allowedRoles: ['admin', 'superadmin', 'guard'],
+    },
     // TEMP: WhatsApp disabled — 2026-07-27
     // {
     //   id: '11',
@@ -223,7 +242,9 @@ function RouteComponent() {
     //   icon: MessageCircle,
     //   allowedRoles: ['admin', 'superadmin'],
     // },
-  ].filter((item) => paymentsOn || !item.path.includes('pagos'))
+  ]
+    .filter((item) => paymentsOn || !item.path.includes('pagos'))
+    .filter((item) => visitorsOn || !item.path.includes('visitas'))
 
   const filteredAdminItems = adminNavItems.filter((item) =>
     item.allowedRoles.includes(user.role),

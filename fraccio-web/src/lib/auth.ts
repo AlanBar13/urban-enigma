@@ -24,7 +24,7 @@ export function isAdmin(user: Pick<SessionUser, 'role'>) {
  * `getPaymentHistoryFn` directly (it only asserts tenant access). Add per-fn
  * checks if guards ever handle data residents shouldn't reach.
  */
-const GUARD_SECTIONS = ['/anuncios', '/perfil']
+const GUARD_SECTIONS = ['/anuncios', '/perfil', '/admin-visitas']
 
 export function isGuard(user: Pick<SessionUser, 'role'>) {
   return user.role === 'guard'

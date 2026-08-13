@@ -60,6 +60,7 @@ function RouteComponent() {
   )
   const [paymentsOn, setPaymentsOn] = useState(false)
   const [emailOn, setEmailOn] = useState(false)
+  const [visitorsOn, setVisitorsOn] = useState(false)
   const [pendingDelete, setPendingDelete] = useState<TenantWithStats | null>(
     null,
   )
@@ -88,6 +89,7 @@ function RouteComponent() {
   const openFeatures = (tenant: TenantWithStats) => {
     setPaymentsOn(isFeatureEnabled(tenant.features, 'payments'))
     setEmailOn(isFeatureEnabled(tenant.features, 'email'))
+    setVisitorsOn(isFeatureEnabled(tenant.features, 'visitors'))
     setFeaturesTenant(tenant)
   }
 
@@ -106,6 +108,13 @@ function RouteComponent() {
           tenantId: featuresTenant.id,
           feature: 'email',
           enabled: emailOn,
+        },
+      })
+      await setTenantFeature({
+        data: {
+          tenantId: featuresTenant.id,
+          feature: 'visitors',
+          enabled: visitorsOn,
         },
       })
       await router.invalidate()
@@ -384,6 +393,20 @@ function RouteComponent() {
             Email
             <span className="block text-xs text-muted-foreground">
               Permite enviar anuncios por email a los residentes
+            </span>
+          </span>
+        </label>
+        <label className="flex items-center gap-3 text-sm cursor-pointer mt-3">
+          <input
+            type="checkbox"
+            className="h-4 w-4 accent-primary"
+            checked={visitorsOn}
+            onChange={(e) => setVisitorsOn(e.target.checked)}
+          />
+          <span>
+            Visitas
+            <span className="block text-xs text-muted-foreground">
+              Registro de visitantes y control de acceso en caseta
             </span>
           </span>
         </label>

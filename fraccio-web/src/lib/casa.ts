@@ -28,6 +28,32 @@ const removeHouseUserSchema = z.object({
   userId: z.uuid(),
 })
 
+/**
+ * The house a user belongs to — as owner first, else as resident.
+ * Shared with the visitas server fns, which must derive `house_id` from the
+ * session and never take it from the client.
+ */
+export async function getUserHouse(
+  supabase: ReturnType<typeof getSupabaseClient>,
+  userId: string,
+): Promise<{ houseId: number | null; isOwner: boolean }> {
+  const { data: ownerRecord } = await supabase
+    .from('house_owners')
+    .select('house_id')
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  if (ownerRecord) return { houseId: ownerRecord.house_id, isOwner: true }
+
+  const { data: residentRecord } = await supabase
+    .from('house_users')
+    .select('house_id')
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  return { houseId: residentRecord?.house_id ?? null, isOwner: false }
+}
+
 // Types
 interface House {
   id: number
@@ -63,32 +89,7 @@ export const getUserHouseFn = createServerFn({ method: 'POST' })
     const user = await getUser()
     assertTenantAccess(user, data.tenantId)
 
-    // Check if user is a house owner
-    const { data: houseOwnerRecord } = await supabase
-      .from('house_owners')
-      .select('house_id')
-      .eq('user_id', user.id)
-      .maybeSingle()
-
-    const isOwner = !!houseOwnerRecord
-
-    // Get user's house (either as owner or as user)
-    let houseId: number | null = null
-
-    if (houseOwnerRecord) {
-      houseId = houseOwnerRecord.house_id
-    } else {
-      // Check house_users table
-      const { data: houseUserRecord } = await supabase
-        .from('house_users')
-        .select('house_id')
-        .eq('user_id', user.id)
-        .maybeSingle()
-
-      if (houseUserRecord) {
-        houseId = houseUserRecord.house_id
-      }
-    }
+    const { houseId, isOwner } = await getUserHouse(supabase, user.id)
 
     if (!houseId) {
       return {
