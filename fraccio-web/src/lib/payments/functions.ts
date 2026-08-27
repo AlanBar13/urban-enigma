@@ -38,7 +38,10 @@ export const getHouseChargesFn = createServerFn({ method: 'POST' })
       logger('error', 'Error fetching house charges', { error })
       throw new Error('Failed to fetch charges')
     }
-    return charges
+    // A deactivated concepto stops being billable, so its open cargos disappear
+    // from the resident's list (and its "Ya pagué" upload). Admins still see
+    // them in the ledger and the review queue.
+    return charges.filter((c) => c.payment_items?.is_active !== false)
   })
 
 /** The whole tenant ledger — morosidad view. Admin only. */

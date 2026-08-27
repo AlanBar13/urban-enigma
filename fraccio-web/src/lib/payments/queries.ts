@@ -19,11 +19,15 @@ export const getTenantChargesQuery = (supabase: Db, tenantId: string) =>
     .eq('tenant_id', tenantId)
     .order('due_date', { ascending: true, nullsFirst: false })
 
-/** One house's charges — what a resident is allowed to see. */
+/**
+ * One house's charges — what a resident is allowed to see. Carries the item's
+ * `is_active` so charges from a deactivated concepto can be dropped; a plain
+ * `!inner` filter would also drop one-off charges (`payment_item_id` null).
+ */
 export const getHouseChargesQuery = (supabase: Db, houseId: number) =>
   supabase
     .from('payments')
-    .select(CHARGE_FIELDS)
+    .select(`${CHARGE_FIELDS}, payment_items (is_active)`)
     .eq('house_id', houseId)
     .order('due_date', { ascending: true, nullsFirst: false })
 
