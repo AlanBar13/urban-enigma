@@ -1,5 +1,7 @@
 import webpush from 'web-push'
 import { getSupabaseClient } from './supabase'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Database } from '@/database.types'
 import { logger } from '@/utils/logger'
 
 // Kept out of push.ts so `web-push` (a Node-only package) never reaches the client
@@ -54,11 +56,17 @@ export async function sendPushToTenant(options: {
   ownersOnly?: boolean
   /** Restricts delivery to these profile ids (e.g. an assigned payment item) */
   userIds?: Array<string>
+  /**
+   * Client to read subscriptions with. Defaults to the request-scoped one,
+   * which borrows the caller's session — the cuotas cron has no session and
+   * must pass the service client or RLS hands it back an empty list.
+   */
+  client?: SupabaseClient<Database>
 }): Promise<void> {
   try {
     if (!configureVapid()) return
 
-    const supabase = getSupabaseClient()
+    const supabase = options.client ?? getSupabaseClient()
 
     const { data: subscriptions, error } = await supabase
       .from('push_subscriptions')

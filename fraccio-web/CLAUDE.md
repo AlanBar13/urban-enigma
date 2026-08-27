@@ -110,6 +110,26 @@ To add a new toggleable feature (no DB migration needed — it's just a new json
 
 Route guards + hidden nav are the enforcement layer; server fns behind backend auth are not re-checked against the flag.
 
+### Cobranza (cuotas, pago manual, morosidad)
+
+A `payments` row is a **charge (cargo)**, not just a receipt: it is generated
+before anyone pays, belongs to a **house** (`user_id` is null until someone
+settles it), and carries a `period` (`YYYY-MM-01`) and `due_date`.
+**"Vencido" is derived** — `status='pending'` past `due_date` — never stored.
+
+- `payment_items` with `recurrence='monthly'` + `due_day` are billed to every house each period. Recurring items are always tenant-wide (no `assigned_user_ids`).
+- `src/lib/payments/charges.ts` — `generateChargesForTenant()` is idempotent via the partial unique index on `(house_id, payment_item_id, period)`. **That index is the only thing preventing double billing**; the daily cron re-runs generation every morning.
+- Paying a cargo goes through the backend checkout with `paymentId` (reuses the row). `paymentItemId` is the one-off path that still inserts.
+- Cash/SPEI: the resident uploads a comprobante (`/api/upload/comprobante`, private S3) → `status='in_review'` → an admin approves via `reviewPaymentFn`. Only an admin can reach `completed`.
+- `/api/cron/cuotas` (daily, `vercel.json` → `crons`) generates the period and pushes reminders. `payments.last_reminder_at` + a 6-day cooldown is what keeps a daily cron from sending a daily notification.
+
+Schema lives in [supabase/cobranza.sql](./supabase/cobranza.sql) — applied by
+hand in the SQL editor, then regenerate `src/database.types.ts`.
+
+**Env**: `CRON_SECRET` (guards the cron route) and `SUPABASE_SECRET_KEY` (the
+service-role client the cron uses — it has no session, so RLS would hand it
+back nothing).
+
 ### Database
 
 Supabase PostgreSQL. Types are auto-generated in `src/database.types.ts`. Main tables: `tenants`, `houses`, `house_owners`, `house_users`, `profiles`, `announcements`, `documents`, `invites`.

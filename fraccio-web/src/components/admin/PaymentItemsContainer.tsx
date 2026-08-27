@@ -25,6 +25,9 @@ interface PaymentItem {
   is_active: boolean
   /** null = visible to the whole tenant; otherwise only these profile ids */
   assigned_user_ids: Array<string> | null
+  /** 'monthly' = billed to every house each period by the cuotas cron */
+  recurrence: string
+  due_day: number | null
   created_at: string
 }
 
@@ -54,6 +57,8 @@ export default function PaymentItemsContainer({
   const [paymentType, setPaymentType] = useState<
     'maintenance' | 'assessment' | 'fine'
   >('maintenance')
+  const [recurrence, setRecurrence] = useState<'none' | 'monthly'>('none')
+  const [dueDay, setDueDay] = useState('5')
   const [scope, setScope] = useState<'all' | 'specific'>('all')
   const [assignedIds, setAssignedIds] = useState<Array<string>>([])
   const [pendingToggle, setPendingToggle] = useState<PaymentItem | null>(null)
@@ -103,6 +108,19 @@ export default function PaymentItemsContainer({
       return
     }
 
+    const dueDayNum = parseInt(dueDay, 10)
+    if (
+      recurrence === 'monthly' &&
+      (isNaN(dueDayNum) || dueDayNum < 1 || dueDayNum > 28)
+    ) {
+      addToast({
+        type: 'error',
+        description: 'El día de vencimiento debe estar entre 1 y 28',
+        duration: 5000,
+      })
+      return
+    }
+
     try {
       await createPaymentItem({
         data: {
@@ -111,7 +129,13 @@ export default function PaymentItemsContainer({
           description: description.trim() || undefined,
           amount: amountNum,
           paymentType,
-          assignedUserIds: scope === 'specific' ? assignedIds : undefined,
+          // A cuota is billed per house, so it is always tenant-wide
+          assignedUserIds:
+            scope === 'specific' && recurrence === 'none'
+              ? assignedIds
+              : undefined,
+          recurrence,
+          ...(recurrence === 'monthly' ? { dueDay: dueDayNum } : {}),
         },
       })
 
@@ -135,6 +159,8 @@ export default function PaymentItemsContainer({
       setDescription('')
       setAmount('')
       setPaymentType('maintenance')
+      setRecurrence('none')
+      setDueDay('5')
       setScope('all')
       setAssignedIds([])
       setOpen(false)
@@ -272,17 +298,49 @@ export default function PaymentItemsContainer({
           </Select>
         </FormField>
 
-        <FormField label="¿Quién puede ver y pagar este concepto?">
+        <FormField label="Frecuencia">
           <Select
-            value={scope}
-            onChange={(e) => setScope(e.target.value as 'all' | 'specific')}
+            value={recurrence}
+            onChange={(e) =>
+              setRecurrence(e.target.value as 'none' | 'monthly')
+            }
           >
-            <option value="all">Todos los residentes</option>
-            <option value="specific">Solo usuarios seleccionados</option>
+            <option value="none">
+              Único (se paga cuando el residente quiera)
+            </option>
+            <option value="monthly">
+              Mensual (se genera un cargo por casa)
+            </option>
           </Select>
         </FormField>
 
-        {scope === 'specific' && (
+        {recurrence === 'monthly' && (
+          <FormField label="Día de vencimiento (1 al 28)">
+            <Input
+              type="number"
+              min="1"
+              max="28"
+              value={dueDay}
+              onChange={(e) => setDueDay(e.target.value)}
+              required
+            />
+          </FormField>
+        )}
+
+        {/* A cuota is the house's debt, so it can't also be scoped to a user list */}
+        {recurrence === 'none' && (
+          <FormField label="¿Quién puede ver y pagar este concepto?">
+            <Select
+              value={scope}
+              onChange={(e) => setScope(e.target.value as 'all' | 'specific')}
+            >
+              <option value="all">Todos los residentes</option>
+              <option value="specific">Solo usuarios seleccionados</option>
+            </Select>
+          </FormField>
+        )}
+
+        {recurrence === 'none' && scope === 'specific' && (
           <div className="max-h-64 overflow-y-auto rounded border p-3">
             <CheckboxGroup
               options={userOptions}
@@ -328,6 +386,14 @@ export default function PaymentItemsContainer({
               key: 'amount',
               label: 'Monto',
               render: (value: number) => formatCurrency(value),
+            },
+            {
+              key: 'recurrence',
+              label: 'Frecuencia',
+              render: (value: string, row: PaymentItem) =>
+                value === 'monthly'
+                  ? `Mensual · vence el ${row.due_day}`
+                  : 'Único',
             },
             {
               key: 'assigned_user_ids',

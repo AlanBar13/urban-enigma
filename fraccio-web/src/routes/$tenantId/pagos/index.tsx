@@ -7,6 +7,8 @@ import {
   getPaymentHistoryFn,
   getPaymentItemsFn,
 } from '@/lib/stripe'
+import { getHouseChargesFn } from '@/lib/payments/functions'
+import ChargesList from '@/components/payments/ChargesList'
 import { isFeatureEnabled } from '@/lib/tenants'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -31,15 +33,23 @@ export const Route = createFileRoute('/$tenantId/pagos/')({
       data: { tenantId: context.tenant.id },
     })
 
-    const [items, history] = await Promise.all([itemsReq, historyReq])
-    return { items, history }
+    const chargesReq = getHouseChargesFn({
+      data: { tenantId: context.tenant.id },
+    })
+
+    const [items, history, charges] = await Promise.all([
+      itemsReq,
+      historyReq,
+      chargesReq,
+    ])
+    return { items, history, charges }
   },
   component: RouteComponent,
 })
 
 function RouteComponent() {
   const { tenant } = Route.useRouteContext()
-  const { items, history } = Route.useLoaderData()
+  const { items, history, charges } = Route.useLoaderData()
   const { addToast } = useToast()
   const createCheckoutSession = useServerFn(createCheckoutSessionFn)
   const [loading, setLoading] = useState<number | null>(null)
@@ -92,6 +102,7 @@ function RouteComponent() {
     const statusMap: Record<string, { label: string; class: string }> = {
       completed: { label: 'Completado', class: 'bg-green-100 text-green-800' },
       pending: { label: 'Pendiente', class: 'bg-yellow-100 text-yellow-800' },
+      in_review: { label: 'En revisión', class: 'bg-blue-100 text-blue-800' },
       failed: { label: 'Fallido', class: 'bg-red-100 text-red-800' },
       cancelled: { label: 'Cancelado', class: 'bg-gray-100 text-gray-800' },
     }
@@ -127,6 +138,17 @@ function RouteComponent() {
           Realiza tus pagos de mantenimiento, cuotas especiales y multas de
           forma segura
         </p>
+      </div>
+
+      {/* Outstanding charges — the household's cuotas, generated per period */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Mis Cargos</h2>
+        <ChargesList
+          tenantId={tenant.id}
+          tenantPath={tenant.path}
+          charges={charges}
+          paymentsEnabled={paymentsEnabled}
+        />
       </div>
 
       {/* Payment Items Section */}

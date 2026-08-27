@@ -6,8 +6,10 @@ interface PaymentsRouteParams {
     tenantId: string;
 }
 
+/** Exactly one of these: `paymentId` settles an existing cargo, `paymentItemId` creates a one-off. */
 interface CreateCheckoutBody {
-    paymentItemId: number;
+    paymentItemId?: number;
+    paymentId?: number;
 }
 
 const tenantParamsSchema = {
@@ -91,10 +93,11 @@ async function routes(server: FastifyInstance, options: Record<string, unknown>)
             params: tenantParamsSchema,
             body: {
                 type: "object",
-                required: ["paymentItemId"],
                 properties: {
-                    paymentItemId: { type: "integer" },
+                    paymentItemId: { type: "integer", description: "One-off concept to charge" },
+                    paymentId: { type: "integer", description: "Existing cargo to settle" },
                 },
+                anyOf: [{ required: ["paymentItemId"] }, { required: ["paymentId"] }],
             },
             response: {
                 200: {
@@ -119,9 +122,9 @@ async function routes(server: FastifyInstance, options: Record<string, unknown>)
         },
     }, async (request, reply) => {
         const { tenantId } = request.params;
-        const { paymentItemId } = request.body;
+        const { paymentItemId, paymentId } = request.body;
         try {
-            const result = await paymentsController.createCheckoutSession(tenantId, request.authUser!.id, paymentItemId);
+            const result = await paymentsController.createCheckoutSession(tenantId, request.authUser!.id, paymentItemId, paymentId);
             reply.send(result);
         } catch (err) {
             if (err instanceof PaymentsNotEnabledError) {

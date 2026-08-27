@@ -37,7 +37,9 @@ import { Route as TenantIdAdminDocumentosRouteImport } from './routes/$tenantId/
 import { Route as TenantIdAdminAnunciosRouteImport } from './routes/$tenantId/admin-anuncios'
 import { Route as TenantIdPagosIndexRouteImport } from './routes/$tenantId/pagos/index'
 import { Route as ApiUploadDocumentRouteImport } from './routes/api/upload/document'
+import { Route as ApiUploadComprobanteRouteImport } from './routes/api/upload/comprobante'
 import { Route as ApiUploadAnuncioRouteImport } from './routes/api/upload/anuncio'
+import { Route as ApiCronCuotasRouteImport } from './routes/api/cron/cuotas'
 import { Route as TenantIdPagosSuccessRouteImport } from './routes/$tenantId/pagos/success'
 import { Route as TenantIdPagosCancelRouteImport } from './routes/$tenantId/pagos/cancel'
 
@@ -181,9 +183,19 @@ const ApiUploadDocumentRoute = ApiUploadDocumentRouteImport.update({
   path: '/api/upload/document',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiUploadComprobanteRoute = ApiUploadComprobanteRouteImport.update({
+  id: '/api/upload/comprobante',
+  path: '/api/upload/comprobante',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiUploadAnuncioRoute = ApiUploadAnuncioRouteImport.update({
   id: '/api/upload/anuncio',
   path: '/api/upload/anuncio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCronCuotasRoute = ApiCronCuotasRouteImport.update({
+  id: '/api/cron/cuotas',
+  path: '/api/cron/cuotas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TenantIdPagosSuccessRoute = TenantIdPagosSuccessRouteImport.update({
@@ -226,7 +238,9 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/$tenantId/pagos/cancel': typeof TenantIdPagosCancelRoute
   '/$tenantId/pagos/success': typeof TenantIdPagosSuccessRoute
+  '/api/cron/cuotas': typeof ApiCronCuotasRoute
   '/api/upload/anuncio': typeof ApiUploadAnuncioRoute
+  '/api/upload/comprobante': typeof ApiUploadComprobanteRoute
   '/api/upload/document': typeof ApiUploadDocumentRoute
   '/$tenantId/pagos/': typeof TenantIdPagosIndexRoute
 }
@@ -257,7 +271,9 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/$tenantId/pagos/cancel': typeof TenantIdPagosCancelRoute
   '/$tenantId/pagos/success': typeof TenantIdPagosSuccessRoute
+  '/api/cron/cuotas': typeof ApiCronCuotasRoute
   '/api/upload/anuncio': typeof ApiUploadAnuncioRoute
+  '/api/upload/comprobante': typeof ApiUploadComprobanteRoute
   '/api/upload/document': typeof ApiUploadDocumentRoute
   '/$tenantId/pagos': typeof TenantIdPagosIndexRoute
 }
@@ -291,7 +307,9 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/$tenantId/pagos/cancel': typeof TenantIdPagosCancelRoute
   '/$tenantId/pagos/success': typeof TenantIdPagosSuccessRoute
+  '/api/cron/cuotas': typeof ApiCronCuotasRoute
   '/api/upload/anuncio': typeof ApiUploadAnuncioRoute
+  '/api/upload/comprobante': typeof ApiUploadComprobanteRoute
   '/api/upload/document': typeof ApiUploadDocumentRoute
   '/$tenantId/pagos/': typeof TenantIdPagosIndexRoute
 }
@@ -326,7 +344,9 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/$tenantId/pagos/cancel'
     | '/$tenantId/pagos/success'
+    | '/api/cron/cuotas'
     | '/api/upload/anuncio'
+    | '/api/upload/comprobante'
     | '/api/upload/document'
     | '/$tenantId/pagos/'
   fileRoutesByTo: FileRoutesByTo
@@ -357,7 +377,9 @@ export interface FileRouteTypes {
     | '/admin'
     | '/$tenantId/pagos/cancel'
     | '/$tenantId/pagos/success'
+    | '/api/cron/cuotas'
     | '/api/upload/anuncio'
+    | '/api/upload/comprobante'
     | '/api/upload/document'
     | '/$tenantId/pagos'
   id:
@@ -390,7 +412,9 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/$tenantId/pagos/cancel'
     | '/$tenantId/pagos/success'
+    | '/api/cron/cuotas'
     | '/api/upload/anuncio'
+    | '/api/upload/comprobante'
     | '/api/upload/document'
     | '/$tenantId/pagos/'
   fileRoutesById: FileRoutesById
@@ -405,7 +429,9 @@ export interface RootRouteChildren {
   NotFoundRoute: typeof NotFoundRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   UserNotInFraccRoute: typeof UserNotInFraccRoute
+  ApiCronCuotasRoute: typeof ApiCronCuotasRoute
   ApiUploadAnuncioRoute: typeof ApiUploadAnuncioRoute
+  ApiUploadComprobanteRoute: typeof ApiUploadComprobanteRoute
   ApiUploadDocumentRoute: typeof ApiUploadDocumentRoute
 }
 
@@ -607,11 +633,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiUploadDocumentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/upload/comprobante': {
+      id: '/api/upload/comprobante'
+      path: '/api/upload/comprobante'
+      fullPath: '/api/upload/comprobante'
+      preLoaderRoute: typeof ApiUploadComprobanteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/upload/anuncio': {
       id: '/api/upload/anuncio'
       path: '/api/upload/anuncio'
       fullPath: '/api/upload/anuncio'
       preLoaderRoute: typeof ApiUploadAnuncioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/cron/cuotas': {
+      id: '/api/cron/cuotas'
+      path: '/api/cron/cuotas'
+      fullPath: '/api/cron/cuotas'
+      preLoaderRoute: typeof ApiCronCuotasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/$tenantId/pagos/success': {
@@ -701,7 +741,9 @@ const rootRouteChildren: RootRouteChildren = {
   NotFoundRoute: NotFoundRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   UserNotInFraccRoute: UserNotInFraccRoute,
+  ApiCronCuotasRoute: ApiCronCuotasRoute,
   ApiUploadAnuncioRoute: ApiUploadAnuncioRoute,
+  ApiUploadComprobanteRoute: ApiUploadComprobanteRoute,
   ApiUploadDocumentRoute: ApiUploadDocumentRoute,
 }
 export const routeTree = rootRouteImport

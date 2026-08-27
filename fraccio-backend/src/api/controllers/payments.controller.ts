@@ -104,30 +104,25 @@ class PaymentsController {
     /**
      * Creates a Stripe Checkout session as a direct charge on the tenant's
      * connected account, with the platform's fixed application fee.
-     * Amount always comes from payment_items — never from the client.
+     *
+     * Two entry points, one session:
+     *  - `paymentId` — settling an existing cargo (a generated cuota). The row
+     *    already exists, so it is reused; inserting here would leave the house
+     *    still owing the original charge after paying.
+     *  - `paymentItemId` — a one-off concept, which creates the row as before.
+     *
+     * Amount always comes from the DB row — never from the client, in either path.
      */
-    async createCheckoutSession(tenantId: string, userId: string, paymentItemId: number): Promise<{ url: string | null; sessionId: string }> {
+    async createCheckoutSession(
+        tenantId: string,
+        userId: string,
+        paymentItemId?: number,
+        paymentId?: number,
+    ): Promise<{ url: string | null; sessionId: string }> {
         const stripe = getStripe();
         const tenant = await this.getTenant(tenantId);
         if (!tenant.stripe_account_id || !tenant.stripe_charges_enabled) {
             throw new PaymentsNotEnabledError();
-        }
-
-        const { data: paymentItem, error: itemError } = await this.supabase
-            .from("payment_items")
-            .select("*")
-            .eq("id", paymentItemId)
-            .eq("tenant_id", tenantId)
-            .eq("is_active", true)
-            .single();
-        if (itemError || !paymentItem) {
-            throw new Error("Payment item not found or inactive");
-        }
-
-        // null assigned_user_ids = tenant-wide. The web only hides these items;
-        // this is the check that actually prevents paying someone else's charge.
-        if (paymentItem.assigned_user_ids && !paymentItem.assigned_user_ids.includes(userId)) {
-            throw new Error("This payment is not assigned to you");
         }
 
         const { data: houseUser, error: houseError } = await this.supabase
@@ -143,24 +138,74 @@ class PaymentsController {
             throw new Error("Unauthorized: House does not belong to this tenant");
         }
 
-        const { data: payment, error: paymentError } = await this.supabase
-            .from("payments")
-            .insert({
-                tenant_id: tenantId,
-                user_id: userId,
-                house_id: houseUser.house_id,
-                // Lets the resident's /pagos page mark the concept as already paid
-                payment_item_id: paymentItem.id,
-                amount: paymentItem.amount,
-                currency: paymentItem.currency,
-                status: "pending",
-                payment_type: paymentItem.payment_type,
-                description: paymentItem.description || paymentItem.name,
-            })
-            .select()
-            .single();
-        if (paymentError || !payment) {
-            throw new Error("Failed to create payment record");
+        let payment: { id: number; amount: number; description: string | null };
+        let lineName: string;
+        let lineDescription: string | undefined;
+
+        if (paymentId) {
+            // Scoped to the caller's own house, so a resident cannot open a
+            // checkout against a neighbour's cargo.
+            const { data: charge, error: chargeError } = await this.supabase
+                .from("payments")
+                .select("id, amount, description")
+                .eq("id", paymentId)
+                .eq("tenant_id", tenantId)
+                .eq("house_id", houseUser.house_id)
+                .eq("status", "pending")
+                .single();
+            if (chargeError || !charge) {
+                throw new Error("Charge not found or already settled");
+            }
+            payment = charge;
+            lineName = charge.description || "Cuota";
+            lineDescription = undefined;
+
+            // Claim the cargo for whoever is paying it
+            await this.supabase.from("payments").update({ user_id: userId }).eq("id", charge.id);
+        } else {
+            if (!paymentItemId) {
+                throw new Error("Either paymentItemId or paymentId is required");
+            }
+
+            const { data: paymentItem, error: itemError } = await this.supabase
+                .from("payment_items")
+                .select("*")
+                .eq("id", paymentItemId)
+                .eq("tenant_id", tenantId)
+                .eq("is_active", true)
+                .single();
+            if (itemError || !paymentItem) {
+                throw new Error("Payment item not found or inactive");
+            }
+
+            // null assigned_user_ids = tenant-wide. The web only hides these items;
+            // this is the check that actually prevents paying someone else's charge.
+            if (paymentItem.assigned_user_ids && !paymentItem.assigned_user_ids.includes(userId)) {
+                throw new Error("This payment is not assigned to you");
+            }
+
+            const { data: created, error: paymentError } = await this.supabase
+                .from("payments")
+                .insert({
+                    tenant_id: tenantId,
+                    user_id: userId,
+                    house_id: houseUser.house_id,
+                    // Lets the resident's /pagos page mark the concept as already paid
+                    payment_item_id: paymentItem.id,
+                    amount: paymentItem.amount,
+                    currency: paymentItem.currency,
+                    status: "pending",
+                    payment_type: paymentItem.payment_type,
+                    description: paymentItem.description || paymentItem.name,
+                })
+                .select("id, amount, description")
+                .single();
+            if (paymentError || !created) {
+                throw new Error("Failed to create payment record");
+            }
+            payment = created;
+            lineName = paymentItem.name;
+            lineDescription = paymentItem.description || undefined;
         }
 
         const baseUrl = `${process.env.WEB_BASE_URL}/${tenant.path}`;
@@ -173,10 +218,10 @@ class PaymentsController {
                         price_data: {
                             currency: "mxn",
                             product_data: {
-                                name: paymentItem.name,
-                                description: paymentItem.description || undefined,
+                                name: lineName,
+                                ...(lineDescription ? { description: lineDescription } : {}),
                             },
-                            unit_amount: Math.round(paymentItem.amount * 100),
+                            unit_amount: Math.round(payment.amount * 100),
                         },
                         quantity: 1,
                     },

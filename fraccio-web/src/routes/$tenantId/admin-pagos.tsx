@@ -1,13 +1,20 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { useState } from 'react'
-import { CheckCircle, DollarSign, TrendingUp, XCircle } from 'lucide-react'
+import { AlertCircle, CheckCircle, DollarSign, Home } from 'lucide-react'
 import {
   createStripeOnboardingLinkFn,
   getAdminPaymentsFn,
   getPaymentItemsFn,
   getStripeAccountStatusFn,
 } from '@/lib/stripe'
+import {
+  generateChargesFn,
+  getPendingReviewFn,
+  getTenantChargesFn,
+} from '@/lib/payments/functions'
+import { periodOf } from '@/lib/payments/charges'
+import ReviewQueueContainer from '@/components/admin/ReviewQueueContainer'
 import { getTenantUsersFn } from '@/lib/user'
 import { isFeatureEnabled } from '@/lib/tenants'
 import PaymentItemsContainer from '@/components/admin/PaymentItemsContainer'
@@ -48,23 +55,63 @@ export const Route = createFileRoute('/$tenantId/admin-pagos')({
     // Needed so the admin can assign a payment item to specific residents
     const usersReq = getTenantUsersFn({ data: { tenantId: context.tenant.id } })
 
-    const [items, payments, stripeStatus, users] = await Promise.all([
-      itemsReq,
-      paymentsReq,
-      stripeStatusReq,
-      usersReq,
-    ])
-    return { items, payments, stripeStatus, users }
+    const chargesReq = getTenantChargesFn({
+      data: { tenantId: context.tenant.id },
+    })
+    const reviewReq = getPendingReviewFn({
+      data: { tenantId: context.tenant.id },
+    })
+
+    const [items, payments, stripeStatus, users, charges, review] =
+      await Promise.all([
+        itemsReq,
+        paymentsReq,
+        stripeStatusReq,
+        usersReq,
+        chargesReq,
+        reviewReq,
+      ])
+    return { items, payments, stripeStatus, users, charges, review }
   },
   component: RouteComponent,
 })
 
 function RouteComponent() {
   const { tenant } = Route.useRouteContext()
-  const { items, payments, stripeStatus, users } = Route.useLoaderData()
+  const { items, payments, stripeStatus, users, charges, review } =
+    Route.useLoaderData()
   const { addToast } = useToast()
+  const router = useRouter()
   const createOnboardingLink = useServerFn(createStripeOnboardingLinkFn)
+  const generateCharges = useServerFn(generateChargesFn)
   const [connecting, setConnecting] = useState(false)
+  const [generating, setGenerating] = useState(false)
+
+  const handleGenerate = async () => {
+    setGenerating(true)
+    try {
+      const { created } = await generateCharges({
+        data: { tenantId: tenant.id },
+      })
+      addToast({
+        type: 'success',
+        description: created
+          ? `${created} cargo(s) generados para este mes`
+          : 'Los cargos de este mes ya estaban generados',
+        duration: 5000,
+      })
+      router.invalidate()
+    } catch (error: any) {
+      logger('error', 'Error generating charges:', { error })
+      addToast({
+        type: 'error',
+        description: error.message || 'Error al generar las cuotas',
+        duration: 10000,
+      })
+    } finally {
+      setGenerating(false)
+    }
+  }
 
   const handleConnectStripe = async () => {
     setConnecting(true)
@@ -96,6 +143,7 @@ function RouteComponent() {
     const statusMap: Record<string, { label: string; class: string }> = {
       completed: { label: 'Completado', class: 'bg-green-100 text-green-800' },
       pending: { label: 'Pendiente', class: 'bg-yellow-100 text-yellow-800' },
+      in_review: { label: 'En revisión', class: 'bg-blue-100 text-blue-800' },
       failed: { label: 'Fallido', class: 'bg-red-100 text-red-800' },
       cancelled: { label: 'Cancelado', class: 'bg-gray-100 text-gray-800' },
     }
@@ -123,47 +171,80 @@ function RouteComponent() {
     return typeMap[type] || type
   }
 
-  // Calculate statistics
-  const totalRevenue = payments
-    .filter((p) => p.status === 'completed')
-    .reduce((sum, p) => sum + p.amount, 0)
+  // The cobranza numbers an administrator is asked for in an asamblea, not
+  // transaction counts. All derived from the ledger — nothing is stored.
+  const period = periodOf()
+  const today = new Date().toISOString().slice(0, 10)
 
-  const completedPayments = payments.filter(
-    (p) => p.status === 'completed',
-  ).length
-  const pendingPayments = payments.filter((p) => p.status === 'pending').length
-  const failedPayments = payments.filter((p) => p.status === 'failed').length
+  const collectedThisMonth = charges
+    .filter((c) => c.status === 'completed' && c.period === period)
+    .reduce((sum, c) => sum + c.amount, 0)
+
+  const outstanding = charges.filter((c) => c.status === 'pending')
+  const outstandingTotal = outstanding.reduce((sum, c) => sum + c.amount, 0)
+
+  // Vencido is derived: pending past its due date
+  const overdue = outstanding.filter((c) => c.due_date && c.due_date < today)
+  const overdueTotal = overdue.reduce((sum, c) => sum + c.amount, 0)
+
+  const housesWithCharges = new Set(charges.map((c) => c.house_id))
+  const housesOverdue = new Set(overdue.map((c) => c.house_id))
+  const housesCurrent = housesWithCharges.size - housesOverdue.size
 
   const stats = [
     {
-      title: 'Ingresos Totales',
-      value: formatCurrency(totalRevenue),
+      title: 'Cobrado este mes',
+      value: formatCurrency(collectedThisMonth),
       icon: DollarSign,
       color: 'text-green-600',
       bgColor: 'bg-green-100',
     },
     {
-      title: 'Pagos Completados',
-      value: completedPayments.toString(),
+      title: 'Por cobrar',
+      value: formatCurrency(outstandingTotal),
       icon: CheckCircle,
       color: 'text-blue-600',
       bgColor: 'bg-blue-100',
     },
     {
-      title: 'Pagos Pendientes',
-      value: pendingPayments.toString(),
-      icon: TrendingUp,
-      color: 'text-yellow-600',
-      bgColor: 'bg-yellow-100',
-    },
-    {
-      title: 'Pagos Fallidos',
-      value: failedPayments.toString(),
-      icon: XCircle,
+      title: 'Vencido',
+      value: formatCurrency(overdueTotal),
+      icon: AlertCircle,
       color: 'text-red-600',
       bgColor: 'bg-red-100',
     },
+    {
+      title: 'Casas al corriente',
+      value: `${housesCurrent} / ${housesWithCharges.size}`,
+      icon: Home,
+      color: 'text-yellow-600',
+      bgColor: 'bg-yellow-100',
+    },
   ]
+
+  // Morosidad, one row per house that owes something
+  const morosidad = [...housesOverdue]
+    .map((houseId) => {
+      const rows = overdue.filter((c) => c.house_id === houseId)
+      const paid = charges
+        .filter((c) => c.house_id === houseId && c.status === 'completed')
+        .map((c) => c.created_at)
+        .sort()
+        .at(-1)
+      return {
+        houseId,
+        house: rows[0]?.houses?.name ?? `Casa ${houseId}`,
+        count: rows.length,
+        balance: rows.reduce((sum, c) => sum + c.amount, 0),
+        oldest:
+          rows
+            .map((c) => c.due_date)
+            .sort()
+            .at(0) ?? null,
+        lastPayment: paid ?? null,
+      }
+    })
+    .sort((a, b) => b.balance - a.balance)
 
   return (
     <div className="space-y-8">
@@ -224,6 +305,80 @@ function RouteComponent() {
           )}
         </div>
       </Card>
+
+      {/* Comprobantes waiting on a ruling — the cash/SPEI money the ledger can't see yet */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4">
+          Por Revisar {review.length > 0 && `(${review.length})`}
+        </h2>
+        <ReviewQueueContainer tenantId={tenant.id} charges={review} />
+      </div>
+
+      {/* Morosidad */}
+      <div>
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <h2 className="text-xl font-semibold">Morosidad</h2>
+          <Button
+            variant="outline"
+            onClick={handleGenerate}
+            disabled={generating}
+          >
+            {generating ? 'Generando...' : 'Generar cuotas del mes'}
+          </Button>
+        </div>
+        {morosidad.length === 0 ? (
+          <Card className="p-6">
+            <p className="text-gray-600 text-center">
+              Ninguna casa tiene cargos vencidos
+            </p>
+          </Card>
+        ) : (
+          <DataTable
+            data={morosidad}
+            columns={[
+              { key: 'house', label: 'Casa' },
+              { key: 'count', label: 'Cargos vencidos' },
+              {
+                key: 'oldest',
+                label: 'Vencido desde',
+                render: (value: string | null) =>
+                  value
+                    ? new Date(`${value}T00:00:00`).toLocaleDateString(
+                        'es-MX',
+                        {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                        },
+                      )
+                    : '-',
+              },
+              {
+                key: 'balance',
+                label: 'Saldo',
+                render: (value: number) => (
+                  <span className="font-semibold text-red-700 tabular-nums">
+                    {formatCurrency(value)}
+                  </span>
+                ),
+              },
+              {
+                key: 'lastPayment',
+                label: 'Último pago',
+                render: (value: string | null) =>
+                  value
+                    ? new Date(value).toLocaleDateString('es-MX', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                      })
+                    : 'Nunca',
+              },
+            ]}
+            striped
+          />
+        )}
+      </div>
 
       {/* Payment Items Management */}
       <div>

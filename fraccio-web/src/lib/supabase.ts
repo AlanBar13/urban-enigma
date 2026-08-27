@@ -1,5 +1,6 @@
 import { getCookies, setCookie } from '@tanstack/react-start/server'
 import { createServerClient } from '@supabase/ssr'
+import { createClient } from '@supabase/supabase-js'
 import type { Database } from '@/database.types'
 
 const supabaseUrl = process.env.SUPABASE_URL!
@@ -23,5 +24,21 @@ export function getSupabaseClient() {
         })
       },
     },
+  })
+}
+
+/**
+ * Service-role client: no cookies, no session, bypasses RLS.
+ *
+ * Only for work that runs outside a request from a signed-in user — today that
+ * is the nightly cuotas cron, which has no session to borrow and would read
+ * back nothing under RLS. Never call this from a route a user can reach.
+ */
+export function getServiceSupabaseClient() {
+  const secretKey = process.env.SUPABASE_SECRET_KEY
+  if (!secretKey) throw new Error('SUPABASE_SECRET_KEY is not configured')
+
+  return createClient<Database>(supabaseUrl, secretKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
   })
 }
