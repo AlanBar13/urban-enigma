@@ -105,11 +105,13 @@ class PaymentsController {
      * Creates a Stripe Checkout session as a direct charge on the tenant's
      * connected account, with the platform's fixed application fee.
      *
-     * Two entry points, one session:
+     * Two entry points, one session — neither writes a `pending` row:
      *  - `paymentId` — settling an existing cargo (a generated cuota). The row
      *    already exists, so it is reused; inserting here would leave the house
      *    still owing the original charge after paying.
-     *  - `paymentItemId` — a one-off concept, which creates the row as before.
+     *  - `paymentItemId` — a one-off concept. Nothing is stored until the
+     *    webhook says paid or failed, so an abandoned checkout leaves no trace.
+     *    The row's fields ride along in the session metadata instead.
      *
      * Amount always comes from the DB row — never from the client, in either path.
      */
@@ -138,9 +140,12 @@ class PaymentsController {
             throw new Error("Unauthorized: House does not belong to this tenant");
         }
 
-        let payment: { id: number; amount: number; description: string | null };
+        let amount: number;
         let lineName: string;
         let lineDescription: string | undefined;
+        // Everything the webhook needs. The cargo path points at an existing row;
+        // the concepto path carries the row it will have to create.
+        let metadata: Record<string, string>;
 
         if (paymentId) {
             // Scoped to the caller's own house, so a resident cannot open a
@@ -156,9 +161,15 @@ class PaymentsController {
             if (chargeError || !charge) {
                 throw new Error("Charge not found or already settled");
             }
-            payment = charge;
+            amount = charge.amount;
             lineName = charge.description || "Cuota";
             lineDescription = undefined;
+            metadata = {
+                payment_id: charge.id.toString(),
+                tenant_id: tenantId,
+                user_id: userId,
+                house_id: houseUser.house_id.toString(),
+            };
 
             // Claim the cargo for whoever is paying it
             await this.supabase.from("payments").update({ user_id: userId }).eq("id", charge.id);
@@ -184,28 +195,19 @@ class PaymentsController {
                 throw new Error("This payment is not assigned to you");
             }
 
-            const { data: created, error: paymentError } = await this.supabase
-                .from("payments")
-                .insert({
-                    tenant_id: tenantId,
-                    user_id: userId,
-                    house_id: houseUser.house_id,
-                    // Lets the resident's /pagos page mark the concept as already paid
-                    payment_item_id: paymentItem.id,
-                    amount: paymentItem.amount,
-                    currency: paymentItem.currency,
-                    status: "pending",
-                    payment_type: paymentItem.payment_type,
-                    description: paymentItem.description || paymentItem.name,
-                })
-                .select("id, amount, description")
-                .single();
-            if (paymentError || !created) {
-                throw new Error("Failed to create payment record");
-            }
-            payment = created;
+            // No insert: the row is born in the webhook, already settled.
+            amount = paymentItem.amount;
             lineName = paymentItem.name;
             lineDescription = paymentItem.description || undefined;
+            metadata = {
+                tenant_id: tenantId,
+                user_id: userId,
+                house_id: houseUser.house_id.toString(),
+                // Lets the resident's /pagos page mark the concept as already paid
+                payment_item_id: paymentItem.id.toString(),
+                payment_type: paymentItem.payment_type,
+                description: paymentItem.description || paymentItem.name,
+            };
         }
 
         const baseUrl = `${process.env.WEB_BASE_URL}/${tenant.path}`;
@@ -221,37 +223,84 @@ class PaymentsController {
                                 name: lineName,
                                 ...(lineDescription ? { description: lineDescription } : {}),
                             },
-                            unit_amount: Math.round(payment.amount * 100),
+                            unit_amount: Math.round(amount * 100),
                         },
                         quantity: 1,
                     },
                 ],
                 payment_intent_data: {
                     application_fee_amount: Number(process.env.PLATFORM_FEE_MXN ?? 0) * 100,
+                    // Copied onto the intent: payment_intent.* events never see
+                    // the session's own metadata, and payment_failed is the only
+                    // signal a concepto attempt existed at all.
+                    metadata,
                 },
                 success_url: `${baseUrl}/pagos/success?session_id={CHECKOUT_SESSION_ID}`,
                 cancel_url: `${baseUrl}/pagos/cancel`,
-                metadata: {
-                    payment_id: payment.id.toString(),
-                    tenant_id: tenantId,
-                    user_id: userId,
-                    house_id: houseUser.house_id.toString(),
-                },
+                metadata,
             },
             { stripeAccount: tenant.stripe_account_id },
         );
 
-        // Non-fatal: the webhook still finds the payment via metadata.payment_id
-        await this.supabase
-            .from("payments")
-            .update({ stripe_session_id: session.id })
-            .eq("id", payment.id);
+        // Non-fatal: the webhook still finds the payment via metadata.payment_id.
+        // Only the cargo path has a row to stamp — a concepto has none yet.
+        if (paymentId) {
+            await this.supabase
+                .from("payments")
+                .update({ stripe_session_id: session.id })
+                .eq("id", paymentId);
+        }
 
         return { url: session.url, sessionId: session.id };
     }
 
     /**
+     * Writes the concepto row the checkout never created, keyed on the payment
+     * intent so the two "it worked" events (checkout.session.completed and
+     * payment_intent.succeeded) and Stripe's retries all land on one row.
+     * A failed attempt later retried successfully collapses into one completed row.
+     *
+     * Amount comes from what Stripe actually charged, not from the metadata.
+     */
+    private async upsertConceptoPayment(
+        metadata: Stripe.Metadata,
+        intentId: string,
+        status: "completed" | "failed",
+        amountCents: number | null,
+        sessionId?: string,
+    ): Promise<void> {
+        const { tenant_id, user_id, house_id, payment_item_id, payment_type, description } = metadata;
+        if (!tenant_id || !user_id || !house_id) return;
+
+        const { error } = await this.supabase.from("payments").upsert(
+            {
+                tenant_id,
+                user_id,
+                house_id: parseInt(house_id),
+                payment_item_id: payment_item_id ? parseInt(payment_item_id) : null,
+                amount: (amountCents ?? 0) / 100,
+                currency: "mxn",
+                status,
+                payment_method: "stripe",
+                payment_type: payment_type ?? "maintenance",
+                description: description ?? null,
+                stripe_payment_intent_id: intentId,
+                ...(sessionId ? { stripe_session_id: sessionId } : {}),
+            },
+            { onConflict: "stripe_payment_intent_id" },
+        );
+        if (error) {
+            throw new Error(`Failed to record payment for intent ${intentId}: ${error.message}`);
+        }
+    }
+
+    /**
      * Handles Connect webhook events (fired on connected accounts for direct charges).
+     *
+     * `metadata.payment_id` present = a cargo, whose row already exists and is
+     * only ever updated. Absent = a one-off concepto, whose row is created here
+     * — an abandoned checkout fires none of these events and so stores nothing.
+     *
      * ponytail: no event.account-vs-tenant cross-check — all accounts are
      * platform-created Express (holders have no API keys) and events are
      * signature-verified; add the check if non-Express accounts ever appear.
@@ -260,35 +309,59 @@ class PaymentsController {
         switch (event.type) {
             case "checkout.session.completed": {
                 const session = event.data.object;
-                if (!session.metadata?.payment_id) break;
-                const { error } = await this.supabase
-                    .from("payments")
-                    .update({
-                        status: session.payment_status === "paid" ? "completed" : "pending",
-                        stripe_payment_intent_id: session.payment_intent as string,
-                    })
-                    .eq("id", parseInt(session.metadata.payment_id));
-                if (error) {
-                    throw new Error(`Failed to update payment ${session.metadata.payment_id}: ${error.message}`);
+                // Anything short of paid is the state we no longer persist
+                if (session.payment_status !== "paid") break;
+                const intentId = session.payment_intent as string;
+
+                if (session.metadata?.payment_id) {
+                    const { error } = await this.supabase
+                        .from("payments")
+                        .update({ status: "completed", stripe_payment_intent_id: intentId })
+                        .eq("id", parseInt(session.metadata.payment_id));
+                    if (error) {
+                        throw new Error(`Failed to update payment ${session.metadata.payment_id}: ${error.message}`);
+                    }
+                } else if (session.metadata) {
+                    await this.upsertConceptoPayment(
+                        session.metadata,
+                        intentId,
+                        "completed",
+                        session.amount_total,
+                        session.id,
+                    );
                 }
                 break;
             }
 
             case "payment_intent.succeeded": {
                 const paymentIntent = event.data.object;
-                await this.supabase
-                    .from("payments")
-                    .update({ status: "completed" })
-                    .eq("stripe_payment_intent_id", paymentIntent.id);
+                if (paymentIntent.metadata.payment_id) {
+                    await this.supabase
+                        .from("payments")
+                        .update({ status: "completed" })
+                        .eq("stripe_payment_intent_id", paymentIntent.id);
+                } else {
+                    await this.upsertConceptoPayment(
+                        paymentIntent.metadata,
+                        paymentIntent.id,
+                        "completed",
+                        paymentIntent.amount_received,
+                    );
+                }
                 break;
             }
 
             case "payment_intent.payment_failed": {
                 const paymentIntent = event.data.object;
-                await this.supabase
-                    .from("payments")
-                    .update({ status: "failed" })
-                    .eq("stripe_payment_intent_id", paymentIntent.id);
+                // A cargo is a debt: a failed card attempt leaves it pending, still
+                // owed and still in Morosidad. Marking it 'failed' would erase it.
+                if (paymentIntent.metadata.payment_id) break;
+                await this.upsertConceptoPayment(
+                    paymentIntent.metadata,
+                    paymentIntent.id,
+                    "failed",
+                    paymentIntent.amount,
+                );
                 break;
             }
 

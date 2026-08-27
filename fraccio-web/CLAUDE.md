@@ -119,8 +119,9 @@ settles it), and carries a `period` (`YYYY-MM-01`) and `due_date`.
 
 - `payment_items` with `recurrence='monthly'` + `due_day` are billed to every house each period. Recurring items are always tenant-wide (no `assigned_user_ids`).
 - `src/lib/payments/charges.ts` — `generateChargesForTenant()` is idempotent via the partial unique index on `(house_id, payment_item_id, period)`. **That index is the only thing preventing double billing**; the daily cron re-runs generation every morning.
-- Paying a cargo goes through the backend checkout with `paymentId` (reuses the row). `paymentItemId` is the one-off path that still inserts.
-- Cash/SPEI: the resident uploads a comprobante (`/api/upload/comprobante`, private S3) → `status='in_review'` → an admin approves via `reviewPaymentFn`. Only an admin can reach `completed`.
+- Paying a cargo goes through the backend checkout with `paymentId` (reuses the row). `paymentItemId` is the one-off path, which **stores nothing at checkout** — the row is created by the Stripe webhook, already `completed` or `failed`, upserted on `stripe_payment_intent_id`. An abandoned checkout leaves no trace. A failed attempt on a _cargo_ is a no-op: the debt stays `pending`.
+- `getPaymentHistoryFn` / `getAdminPaymentsFn` are the transaction lists and filter to `completed`/`failed`. The cargo ledger (`src/lib/payments/queries.ts`) stays unfiltered — every stat and Morosidad is derived from it.
+- Cash/SPEI: the resident uploads a comprobante (`/api/upload/comprobante`, private S3) → `status='in_review'` → an admin approves via `reviewPaymentFn`. Only an admin can reach `completed`. Gated by the `comprobante` feature toggle, enforced in the upload route.
 - `/api/cron/cuotas` (daily, `vercel.json` → `crons`) generates the period and pushes reminders. `payments.last_reminder_at` + a 6-day cooldown is what keeps a daily cron from sending a daily notification.
 
 Schema lives in [supabase/cobranza.sql](./supabase/cobranza.sql) — applied by

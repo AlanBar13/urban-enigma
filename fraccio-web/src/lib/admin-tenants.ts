@@ -20,7 +20,7 @@ export const setTenantFeatureFn = createServerFn({ method: 'POST' })
   .inputValidator(
     z.object({
       tenantId: z.string(),
-      feature: z.enum(['payments', 'email', 'visitors']),
+      feature: z.enum(['payments', 'email', 'visitors', 'comprobante']),
       enabled: z.boolean(),
     }),
   )

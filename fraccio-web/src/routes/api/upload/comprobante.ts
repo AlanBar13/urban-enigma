@@ -4,6 +4,7 @@ import { getSupabaseClient } from '@/lib/supabase'
 import { getUser } from '@/lib/user'
 import { getUserHouse } from '@/lib/casa'
 import { canAccessTenant } from '@/lib/auth'
+import { isFeatureEnabled } from '@/lib/tenants'
 import { logger } from '@/utils/logger'
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
@@ -57,6 +58,24 @@ export const Route = createFileRoute('/api/upload/comprobante')({
           return new Response(
             JSON.stringify({
               error: 'Unauthorized: User does not belong to this tenant',
+            }),
+            { status: 403 },
+          )
+        }
+
+        // The real gate: the UI hides "Ya pagué" when the toggle is off, but a
+        // tenant that doesn't want comprobantes must not receive one anyway.
+        const { data: tenant } = await supabase
+          .from('tenants')
+          .select('features')
+          .eq('id', tenantId)
+          .single()
+
+        if (!isFeatureEnabled(tenant?.features ?? null, 'comprobante')) {
+          return new Response(
+            JSON.stringify({
+              error:
+                'Este fraccionamiento no acepta comprobantes de pago manual',
             }),
             { status: 403 },
           )

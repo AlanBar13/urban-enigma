@@ -27,6 +27,8 @@ interface Props {
   charges: Array<Charge>
   /** Card payment is only offered once the tenant finishes Stripe onboarding */
   paymentsEnabled: boolean
+  /** `comprobante` feature toggle — when off, only card payment is offered */
+  comprobanteEnabled: boolean
 }
 
 const formatCurrency = (amount: number) =>
@@ -66,6 +68,7 @@ export default function ChargesList({
   tenantPath,
   charges,
   paymentsEnabled,
+  comprobanteEnabled,
 }: Props) {
   const { addToast } = useToast()
   const router = useRouter()
@@ -209,12 +212,14 @@ export default function ChargesList({
                       >
                         {paying === charge.id ? 'Procesando...' : 'Pagar'}
                       </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => setProofFor(charge)}
-                      >
-                        Ya pagué
-                      </Button>
+                      {comprobanteEnabled && (
+                        <Button
+                          variant="outline"
+                          onClick={() => setProofFor(charge)}
+                        >
+                          Ya pagué
+                        </Button>
+                      )}
                     </>
                   )}
                 </div>
@@ -225,7 +230,7 @@ export default function ChargesList({
       </div>
 
       <FormModal
-        open={!!proofFor}
+        open={comprobanteEnabled && !!proofFor}
         onOpenChange={(o) => !o && setProofFor(null)}
         title="Registrar pago realizado"
         description="Sube tu comprobante de transferencia o depósito. El administrador lo revisará antes de marcar el cargo como pagado."

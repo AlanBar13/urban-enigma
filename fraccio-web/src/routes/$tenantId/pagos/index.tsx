@@ -55,6 +55,7 @@ function RouteComponent() {
   const [loading, setLoading] = useState<number | null>(null)
   // UX only — the backend rejects checkout (409) until the tenant finishes Stripe onboarding
   const paymentsEnabled = tenant.stripe_charges_enabled
+  const comprobanteEnabled = isFeatureEnabled(tenant.features, 'comprobante')
 
   // Concepts this user has already paid at least once. Paying again stays allowed —
   // a concept can be recurring, and nothing here should block a second payment.
@@ -148,6 +149,7 @@ function RouteComponent() {
           tenantPath={tenant.path}
           charges={charges}
           paymentsEnabled={paymentsEnabled}
+          comprobanteEnabled={comprobanteEnabled}
         />
       </div>
 

@@ -185,6 +185,9 @@ export const getPaymentHistoryFn = createServerFn({ method: 'POST' })
       .select('*, houses(name)')
       .eq('house_id', houseId)
       .eq('tenant_id', data.tenantId)
+      // Transactions only. Outstanding cargos are their own list (ChargesList),
+      // and nothing is stored for a checkout that was never completed.
+      .in('status', ['completed', 'failed'])
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -385,6 +388,8 @@ export const getAdminPaymentsFn = createServerFn({ method: 'POST' })
       // This column is "who paid".
       .select('*, houses(name), profiles!payments_user_id_fkey(full_name)')
       .eq('tenant_id', data.tenantId)
+      // Transactions only — the outstanding ledger comes from getTenantChargesFn
+      .in('status', ['completed', 'failed'])
       .order('created_at', { ascending: false })
 
     if (error) {

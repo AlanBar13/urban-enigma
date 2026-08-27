@@ -58,9 +58,13 @@ export const Route = createFileRoute('/$tenantId/admin-pagos')({
     const chargesReq = getTenantChargesFn({
       data: { tenantId: context.tenant.id },
     })
-    const reviewReq = getPendingReviewFn({
-      data: { tenantId: context.tenant.id },
-    })
+    const comprobanteOn = isFeatureEnabled(
+      context.tenant.features,
+      'comprobante',
+    )
+    const reviewReq = comprobanteOn
+      ? getPendingReviewFn({ data: { tenantId: context.tenant.id } })
+      : []
 
     const [items, payments, stripeStatus, users, charges, review] =
       await Promise.all([
@@ -71,15 +75,30 @@ export const Route = createFileRoute('/$tenantId/admin-pagos')({
         chargesReq,
         reviewReq,
       ])
-    return { items, payments, stripeStatus, users, charges, review }
+    return {
+      items,
+      payments,
+      stripeStatus,
+      users,
+      charges,
+      review,
+      comprobanteOn,
+    }
   },
   component: RouteComponent,
 })
 
 function RouteComponent() {
   const { tenant } = Route.useRouteContext()
-  const { items, payments, stripeStatus, users, charges, review } =
-    Route.useLoaderData()
+  const {
+    items,
+    payments,
+    stripeStatus,
+    users,
+    charges,
+    review,
+    comprobanteOn,
+  } = Route.useLoaderData()
   const { addToast } = useToast()
   const router = useRouter()
   const createOnboardingLink = useServerFn(createStripeOnboardingLinkFn)
@@ -307,12 +326,14 @@ function RouteComponent() {
       </Card>
 
       {/* Comprobantes waiting on a ruling — the cash/SPEI money the ledger can't see yet */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4">
-          Por Revisar {review.length > 0 && `(${review.length})`}
-        </h2>
-        <ReviewQueueContainer tenantId={tenant.id} charges={review} />
-      </div>
+      {comprobanteOn && (
+        <div>
+          <h2 className="text-xl font-semibold mb-4">
+            Por Revisar {review.length > 0 && `(${review.length})`}
+          </h2>
+          <ReviewQueueContainer tenantId={tenant.id} charges={review} />
+        </div>
+      )}
 
       {/* Morosidad */}
       <div>

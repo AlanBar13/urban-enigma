@@ -5,7 +5,6 @@ import {
   Bell,
   Building,
   CheckCircle,
-  Clock,
   DollarSign,
   FileText,
   Home,
@@ -95,16 +94,14 @@ function RouteComponent() {
       day: 'numeric',
     })
 
-  // User payment stats
+  // User payment stats. Both lists are already transactions only (completed or
+  // failed) — outstanding cargos live on /pagos, not on tiles here.
   const userCompleted = paymentHistory.filter((p) => p.status === 'completed')
-  const userPending = paymentHistory.filter((p) => p.status === 'pending')
   const userTotalPaid = userCompleted.reduce((sum, p) => sum + p.amount, 0)
 
   // Admin stats
   const adminCompleted =
     adminPayments?.filter((p) => p.status === 'completed') ?? []
-  const adminPending =
-    adminPayments?.filter((p) => p.status === 'pending') ?? []
   const adminFailed = adminPayments?.filter((p) => p.status === 'failed') ?? []
   const adminTotalRevenue = adminCompleted.reduce((sum, p) => sum + p.amount, 0)
 
@@ -119,12 +116,7 @@ function RouteComponent() {
         label: 'Completado',
         className: 'bg-green-100 text-green-800',
       },
-      pending: {
-        label: 'Pendiente',
-        className: 'bg-yellow-100 text-yellow-800',
-      },
       failed: { label: 'Fallido', className: 'bg-red-100 text-red-800' },
-      cancelled: { label: 'Cancelado', className: 'bg-gray-100 text-gray-800' },
     }
     const info = map[status] ?? {
       label: status,
@@ -167,13 +159,6 @@ function RouteComponent() {
             bg: 'bg-blue-100',
           },
           {
-            title: 'Pagos Pendientes',
-            value: adminPending.length.toString(),
-            icon: Clock,
-            color: 'text-yellow-600',
-            bg: 'bg-yellow-100',
-          },
-          {
             title: 'Pagos Fallidos',
             value: adminFailed.length.toString(),
             icon: XCircle,
@@ -195,13 +180,6 @@ function RouteComponent() {
             icon: CheckCircle,
             color: 'text-blue-600',
             bg: 'bg-blue-100',
-          },
-          {
-            title: 'Pagos Pendientes',
-            value: userPending.length.toString(),
-            icon: Clock,
-            color: 'text-yellow-600',
-            bg: 'bg-yellow-100',
           },
         ]
 
