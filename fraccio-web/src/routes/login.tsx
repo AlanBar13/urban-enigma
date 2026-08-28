@@ -2,6 +2,7 @@ import { createFileRoute, redirect } from '@tanstack/react-router'
 import Login from '../components/Login'
 import { getTenantByIdFn } from '@/lib/tenants'
 import { getUser } from '@/lib/user'
+import { Spinner } from '@/components/ui/spinner'
 
 export const Route = createFileRoute('/login')({
   // Already signed in? Skip the form — the PWA's start_url points here.
@@ -22,6 +23,14 @@ export const Route = createFileRoute('/login')({
     }
   },
   component: LoginComp,
+  // The session check above can take a beat; show a spinner immediately
+  // instead of a blank screen.
+  pendingMs: 0,
+  pendingComponent: () => (
+    <div className="flex items-center justify-center min-h-screen bg-[var(--surface-container)]">
+      <Spinner size="lg" />
+    </div>
+  ),
   head: () => ({
     meta: [
       {
