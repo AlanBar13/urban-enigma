@@ -9,7 +9,7 @@ export const getContactRequestsFn = createServerFn({ method: 'GET' }).handler(
   async () => {
     const { data, error } = await getSupabaseClient()
       .from('contact_requests')
-      .select('id, name, email, phone, fraccionamiento, created_at')
+      .select('id, name, email, phone, fraccionamiento, plan, created_at')
       .order('created_at', { ascending: false })
     if (error) {
       logger('error', 'Error fetching contact requests:', { error })
@@ -44,6 +44,8 @@ export const submitContactRequestFn = createServerFn({ method: 'POST' })
       email: z.email().max(255),
       phone: z.string().trim().min(1).max(40),
       fraccionamiento: z.string().trim().min(1).max(160),
+      // Plan que el visitante eligió en la sección de precios (si llegó por ahí)
+      plan: z.string().trim().max(40).optional(),
     }),
   )
   .handler(async ({ data }) => {

@@ -100,6 +100,16 @@ function RouteComponent() {
             },
             { key: 'fraccionamiento', label: 'Fraccionamiento' },
             {
+              key: 'plan',
+              label: 'Plan',
+              render: (value: string | null) =>
+                value ? (
+                  <span className="capitalize">{value}</span>
+                ) : (
+                  <span className="text-muted-foreground">—</span>
+                ),
+            },
+            {
               key: 'created_at',
               label: 'Recibida',
               render: (value: string) => formatDate(value),

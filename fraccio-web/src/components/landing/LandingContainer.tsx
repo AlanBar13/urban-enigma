@@ -7,7 +7,6 @@ import {
   CreditCard,
   FileText,
   Home,
-  MessageCircle,
   Users,
   Zap,
 } from 'lucide-react'
@@ -15,6 +14,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/components/notifications'
+import PricingSection, {
+  PLAN_LABELS,
+} from '@/components/landing/PricingSection'
 import { submitContactRequestFn } from '@/lib/contact'
 import { logger } from '@/utils/logger'
 
@@ -78,15 +80,19 @@ export default function LandingContainer() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
 
     try {
-      await submitContactRequest({ data: formData })
+      await submitContactRequest({
+        data: { ...formData, ...(selectedPlan ? { plan: selectedPlan } : {}) },
+      })
       setIsSubmitted(true)
       setFormData({ name: '', email: '', phone: '', fraccionamiento: '' })
+      setSelectedPlan(null)
 
       // Vuelve a mostrar el formulario después de unos segundos
       setTimeout(() => setIsSubmitted(false), 5000)
@@ -125,7 +131,18 @@ export default function LandingContainer() {
               >
                 Iniciar Sesión
               </Button>
-              {/* Phones get this CTA from the hero section instead — three items don't fit */}
+              {/* Phones get these from the hero/pricing sections instead — they don't fit */}
+              <Button
+                variant="ghost"
+                className="hidden sm:inline-flex"
+                onClick={() => {
+                  document
+                    .getElementById('precios')
+                    ?.scrollIntoView({ behavior: 'smooth' })
+                }}
+              >
+                Precios
+              </Button>
               <Button
                 variant="outline"
                 className="hidden sm:inline-flex"
@@ -288,6 +305,8 @@ export default function LandingContainer() {
         </div>
       </section>
 
+      <PricingSection onSelectPlan={setSelectedPlan} />
+
       {/* Contact Form Section */}
       <section
         id="contact-form"
@@ -317,6 +336,23 @@ export default function LandingContainer() {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
+                {selectedPlan && (
+                  <div className="flex items-center justify-between gap-4 rounded-lg bg-secondary/50 px-4 py-3">
+                    <span className="text-sm">
+                      Plan de interés:{' '}
+                      <strong>{PLAN_LABELS[selectedPlan]}</strong>
+                    </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedPlan(null)}
+                    >
+                      Quitar
+                    </Button>
+                  </div>
+                )}
+
                 <div className="space-y-2">
                   <Label htmlFor="name">Nombre Completo *</Label>
                   <Input

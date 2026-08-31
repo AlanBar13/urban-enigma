@@ -7,6 +7,41 @@ import { logger } from '@/utils/logger'
 
 export type FeatureName = 'payments' | 'email' | 'visitors' | 'comprobante'
 
+export type PlanName = 'arranque' | 'basico' | 'esencial' | 'pro'
+
+export const PLAN_LABEL: Record<PlanName, string> = {
+  arranque: 'Arranque',
+  basico: 'Básico',
+  esencial: 'Esencial',
+  pro: 'Pro',
+}
+
+/**
+ * Tope duro de casas por plan. Se aplica al crear una casa (`createHouseFn`),
+ * que es el único lugar donde nacen. NO hay cobro por excedente: si el plan se
+ * llena, se sube de plan.
+ */
+export const PLAN_MAX_HOUSES: Record<PlanName, number> = {
+  arranque: 10,
+  basico: 50,
+  esencial: 200,
+  pro: 400,
+}
+
+// La comisión por plan vive SÓLO en el backend (PLAN_FEE_MXN en
+// billing.controller.ts) y llega a la UI vía getSubscriptionStatusFn. Duplicarla
+// aquí sería una segunda fuente de verdad sobre dinero, que puede desalinearse.
+
+/** Un plan que se cobra en línea (Arranque es gratis, no tiene suscripción). */
+export const isPaidPlan = (
+  plan: string,
+): plan is 'basico' | 'esencial' | 'pro' =>
+  plan === 'basico' || plan === 'esencial' || plan === 'pro'
+
+/** El fraccionamiento debe dinero: avisar, pero nunca bloquear la app. */
+export const isSubscriptionOverdue = (status: string | null): boolean =>
+  status === 'past_due' || status === 'unpaid'
+
 // Missing key = disabled: features must be explicitly enabled per tenant
 export const isFeatureEnabled = (
   features: Json | null,

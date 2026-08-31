@@ -1,5 +1,6 @@
 import type Stripe from "stripe";
 import { getStripe } from "../../lib/stripe.js";
+import { PLAN_FEE_MXN, type PlanName } from "./billing.controller.js";
 import SupaClient from "../../lib/db/client.js";
 
 /** Thrown when the tenant hasn't completed Stripe onboarding; routes map it to 409. */
@@ -17,7 +18,7 @@ class PaymentsController {
     private async getTenant(tenantId: string) {
         const { data: tenant, error } = await this.supabase
             .from("tenants")
-            .select("id, name, path, stripe_account_id, stripe_charges_enabled")
+            .select("id, name, path, plan, stripe_account_id, stripe_charges_enabled")
             .eq("id", tenantId)
             .single();
         if (error || !tenant) {
@@ -229,7 +230,10 @@ class PaymentsController {
                     },
                 ],
                 payment_intent_data: {
-                    application_fee_amount: Number(process.env.PLATFORM_FEE_MXN ?? 0) * 100,
+                    // Our commission drops as the tenant's plan goes up — that
+                    // step-down is what the paid plans are actually selling.
+                    application_fee_amount:
+                        (PLAN_FEE_MXN[tenant.plan as PlanName] ?? Number(process.env.PLATFORM_FEE_MXN ?? 0)) * 100,
                     // Copied onto the intent: payment_intent.* events never see
                     // the session's own metadata, and payment_failed is the only
                     // signal a concepto attempt existed at all.

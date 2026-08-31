@@ -14,16 +14,23 @@ import {
 import { useState } from 'react'
 import { useServerFn } from '@tanstack/react-start'
 import type { TenantWithStats } from '@/lib/admin-tenants'
+import type { PlanName } from '@/lib/tenants'
 import {
   deleteTenantFn,
   getTenantsWithStatsFn,
   setTenantFeatureFn,
+  setTenantPlanFn,
 } from '@/lib/admin-tenants'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog, FormModal } from '@/components/modals'
 import { FormField } from '@/components/forms'
 import { Input } from '@/components/ui/input'
-import { createTenantFn, isFeatureEnabled } from '@/lib/tenants'
+import {
+  PLAN_LABEL,
+  createTenantFn,
+  isFeatureEnabled,
+  isSubscriptionOverdue,
+} from '@/lib/tenants'
 import { useToast } from '@/components/notifications'
 import { logger } from '@/utils/logger'
 
@@ -52,6 +59,7 @@ function RouteComponent() {
   const [address, setAddress] = useState('')
   const createTenant = useServerFn(createTenantFn)
   const setTenantFeature = useServerFn(setTenantFeatureFn)
+  const setTenantPlan = useServerFn(setTenantPlanFn)
   const { addToast } = useToast()
   const router = useRouter()
 
@@ -62,6 +70,7 @@ function RouteComponent() {
   const [emailOn, setEmailOn] = useState(false)
   const [visitorsOn, setVisitorsOn] = useState(false)
   const [comprobanteOn, setComprobanteOn] = useState(false)
+  const [plan, setPlan] = useState<PlanName>('arranque')
   const [pendingDelete, setPendingDelete] = useState<TenantWithStats | null>(
     null,
   )
@@ -92,6 +101,7 @@ function RouteComponent() {
     setEmailOn(isFeatureEnabled(tenant.features, 'email'))
     setVisitorsOn(isFeatureEnabled(tenant.features, 'visitors'))
     setComprobanteOn(isFeatureEnabled(tenant.features, 'comprobante'))
+    setPlan(tenant.plan as PlanName)
     setFeaturesTenant(tenant)
   }
 
@@ -126,6 +136,9 @@ function RouteComponent() {
           enabled: comprobanteOn,
         },
       })
+      if (plan !== featuresTenant.plan) {
+        await setTenantPlan({ data: { tenantId: featuresTenant.id, plan } })
+      }
       await router.invalidate()
       setFeaturesTenant(null)
       addToast({
@@ -311,6 +324,19 @@ function RouteComponent() {
                   </div>
                 </div>
 
+                {/* Plan */}
+                <div className="flex items-center justify-between gap-2 pt-4 mb-1">
+                  <span className="text-sm text-muted-foreground">Plan</span>
+                  <span className="text-sm font-medium">
+                    {PLAN_LABEL[tenant.plan as PlanName]}
+                    {isSubscriptionOverdue(tenant.subscription_status) && (
+                      <span className="ml-2 rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">
+                        Pago pendiente
+                      </span>
+                    )}
+                  </span>
+                </div>
+
                 {/* Feature toggles */}
                 <div className="flex items-center justify-between pt-4 border-t mb-4">
                   <span className="text-sm text-muted-foreground">
@@ -377,6 +403,25 @@ function RouteComponent() {
         title={`Funciones — ${featuresTenant?.name ?? ''}`}
         onSubmit={onSaveFeatures}
       >
+        <label className="block text-sm mb-4">
+          <span className="font-medium">Plan</span>
+          <span className="block text-xs text-muted-foreground mb-2">
+            Determina nuestra comisión por pago recibido. Corrección manual: no
+            crea ni cancela la suscripción en Stripe.
+          </span>
+          <select
+            className="h-9 w-full rounded-md border bg-transparent px-3 text-sm"
+            value={plan}
+            onChange={(e) => setPlan(e.target.value as PlanName)}
+          >
+            {(Object.keys(PLAN_LABEL) as Array<PlanName>).map((key) => (
+              <option key={key} value={key}>
+                {PLAN_LABEL[key]}
+              </option>
+            ))}
+          </select>
+        </label>
+
         <label className="flex items-center gap-3 text-sm cursor-pointer">
           <input
             type="checkbox"

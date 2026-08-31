@@ -3,6 +3,8 @@ import { z } from 'zod'
 import { getSupabaseClient } from './supabase'
 import { getUser } from './user'
 import { assertAdmin, assertTenantAccess } from './auth'
+import { PLAN_LABEL, PLAN_MAX_HOUSES } from './tenants'
+import type { PlanName } from './tenants'
 import { logger } from '@/utils/logger'
 
 const createHouseInputSchema = z.object({
@@ -43,6 +45,38 @@ export const createHouseFn = createServerFn({ method: 'POST' })
     const userData = await getUser()
     assertAdmin(userData)
     assertTenantAccess(userData, data.tenantId)
+
+    // Tope duro del plan. Va aquí porque createHouseFn es el único lugar donde
+    // nace una casa — un guard en la UI sería evitable llamando la server fn.
+    // Sólo bloquea casas NUEVAS: un fraccionamiento que ya está por encima del
+    // tope (p.ej. tras bajar de plan) conserva las que tiene.
+    const { data: tenant, error: tenantError } = await supabase
+      .from('tenants')
+      .select('plan')
+      .eq('id', data.tenantId)
+      .single()
+
+    if (tenantError) {
+      logger('error', 'Error reading tenant plan:', { error: tenantError })
+      throw tenantError
+    }
+
+    const max = PLAN_MAX_HOUSES[tenant.plan as PlanName]
+    const { count, error: countError } = await supabase
+      .from('houses')
+      .select('id', { count: 'exact', head: true })
+      .eq('tenant_id', data.tenantId)
+
+    if (countError) {
+      logger('error', 'Error counting houses:', { error: countError })
+      throw countError
+    }
+
+    if ((count ?? 0) >= max) {
+      throw new Error(
+        `El plan ${PLAN_LABEL[tenant.plan as PlanName]} permite hasta ${max} casas. Sube de plan para agregar más.`,
+      )
+    }
 
     const { data: house, error } = await supabase
       .from('houses')

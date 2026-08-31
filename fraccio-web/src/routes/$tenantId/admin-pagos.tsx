@@ -2,6 +2,7 @@ import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { useState } from 'react'
 import { AlertCircle, CheckCircle, DollarSign, Home } from 'lucide-react'
+import type { PlanName } from '@/lib/tenants'
 import {
   createStripeOnboardingLinkFn,
   getAdminPaymentsFn,
@@ -16,7 +17,18 @@ import {
 import { periodOf } from '@/lib/payments/charges'
 import ReviewQueueContainer from '@/components/admin/ReviewQueueContainer'
 import { getTenantUsersFn } from '@/lib/user'
-import { isFeatureEnabled } from '@/lib/tenants'
+import {
+  PLAN_LABEL,
+  PLAN_MAX_HOUSES,
+  isFeatureEnabled,
+  isPaidPlan,
+  isSubscriptionOverdue,
+} from '@/lib/tenants'
+import {
+  createBillingPortalFn,
+  createSubscriptionCheckoutFn,
+  getSubscriptionStatusFn,
+} from '@/lib/billing'
 import PaymentItemsContainer from '@/components/admin/PaymentItemsContainer'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -51,6 +63,10 @@ export const Route = createFileRoute('/$tenantId/admin-pagos')({
     const stripeStatusReq = getStripeAccountStatusFn({
       data: { tenantId: context.tenant.id },
     })
+    // Also re-syncs subscription_status from Stripe, in case a webhook was missed
+    const subscriptionReq = getSubscriptionStatusFn({
+      data: { tenantId: context.tenant.id },
+    })
 
     // Needed so the admin can assign a payment item to specific residents
     const usersReq = getTenantUsersFn({ data: { tenantId: context.tenant.id } })
@@ -66,15 +82,23 @@ export const Route = createFileRoute('/$tenantId/admin-pagos')({
       ? getPendingReviewFn({ data: { tenantId: context.tenant.id } })
       : []
 
-    const [items, payments, stripeStatus, users, charges, review] =
-      await Promise.all([
-        itemsReq,
-        paymentsReq,
-        stripeStatusReq,
-        usersReq,
-        chargesReq,
-        reviewReq,
-      ])
+    const [
+      items,
+      payments,
+      stripeStatus,
+      users,
+      charges,
+      review,
+      subscription,
+    ] = await Promise.all([
+      itemsReq,
+      paymentsReq,
+      stripeStatusReq,
+      usersReq,
+      chargesReq,
+      reviewReq,
+      subscriptionReq,
+    ])
     return {
       items,
       payments,
@@ -83,6 +107,7 @@ export const Route = createFileRoute('/$tenantId/admin-pagos')({
       charges,
       review,
       comprobanteOn,
+      subscription,
     }
   },
   component: RouteComponent,
@@ -98,13 +123,22 @@ function RouteComponent() {
     charges,
     review,
     comprobanteOn,
+    subscription,
   } = Route.useLoaderData()
   const { addToast } = useToast()
   const router = useRouter()
   const createOnboardingLink = useServerFn(createStripeOnboardingLinkFn)
+  const createSubscriptionCheckout = useServerFn(createSubscriptionCheckoutFn)
+  const createBillingPortal = useServerFn(createBillingPortalFn)
   const generateCharges = useServerFn(generateChargesFn)
   const [connecting, setConnecting] = useState(false)
+  const [billingBusy, setBillingBusy] = useState(false)
+  const [upgradeTo, setUpgradeTo] = useState<'basico' | 'esencial' | 'pro'>(
+    'basico',
+  )
   const [generating, setGenerating] = useState(false)
+
+  const maxHouses = PLAN_MAX_HOUSES[subscription.plan as PlanName]
 
   const handleGenerate = async () => {
     setGenerating(true)
@@ -148,6 +182,27 @@ function RouteComponent() {
         duration: 10000,
       })
       setConnecting(false)
+    }
+  }
+
+  /** Upgrade a un plan de paga, o el portal de Stripe si ya hay suscripción. */
+  const handleBilling = async (plan?: 'basico' | 'esencial' | 'pro') => {
+    setBillingBusy(true)
+    try {
+      const { url } = plan
+        ? await createSubscriptionCheckout({
+            data: { tenantId: tenant.id, plan },
+          })
+        : await createBillingPortal({ data: { tenantId: tenant.id } })
+      if (url) window.location.href = url
+    } catch (error: any) {
+      logger('error', 'Error opening billing flow:', { error })
+      addToast({
+        type: 'error',
+        description: 'No pudimos abrir la suscripción. Intenta de nuevo.',
+        duration: 10000,
+      })
+      setBillingBusy(false)
     }
   }
 
@@ -294,6 +349,73 @@ function RouteComponent() {
           )
         })}
       </div>
+
+      {/* Plan de Fraccio — la mensualidad que el fraccionamiento nos paga */}
+      <Card className="p-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold">
+              Plan {PLAN_LABEL[subscription.plan as PlanName]}
+            </h2>
+            <p className="text-gray-600 text-sm mt-1">
+              {subscription.houseCount} / {maxHouses} casas · comisión de{' '}
+              {formatCurrency(subscription.feeMxn)} por pago recibido
+              {subscription.currentPeriodEnd
+                ? ` · se renueva el ${new Date(subscription.currentPeriodEnd * 1000).toLocaleDateString('es-MX')}`
+                : ''}
+            </p>
+            {subscription.houseCount >= maxHouses && (
+              <p className="text-amber-700 text-sm mt-2 font-medium">
+                Llegaste al límite de casas de tu plan. Sube de plan para
+                registrar más casas (las que ya tienes no se ven afectadas).
+              </p>
+            )}
+            {isSubscriptionOverdue(subscription.status) && (
+              <p className="text-red-700 text-sm mt-2 font-medium">
+                Hay un pago pendiente de tu suscripción. Actualiza tu método de
+                pago para no perder el plan.
+              </p>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {isPaidPlan(subscription.plan) ? (
+              <Button
+                variant="outline"
+                onClick={() => handleBilling()}
+                disabled={billingBusy}
+              >
+                {billingBusy ? 'Abriendo...' : 'Administrar suscripción'}
+              </Button>
+            ) : (
+              // Un select en vez de un botón por plan: escala si algún día hay
+              // más niveles, y no llena la tarjeta de botones.
+              <>
+                <select
+                  className="h-9 rounded-md border bg-transparent px-3 text-sm"
+                  value={upgradeTo}
+                  onChange={(e) =>
+                    setUpgradeTo(
+                      e.target.value as 'basico' | 'esencial' | 'pro',
+                    )
+                  }
+                >
+                  {(['basico', 'esencial', 'pro'] as const).map((key) => (
+                    <option key={key} value={key}>
+                      {PLAN_LABEL[key]} — hasta {PLAN_MAX_HOUSES[key]} casas
+                    </option>
+                  ))}
+                </select>
+                <Button
+                  onClick={() => handleBilling(upgradeTo)}
+                  disabled={billingBusy}
+                >
+                  {billingBusy ? 'Abriendo...' : 'Contratar'}
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      </Card>
 
       {/* Stripe Connect Status */}
       <Card className="p-6">

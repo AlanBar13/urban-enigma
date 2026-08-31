@@ -27,7 +27,12 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { useToast } from '@/components/notifications'
-import { getTenantFn, isFeatureEnabled, listUserTenantsFn } from '@/lib/tenants'
+import {
+  getTenantFn,
+  isFeatureEnabled,
+  isSubscriptionOverdue,
+  listUserTenantsFn,
+} from '@/lib/tenants'
 import { canGuardAccess, isAdmin, isGuard } from '@/lib/auth'
 import { getUser, logoutFn } from '@/lib/user'
 import { TenantSelector } from '@/components/tenant'
@@ -517,6 +522,18 @@ function RouteComponent() {
               <div className="h-8 w-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
               <p className="text-sm text-muted-foreground">Cargando...</p>
             </div>
+          </div>
+        )}
+        {/* Sólo avisa. Apagar la plataforma por una tarjeta vencida dejaría a
+            los colonos sin poder pagar su cuota — si hay que cortar, un
+            superadmin apaga las funciones a mano. */}
+        {isSubscriptionOverdue(tenant.subscription_status) && isAdmin(user) && (
+          <div className="mb-6 rounded-xl bg-destructive/10 p-4 text-sm">
+            <p className="font-semibold">Suscripción con pago pendiente</p>
+            <p className="text-muted-foreground mt-1">
+              No pudimos cobrar la mensualidad de Fraccio. Actualiza el método
+              de pago desde Administrar pagos para no perder el plan.
+            </p>
           </div>
         )}
         <Outlet />

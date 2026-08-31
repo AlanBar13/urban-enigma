@@ -11,6 +11,8 @@ import baseRoutes from "./api/routes/base.route.js";
 // import whatsappSessionRoutes from "./api/routes/whatsapp-session.route.js";
 import paymentsRoutes from "./api/routes/payments.route.js";
 import stripeWebhookRoutes from "./api/routes/stripe-webhook.route.js";
+import stripeBillingWebhookRoutes from "./api/routes/stripe-billing-webhook.route.js";
+import billingRoutes from "./api/routes/billing.route.js";
 import emailRoutes from "./api/routes/email.route.js";
 
 const server = Fastify({
@@ -41,6 +43,9 @@ server.register(supabasePlugin);
 server.register(async (instance) => {
     instance.register(baseRoutes);
     instance.register(stripeWebhookRoutes); // no auth — Stripe signature-verified
+    // Separate register() = separate context, so its raw-body parser does not
+    // clash with the Connect webhook's. Never wrap either in fastify-plugin.
+    instance.register(stripeBillingWebhookRoutes);
     // TEMP: WhatsApp disabled — 2026-07-27
     // instance.register(async (comms) => {
     //     comms.addHook("preHandler", requireTenantAuth);
@@ -51,6 +56,10 @@ server.register(async (instance) => {
         payments.addHook("preHandler", requireTenantAuth);
         payments.register(paymentsRoutes);
     }, { prefix: "/payments" });
+    instance.register(async (billing) => {
+        billing.addHook("preHandler", requireTenantAuth);
+        billing.register(billingRoutes);
+    }, { prefix: "/billing" });
     instance.register(async (email) => {
         email.addHook("preHandler", requireTenantAuth);
         email.register(emailRoutes);

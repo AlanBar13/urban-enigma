@@ -12,9 +12,39 @@ export interface TenantWithStats {
   address: string | null
   created_at: string
   features: Json
+  plan: string
+  subscription_status: string | null
   users_count: number
   houses_count: number
 }
+
+/**
+ * Corrección manual del plan (cortesías, plan negociado, o arreglar un webhook
+ * perdido). El cobro real lo mueve Stripe: cambiar el plan aquí cambia nuestra
+ * comisión por pago, pero NO cancela ni crea la suscripción en Stripe.
+ */
+export const setTenantPlanFn = createServerFn({ method: 'POST' })
+  .inputValidator(
+    z.object({
+      tenantId: z.string(),
+      plan: z.enum(['arranque', 'basico', 'esencial', 'pro']),
+    }),
+  )
+  .handler(async ({ data }) => {
+    await requireSuperadmin()
+
+    const { error } = await getSupabaseClient()
+      .from('tenants')
+      .update({ plan: data.plan })
+      .eq('id', data.tenantId)
+
+    if (error) {
+      logger('error', 'Error updating tenant plan:', { error })
+      throw error
+    }
+
+    return { plan: data.plan }
+  })
 
 export const setTenantFeatureFn = createServerFn({ method: 'POST' })
   .inputValidator(
