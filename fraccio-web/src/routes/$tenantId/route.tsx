@@ -12,6 +12,7 @@ import {
   BookOpen,
   Building,
   ChevronDown,
+  CreditCard,
   House,
   LayoutDashboard,
   LogOut,
@@ -230,6 +231,13 @@ function RouteComponent() {
       label: 'Administrar Documentos',
       path: `/${params.tenantId}/admin-documentos`,
       icon: BookOpen,
+      allowedRoles: ['admin', 'superadmin'],
+    },
+    {
+      id: '13',
+      label: 'Suscripción',
+      path: `/${params.tenantId}/suscripcion`,
+      icon: CreditCard,
       allowedRoles: ['admin', 'superadmin'],
     },
     {
@@ -532,7 +540,7 @@ function RouteComponent() {
             <p className="font-semibold">Suscripción con pago pendiente</p>
             <p className="text-muted-foreground mt-1">
               No pudimos cobrar la mensualidad de Fraccio. Actualiza el método
-              de pago desde Administrar pagos para no perder el plan.
+              de pago desde Suscripción para no perder el plan.
             </p>
           </div>
         )}

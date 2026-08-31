@@ -26,6 +26,7 @@ import { Route as AdminIngresosRouteImport } from './routes/admin/ingresos'
 import { Route as AdminFraccionamientosRouteImport } from './routes/admin/fraccionamientos'
 import { Route as TenantIdVisitasRouteImport } from './routes/$tenantId/visitas'
 import { Route as TenantIdUsuariosRouteImport } from './routes/$tenantId/usuarios'
+import { Route as TenantIdSuscripcionRouteImport } from './routes/$tenantId/suscripcion'
 import { Route as TenantIdPerfilRouteImport } from './routes/$tenantId/perfil'
 import { Route as TenantIdDocumentosRouteImport } from './routes/$tenantId/documentos'
 import { Route as TenantIdCasaRouteImport } from './routes/$tenantId/casa'
@@ -127,6 +128,11 @@ const TenantIdVisitasRoute = TenantIdVisitasRouteImport.update({
 const TenantIdUsuariosRoute = TenantIdUsuariosRouteImport.update({
   id: '/usuarios',
   path: '/usuarios',
+  getParentRoute: () => TenantIdRouteRoute,
+} as any)
+const TenantIdSuscripcionRoute = TenantIdSuscripcionRouteImport.update({
+  id: '/suscripcion',
+  path: '/suscripcion',
   getParentRoute: () => TenantIdRouteRoute,
 } as any)
 const TenantIdPerfilRoute = TenantIdPerfilRouteImport.update({
@@ -235,6 +241,7 @@ export interface FileRoutesByFullPath {
   '/$tenantId/casa': typeof TenantIdCasaRoute
   '/$tenantId/documentos': typeof TenantIdDocumentosRoute
   '/$tenantId/perfil': typeof TenantIdPerfilRoute
+  '/$tenantId/suscripcion': typeof TenantIdSuscripcionRoute
   '/$tenantId/usuarios': typeof TenantIdUsuariosRoute
   '/$tenantId/visitas': typeof TenantIdVisitasRoute
   '/admin/fraccionamientos': typeof AdminFraccionamientosRoute
@@ -269,6 +276,7 @@ export interface FileRoutesByTo {
   '/$tenantId/casa': typeof TenantIdCasaRoute
   '/$tenantId/documentos': typeof TenantIdDocumentosRoute
   '/$tenantId/perfil': typeof TenantIdPerfilRoute
+  '/$tenantId/suscripcion': typeof TenantIdSuscripcionRoute
   '/$tenantId/usuarios': typeof TenantIdUsuariosRoute
   '/$tenantId/visitas': typeof TenantIdVisitasRoute
   '/admin/fraccionamientos': typeof AdminFraccionamientosRoute
@@ -306,6 +314,7 @@ export interface FileRoutesById {
   '/$tenantId/casa': typeof TenantIdCasaRoute
   '/$tenantId/documentos': typeof TenantIdDocumentosRoute
   '/$tenantId/perfil': typeof TenantIdPerfilRoute
+  '/$tenantId/suscripcion': typeof TenantIdSuscripcionRoute
   '/$tenantId/usuarios': typeof TenantIdUsuariosRoute
   '/$tenantId/visitas': typeof TenantIdVisitasRoute
   '/admin/fraccionamientos': typeof AdminFraccionamientosRoute
@@ -344,6 +353,7 @@ export interface FileRouteTypes {
     | '/$tenantId/casa'
     | '/$tenantId/documentos'
     | '/$tenantId/perfil'
+    | '/$tenantId/suscripcion'
     | '/$tenantId/usuarios'
     | '/$tenantId/visitas'
     | '/admin/fraccionamientos'
@@ -378,6 +388,7 @@ export interface FileRouteTypes {
     | '/$tenantId/casa'
     | '/$tenantId/documentos'
     | '/$tenantId/perfil'
+    | '/$tenantId/suscripcion'
     | '/$tenantId/usuarios'
     | '/$tenantId/visitas'
     | '/admin/fraccionamientos'
@@ -414,6 +425,7 @@ export interface FileRouteTypes {
     | '/$tenantId/casa'
     | '/$tenantId/documentos'
     | '/$tenantId/perfil'
+    | '/$tenantId/suscripcion'
     | '/$tenantId/usuarios'
     | '/$tenantId/visitas'
     | '/admin/fraccionamientos'
@@ -568,6 +580,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TenantIdUsuariosRouteImport
       parentRoute: typeof TenantIdRouteRoute
     }
+    '/$tenantId/suscripcion': {
+      id: '/$tenantId/suscripcion'
+      path: '/suscripcion'
+      fullPath: '/$tenantId/suscripcion'
+      preLoaderRoute: typeof TenantIdSuscripcionRouteImport
+      parentRoute: typeof TenantIdRouteRoute
+    }
     '/$tenantId/perfil': {
       id: '/$tenantId/perfil'
       path: '/perfil'
@@ -701,6 +720,7 @@ interface TenantIdRouteRouteChildren {
   TenantIdCasaRoute: typeof TenantIdCasaRoute
   TenantIdDocumentosRoute: typeof TenantIdDocumentosRoute
   TenantIdPerfilRoute: typeof TenantIdPerfilRoute
+  TenantIdSuscripcionRoute: typeof TenantIdSuscripcionRoute
   TenantIdUsuariosRoute: typeof TenantIdUsuariosRoute
   TenantIdVisitasRoute: typeof TenantIdVisitasRoute
   TenantIdIndexRoute: typeof TenantIdIndexRoute
@@ -720,6 +740,7 @@ const TenantIdRouteRouteChildren: TenantIdRouteRouteChildren = {
   TenantIdCasaRoute: TenantIdCasaRoute,
   TenantIdDocumentosRoute: TenantIdDocumentosRoute,
   TenantIdPerfilRoute: TenantIdPerfilRoute,
+  TenantIdSuscripcionRoute: TenantIdSuscripcionRoute,
   TenantIdUsuariosRoute: TenantIdUsuariosRoute,
   TenantIdVisitasRoute: TenantIdVisitasRoute,
   TenantIdIndexRoute: TenantIdIndexRoute,
