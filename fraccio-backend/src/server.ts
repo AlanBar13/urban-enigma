@@ -4,7 +4,7 @@ import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUi from '@fastify/swagger-ui';
 
 import supabasePlugin from "./lib/db/plugin.js";
-import { requireTenantAuth } from "./api/plugins/auth.js";
+import { requireSuperadmin, requireTenantAuth } from "./api/plugins/auth.js";
 import baseRoutes from "./api/routes/base.route.js";
 // TEMP: WhatsApp disabled — 2026-07-27
 // import commsRoutes from "./api/routes/comms.route.js";
@@ -13,6 +13,7 @@ import paymentsRoutes from "./api/routes/payments.route.js";
 import stripeWebhookRoutes from "./api/routes/stripe-webhook.route.js";
 import stripeBillingWebhookRoutes from "./api/routes/stripe-billing-webhook.route.js";
 import billingRoutes from "./api/routes/billing.route.js";
+import adminRoutes from "./api/routes/admin.route.js";
 import emailRoutes from "./api/routes/email.route.js";
 
 const server = Fastify({
@@ -60,6 +61,12 @@ server.register(async (instance) => {
         billing.addHook("preHandler", requireTenantAuth);
         billing.register(billingRoutes);
     }, { prefix: "/billing" });
+    // Platform-wide, no :tenantId — hence its own explicit superadmin guard
+    // rather than requireTenantAuth, whose param-less behaviour is incidental.
+    instance.register(async (admin) => {
+        admin.addHook("preHandler", requireSuperadmin);
+        admin.register(adminRoutes);
+    }, { prefix: "/admin" });
     instance.register(async (email) => {
         email.addHook("preHandler", requireTenantAuth);
         email.register(emailRoutes);

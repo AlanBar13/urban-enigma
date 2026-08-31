@@ -47,10 +47,7 @@ const plans = [
       'Para fraccionamientos grandes: comisión casi simbólica y lo nuevo primero.',
     houses: 'Hasta 400 casas',
     fee: '$2 MXN',
-    extras: [
-      'Soporte prioritario',
-      'WhatsApp del fraccionamiento (acceso anticipado)',
-    ],
+    extras: ['Soporte prioritario'],
     missing: [],
     cta: 'Elegir Pro',
     highlight: false,

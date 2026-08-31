@@ -9,6 +9,7 @@ import {
 } from '@tanstack/react-router'
 import {
   Building,
+  DollarSign,
   Home,
   LayoutDashboard,
   LogOut,
@@ -92,6 +93,12 @@ function RouteComponent() {
       label: 'Solicitudes',
       path: '/admin/solicitudes',
       icon: Mail,
+    },
+    {
+      id: '5',
+      label: 'Ingresos',
+      path: '/admin/ingresos',
+      icon: DollarSign,
     },
   ]
 

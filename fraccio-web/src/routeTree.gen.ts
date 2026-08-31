@@ -22,6 +22,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as TenantIdIndexRouteImport } from './routes/$tenantId/index'
 import { Route as AdminUsuariosRouteImport } from './routes/admin/usuarios'
 import { Route as AdminSolicitudesRouteImport } from './routes/admin/solicitudes'
+import { Route as AdminIngresosRouteImport } from './routes/admin/ingresos'
 import { Route as AdminFraccionamientosRouteImport } from './routes/admin/fraccionamientos'
 import { Route as TenantIdVisitasRouteImport } from './routes/$tenantId/visitas'
 import { Route as TenantIdUsuariosRouteImport } from './routes/$tenantId/usuarios'
@@ -106,6 +107,11 @@ const AdminUsuariosRoute = AdminUsuariosRouteImport.update({
 const AdminSolicitudesRoute = AdminSolicitudesRouteImport.update({
   id: '/solicitudes',
   path: '/solicitudes',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminIngresosRoute = AdminIngresosRouteImport.update({
+  id: '/ingresos',
+  path: '/ingresos',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminFraccionamientosRoute = AdminFraccionamientosRouteImport.update({
@@ -232,6 +238,7 @@ export interface FileRoutesByFullPath {
   '/$tenantId/usuarios': typeof TenantIdUsuariosRoute
   '/$tenantId/visitas': typeof TenantIdVisitasRoute
   '/admin/fraccionamientos': typeof AdminFraccionamientosRoute
+  '/admin/ingresos': typeof AdminIngresosRoute
   '/admin/solicitudes': typeof AdminSolicitudesRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/$tenantId/': typeof TenantIdIndexRoute
@@ -265,6 +272,7 @@ export interface FileRoutesByTo {
   '/$tenantId/usuarios': typeof TenantIdUsuariosRoute
   '/$tenantId/visitas': typeof TenantIdVisitasRoute
   '/admin/fraccionamientos': typeof AdminFraccionamientosRoute
+  '/admin/ingresos': typeof AdminIngresosRoute
   '/admin/solicitudes': typeof AdminSolicitudesRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/$tenantId': typeof TenantIdIndexRoute
@@ -301,6 +309,7 @@ export interface FileRoutesById {
   '/$tenantId/usuarios': typeof TenantIdUsuariosRoute
   '/$tenantId/visitas': typeof TenantIdVisitasRoute
   '/admin/fraccionamientos': typeof AdminFraccionamientosRoute
+  '/admin/ingresos': typeof AdminIngresosRoute
   '/admin/solicitudes': typeof AdminSolicitudesRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/$tenantId/': typeof TenantIdIndexRoute
@@ -338,6 +347,7 @@ export interface FileRouteTypes {
     | '/$tenantId/usuarios'
     | '/$tenantId/visitas'
     | '/admin/fraccionamientos'
+    | '/admin/ingresos'
     | '/admin/solicitudes'
     | '/admin/usuarios'
     | '/$tenantId/'
@@ -371,6 +381,7 @@ export interface FileRouteTypes {
     | '/$tenantId/usuarios'
     | '/$tenantId/visitas'
     | '/admin/fraccionamientos'
+    | '/admin/ingresos'
     | '/admin/solicitudes'
     | '/admin/usuarios'
     | '/$tenantId'
@@ -406,6 +417,7 @@ export interface FileRouteTypes {
     | '/$tenantId/usuarios'
     | '/$tenantId/visitas'
     | '/admin/fraccionamientos'
+    | '/admin/ingresos'
     | '/admin/solicitudes'
     | '/admin/usuarios'
     | '/$tenantId/'
@@ -526,6 +538,13 @@ declare module '@tanstack/react-router' {
       path: '/solicitudes'
       fullPath: '/admin/solicitudes'
       preLoaderRoute: typeof AdminSolicitudesRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/ingresos': {
+      id: '/admin/ingresos'
+      path: '/ingresos'
+      fullPath: '/admin/ingresos'
+      preLoaderRoute: typeof AdminIngresosRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/fraccionamientos': {
@@ -715,6 +734,7 @@ const TenantIdRouteRouteWithChildren = TenantIdRouteRoute._addFileChildren(
 
 interface AdminRouteRouteChildren {
   AdminFraccionamientosRoute: typeof AdminFraccionamientosRoute
+  AdminIngresosRoute: typeof AdminIngresosRoute
   AdminSolicitudesRoute: typeof AdminSolicitudesRoute
   AdminUsuariosRoute: typeof AdminUsuariosRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -722,6 +742,7 @@ interface AdminRouteRouteChildren {
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminFraccionamientosRoute: AdminFraccionamientosRoute,
+  AdminIngresosRoute: AdminIngresosRoute,
   AdminSolicitudesRoute: AdminSolicitudesRoute,
   AdminUsuariosRoute: AdminUsuariosRoute,
   AdminIndexRoute: AdminIndexRoute,
