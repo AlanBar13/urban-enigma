@@ -123,6 +123,7 @@ async function routes(server: FastifyInstance, options: Record<string, unknown>)
                             status: { type: "string", nullable: true },
                             houseCount: { type: "integer" },
                             feeMxn: { type: "number" },
+                            monthlyMxn: { type: "number", nullable: true },
                             currentPeriodEnd: { type: "integer", nullable: true },
                         },
                     },
@@ -137,6 +138,46 @@ async function routes(server: FastifyInstance, options: Record<string, unknown>)
             } catch (err) {
                 request.log.error(err);
                 reply.status(500).send({ message: `Error fetching subscription status for tenant ${tenantId}` });
+            }
+        },
+    );
+
+    server.get<{ Params: BillingRouteParams }>(
+        "/tenants/:tenantId/subscription/invoices",
+        {
+            preHandler: requireAdmin,
+            schema: {
+                description: "Returns the tenant's recent SaaS receipts, newest first",
+                tags: ["Billing"],
+                params: tenantParamsSchema,
+                response: {
+                    200: {
+                        description: "Receipt history",
+                        type: "array",
+                        items: {
+                            type: "object",
+                            properties: {
+                                id: { type: "string" },
+                                number: { type: "string", nullable: true },
+                                created: { type: "integer" },
+                                amountPaid: { type: "number" },
+                                status: { type: "string", nullable: true },
+                                hostedUrl: { type: "string", nullable: true },
+                                pdfUrl: { type: "string", nullable: true },
+                            },
+                        },
+                    },
+                    500: { description: "Invoice lookup failed", ...messageSchema },
+                },
+            },
+        },
+        async (request, reply) => {
+            const { tenantId } = request.params;
+            try {
+                reply.send(await billingController.listInvoices(tenantId));
+            } catch (err) {
+                request.log.error(err);
+                reply.status(500).send({ message: `Error fetching invoices for tenant ${tenantId}` });
             }
         },
     );

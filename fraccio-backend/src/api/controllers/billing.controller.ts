@@ -34,6 +34,18 @@ const PLAN_PRICE_ENV: Record<Exclude<PlanName, "arranque">, string> = {
     pro: "STRIPE_PRICE_PRO",
 };
 
+/** One row of the tenant's receipt history. Stripe invoices are NOT CFDIs. */
+export type BillingInvoice = {
+    id: string;
+    number: string | null;
+    /** Unix seconds, like the rest of the Stripe timestamps we hand the UI. */
+    created: number;
+    amountPaid: number;
+    status: string | null;
+    hostedUrl: string | null;
+    pdfUrl: string | null;
+};
+
 /** Thrown when a paid plan has no Price configured; routes map it to 409. */
 export class PlanNotBillableError extends Error {
     constructor(plan: string) {
@@ -109,7 +121,7 @@ class BillingController {
 
         const tenant = await this.getTenant(tenantId);
         const customer = await this.getCustomerId(tenant);
-        const adminUrl = `${process.env.WEB_BASE_URL}/${tenant.path}/admin-pagos`;
+        const adminUrl = `${process.env.WEB_BASE_URL}/${tenant.path}/suscripcion`;
 
         const session = await getStripe().checkout.sessions.create({
             mode: "subscription",
@@ -135,9 +147,35 @@ class BillingController {
 
         const session = await getStripe().billingPortal.sessions.create({
             customer: tenant.stripe_customer_id,
-            return_url: `${process.env.WEB_BASE_URL}/${tenant.path}/admin-pagos`,
+            return_url: `${process.env.WEB_BASE_URL}/${tenant.path}/suscripcion`,
         });
         return { url: session.url };
+    }
+
+    /**
+     * The tenant's own receipts: what they paid US. Gated on the customer and
+     * not on the subscription — a tenant who cancelled still owns its history.
+     */
+    async listInvoices(tenantId: string): Promise<BillingInvoice[]> {
+        const tenant = await this.getTenant(tenantId);
+        if (!tenant.stripe_customer_id) {
+            return [];
+        }
+
+        const { data } = await getStripe().invoices.list({
+            customer: tenant.stripe_customer_id,
+            limit: 12,
+        });
+
+        return data.map((invoice) => ({
+            id: invoice.id ?? "",
+            number: invoice.number,
+            created: invoice.created,
+            amountPaid: invoice.amount_paid / 100,
+            status: invoice.status,
+            hostedUrl: invoice.hosted_invoice_url ?? null,
+            pdfUrl: invoice.invoice_pdf ?? null,
+        }));
     }
 
     /**
@@ -151,6 +189,7 @@ class BillingController {
         status: string | null;
         houseCount: number;
         feeMxn: number;
+        monthlyMxn: number | null;
         currentPeriodEnd: number | null;
     }> {
         const tenant = await this.getTenant(tenantId);
@@ -162,7 +201,8 @@ class BillingController {
         };
 
         if (!tenant.stripe_subscription_id) {
-            return { ...base, status: tenant.subscription_status, currentPeriodEnd: null };
+            // Arranque: no subscription, so no monthly amount to show.
+            return { ...base, status: tenant.subscription_status, monthlyMxn: null, currentPeriodEnd: null };
         }
 
         const subscription = await getStripe().subscriptions.retrieve(tenant.stripe_subscription_id);
@@ -178,6 +218,9 @@ class BillingController {
         return {
             ...base,
             status: subscription.status,
+            // What Stripe actually charges them. Read off the price we already
+            // have rather than any constant of ours — no second source of truth.
+            monthlyMxn: item?.price.unit_amount != null ? item.price.unit_amount / 100 : null,
             // current_period_end lives on the subscription item in current API
             // versions; the client pins none, so read it from there.
             currentPeriodEnd: item?.current_period_end ?? null,

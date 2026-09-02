@@ -1,12 +1,13 @@
 import { Check, Minus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { PLAN_PRICE_MXN } from '@/lib/tenants'
 
 /** Lo que cambia entre planes. Las funciones compartidas viven en `included`. */
 const plans = [
   {
     id: 'arranque',
     name: 'Arranque',
-    price: 0,
+    price: PLAN_PRICE_MXN.arranque,
     pitch: 'Para probar la plataforma completa sin pagar mensualidad.',
     houses: 'Hasta 10 casas',
     fee: '$10 MXN',
@@ -18,7 +19,7 @@ const plans = [
   {
     id: 'basico',
     name: 'Básico',
-    price: 490,
+    price: PLAN_PRICE_MXN.basico,
     pitch: 'Para privadas y fraccionamientos chicos que ya operan a diario.',
     houses: 'Hasta 50 casas',
     fee: '$8 MXN',
@@ -30,7 +31,7 @@ const plans = [
   {
     id: 'esencial',
     name: 'Esencial',
-    price: 990,
+    price: PLAN_PRICE_MXN.esencial,
     pitch: 'Suma caseta y control de visitas, con la comisión a la mitad.',
     houses: 'Hasta 200 casas',
     fee: '$5 MXN',
@@ -42,7 +43,7 @@ const plans = [
   {
     id: 'pro',
     name: 'Pro',
-    price: 1890,
+    price: PLAN_PRICE_MXN.pro,
     pitch:
       'Para fraccionamientos grandes: comisión casi simbólica y lo nuevo primero.',
     houses: 'Hasta 400 casas',

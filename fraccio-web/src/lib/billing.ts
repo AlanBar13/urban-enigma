@@ -14,8 +14,22 @@ export type SubscriptionStatus = {
   plan: string
   status: string | null
   houseCount: number
+  /** Comisión por transacción, no la mensualidad. */
   feeMxn: number
+  /** Lo que Stripe cobra al mes. `null` en Arranque (no hay suscripción). */
+  monthlyMxn: number | null
   currentPeriodEnd: number | null
+}
+
+/** Un cobro pasado de la suscripción. Ojo: NO es un CFDI. */
+export type BillingInvoice = {
+  id: string
+  number: string | null
+  created: number
+  amountPaid: number
+  status: string | null
+  hostedUrl: string | null
+  pdfUrl: string | null
 }
 
 const tenantIdSchema = z.object({ tenantId: z.string().uuid() })
@@ -64,4 +78,17 @@ export const getSubscriptionStatusFn = createServerFn({ method: 'POST' })
     return backendFetch(
       `/api/v1/billing/tenants/${data.tenantId}/subscription`,
     ) as Promise<SubscriptionStatus>
+  })
+
+/** Admin only: los recibos de la suscripción, del más reciente al más viejo. */
+export const getBillingInvoicesFn = createServerFn({ method: 'POST' })
+  .inputValidator(tenantIdSchema)
+  .handler(async ({ data }) => {
+    const user = await getUser()
+    assertTenantAccess(user, data.tenantId)
+    assertAdmin(user, 'view the subscription receipts')
+
+    return backendFetch(
+      `/api/v1/billing/tenants/${data.tenantId}/subscription/invoices`,
+    ) as Promise<Array<BillingInvoice>>
   })

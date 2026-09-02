@@ -28,6 +28,19 @@ export const PLAN_MAX_HOUSES: Record<PlanName, number> = {
   pro: 400,
 }
 
+/**
+ * Mensualidad por plan, SÓLO para escaparate: la landing y el selector de
+ * pre-compra, donde todavía no hay suscripción de la cual leer nada. Lo que el
+ * fraccionamiento realmente paga sale de Stripe (`monthlyMxn` en
+ * getSubscriptionStatusFn). Si cambias un Price en el Dashboard, cámbialo aquí.
+ */
+export const PLAN_PRICE_MXN: Record<PlanName, number> = {
+  arranque: 0,
+  basico: 490,
+  esencial: 990,
+  pro: 1890,
+}
+
 // La comisión por plan vive SÓLO en el backend (PLAN_FEE_MXN en
 // billing.controller.ts) y llega a la UI vía getSubscriptionStatusFn. Duplicarla
 // aquí sería una segunda fuente de verdad sobre dinero, que puede desalinearse.
